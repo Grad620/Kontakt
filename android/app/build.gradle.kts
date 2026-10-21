@@ -13,6 +13,7 @@ plugins {
 fun config(name: String): String =
     providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orElse("").get().trim()
 
+val vkStandaloneAppId = config("VK_STANDALONE_APP_ID").toIntOrNull()?.takeIf { it > 0 } ?: 0
 val vkClientId = config("VK_CLIENT_ID")
 val vkClientSecret = config("VK_CLIENT_SECRET")
 val vkScopes = config("VK_SCOPES") // например: friends,wall,messages — только после одобрения VK
@@ -46,6 +47,8 @@ android {
         // VK ID SDK setup requires both the application ID and protected client secret.
         // Do not expose the secret itself in BuildConfig; only expose whether both values exist.
         buildConfigField("boolean", "VK_ID_CONFIGURED", (vkClientId.isNotBlank() && vkClientSecret.isNotBlank()).toString())
+        buildConfigField("boolean", "VK_STANDALONE_CONFIGURED", (vkStandaloneAppId > 0).toString())
+        resValue("integer", "com_vk_sdk_AppId", vkStandaloneAppId.toString())
 
         // Требование VK ID SDK: значения подставляются в манифест.
         manifestPlaceholders["VKIDClientID"] = vkClientId.ifBlank { "0" }
@@ -130,6 +133,7 @@ dependencies {
 
     // Официальная авторизация VK ID (лицензия MIT)
     implementation("com.vk.id:vkid:2.7.3")
+    implementation("com.vk:android-sdk-core:4.1.0")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
