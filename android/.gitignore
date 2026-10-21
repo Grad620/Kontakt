@@ -12,7 +12,7 @@ captures/
 *.aab
 .DS_Store
 
-# Signing material must never be committed.
-/app/debug.keystore
+# Ignore new local signing files. The existing debug keystore remains tracked temporarily
+# so test APKs can update the installed app without changing its signing identity.
 *.jks
 *.keystore
