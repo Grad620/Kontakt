@@ -23,8 +23,8 @@ android {
         applicationId = "com.kontakt.app"
         minSdk = 34
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.1.2"
+        versionCode = 4
+        versionName = "0.1.3"
 
         // Идентификатор приложения и список прав — не секреты. Секрет в BuildConfig не попадает.
         buildConfigField("String", "VK_CLIENT_ID", "\"$vkClientId\"")
