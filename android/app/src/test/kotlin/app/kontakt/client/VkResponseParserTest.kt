@@ -26,6 +26,32 @@ class VkResponseParserTest {
     }
 
     @Test
+    fun rateLimitCodesAreMappedWithoutAutomaticRetry() {
+        assertThrows(VkError.RateLimited::class.java) {
+            VkResponseParser.parse("""{"error":{"error_code":6,"error_msg":"Too many requests"}}""")
+        }
+        assertThrows(VkError.RateLimited::class.java) {
+            VkResponseParser.parse("""{"error":{"error_code":9,"error_msg":"Flood control"}}""")
+        }
+    }
+
+    @Test
+    fun unknownApiErrorPreservesCodeAndMessage() {
+        val error = assertThrows(VkError.Server::class.java) {
+            VkResponseParser.parse("""{"error":{"error_code":999,"error_msg":"Unexpected error"}}""")
+        }
+        assertEquals(999, error.code)
+        assertEquals("Unexpected error", error.vkMessage)
+    }
+
+    @Test
+    fun missingResponseAndErrorIsMalformed() {
+        assertThrows(VkError.Malformed::class.java) {
+            VkResponseParser.parse("""{"items":[]}""")
+        }
+    }
+
+    @Test
     fun captchaIsReportedNotBypassed() {
         assertThrows(VkError.Captcha::class.java) {
             VkResponseParser.parse("""{"error":{"error_code":14,"error_msg":"Captcha needed"}}""")
