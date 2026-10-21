@@ -33,6 +33,12 @@ class VkResponseParserTest {
     }
 
     @Test
+    fun profileTypeErrorCanCarryTheMethodName() {
+        val error = VkError.ProfileTypeUnavailable("Method is not available for this profile type", "messages.getConversations")
+        assertEquals("messages.getConversations", error.method)
+    }
+
+    @Test
     fun rateLimitCodesAreMappedWithoutAutomaticRetry() {
         assertThrows(VkError.RateLimited::class.java) {
             VkResponseParser.parse("""{"error":{"error_code":6,"error_msg":"Too many requests"}}""")

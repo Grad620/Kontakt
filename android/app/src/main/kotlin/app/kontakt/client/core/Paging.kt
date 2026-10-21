@@ -37,9 +37,9 @@ fun Throwable.toUiError(deniedMessage: String): UiError = when (this) {
     is VkError.AccessDenied -> UiError(UiError.Kind.AccessDenied, deniedMessage)
     is VkError.ProfileTypeUnavailable -> UiError(
         UiError.Kind.AccessDenied,
-        "VK отклонил запрос (код 1051): этот метод недоступен для токена VK ID, который Kontakt получил при входе. " +
-            "Это не проблема VPN и не исправляется добавлением scopes. Личные сообщения и часть ленты/друзей сейчас нельзя загрузить этим способом. " +
-            "Повторять запрос бессмысленно; доступ должен предоставить сам VK либо нужен официальный поддерживаемый способ авторизации для этого метода.",
+        "VK отклонил метод ${method ?: "API"} (код 1051): он недоступен для типа авторизации, полученного через VK ID. " +
+            "Это не ошибка VPN. Повторять запрос бессмысленно, а добавление scopes не меняет тип токена. " +
+            "Для доступа нужен поддерживаемый VK способ авторизации или разрешение VK для этого приложения.",
     )
     is VkError.RateLimited -> UiError(
         UiError.Kind.Other,

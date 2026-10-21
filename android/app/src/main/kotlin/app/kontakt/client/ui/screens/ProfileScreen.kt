@@ -112,8 +112,8 @@ private fun ProfileContent(profile: Profile, modifier: Modifier) {
 
         SectionCard("Друзья") {
             Text(
-                "Список друзей требует права friends, которое VK выдаёт только по запросу. " +
-                    "В этой версии раздел недоступен.",
+                "Список друзей требует доступного метода VK API. Новый тип токена VK ID может не предоставлять этот доступ; " +
+                    "показывать список без разрешения VK приложение не может.",
                 style = MaterialTheme.typography.bodyMedium,
             )
         }

@@ -21,7 +21,7 @@ data class ChatItem(
     val lastIsOutgoing: Boolean,
 )
 
-/** users.get — доступно с базовым доступом VK ID. */
+/** Получение профиля через users.get. Доступность проверяется по фактическому ответу API. */
 class ProfileRepository(private val api: VkApi) {
     suspend fun load(): Profile {
         val response = api.call("users.get", mapOf("fields" to "photo_200,screen_name,status"))
@@ -36,7 +36,7 @@ class ProfileRepository(private val api: VkApi) {
     }
 }
 
-/** messages.getConversations — для пользовательского токена нужно право messages (выдаётся VK по запросу). */
+/** Получение личных диалогов. VK ID может отклонить метод по типу токена (1051), независимо от scopes. */
 class ChatsRepository(private val api: VkApi) {
     suspend fun page(offset: Int): Page<Int, ChatItem> {
         val response = api.call(
