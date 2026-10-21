@@ -2,7 +2,7 @@ name: Build Kontakt APK
 
 on:
   push:
-    branches: [main, master, fix/vk-id-build-config]
+    branches: [main, master, fix/vk-id-build-config, work/visible-kontakt-ui]
     tags: ['v*']
   pull_request:
     branches: [main, master, fix/vk-id-build-config]
