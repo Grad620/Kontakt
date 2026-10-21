@@ -21,6 +21,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.activity.compose.LocalActivity
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -204,7 +205,7 @@ fun VgTheme(
     }
 
     // Иконки статус-бара и панели навигации подстраиваются под выбранную тему.
-    val activity = LocalActivity.current
+    val activity = LocalActivity.current as? ComponentActivity
     DisposableEffect(activity, dark) {
         activity?.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT) { dark },
