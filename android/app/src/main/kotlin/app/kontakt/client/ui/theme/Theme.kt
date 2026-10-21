@@ -1,7 +1,6 @@
 package app.kontakt.client.ui.theme
 
 import android.graphics.Color as AndroidColor
-import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -21,7 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.LocalActivity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -205,7 +204,7 @@ fun VgTheme(
     }
 
     // Иконки статус-бара и панели навигации подстраиваются под выбранную тему.
-    val activity = LocalContext.current as? ComponentActivity
+    val activity = LocalActivity.current
     DisposableEffect(activity, dark) {
         activity?.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT) { dark },
