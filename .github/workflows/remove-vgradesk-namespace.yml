@@ -22,6 +22,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
           import shutil
 
           root = Path(".")
@@ -55,7 +56,6 @@ jobs:
               if updated != original:
                   path.write_text(updated, encoding="utf-8")
 
-          # Rename Kotlin package directories and files after updating source references.
           for old, new in [
               (Path("android/app/src/main/kotlin/app/vgradesk"), Path("android/app/src/main/kotlin/app/kontakt")),
               (Path("android/app/src/test/kotlin/app/vgradesk"), Path("android/app/src/test/kotlin/app/kontakt")),
@@ -74,16 +74,36 @@ jobs:
                   if old.exists():
                       old.rename(base / new_name)
 
-          # Remove this temporary migration workflow from the resulting source tree.
           migration_workflow = Path(".github/workflows/remove-vgradesk-namespace.yml")
           if migration_workflow.exists():
               migration_workflow.unlink()
+
+          archive = root / "kontakt-project-fixed-repository.zip"
+          with ZipFile(archive, "w", ZIP_DEFLATED) as z:
+              for path in sorted(root.rglob("*")):
+                  if not path.is_file() or path == archive or any(part in skip_dirs for part in path.parts):
+                      continue
+                  z.write(path, path.relative_to(root).as_posix())
           PY
 
-          if grep -Rni --exclude-dir=.git --exclude='*.keystore' -E 'vgradesk|VGradesk|VgApp|VgRoot|VgIcons|app\.vgradesk' .; then
+          if grep -Rni --binary-files=without-match --exclude-dir=.git --exclude='*.zip' --exclude='*.keystore' -E 'vgradesk|VGradesk|VgApp|VgRoot|VgIcons|app\.vgradesk' .; then
             echo "Legacy-name references remain; refusing to commit."
             exit 1
           fi
+
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          import re
+          with ZipFile("kontakt-project-fixed-repository.zip") as z:
+              for name in z.namelist():
+                  if name.endswith((".kt", ".kts", ".java", ".xml", ".md", ".yml", ".yaml", ".properties", ".gradle", ".pro", ".txt", ".json", ".toml", ".sh")):
+                      try:
+                          content = z.read(name).decode("utf-8")
+                      except UnicodeDecodeError:
+                          continue
+                      if re.search(r"vgradesk|VGradesk|VgApp|VgRoot|VgIcons|app\.vgradesk", content, re.I):
+                          raise SystemExit(f"Legacy name remains in archive: {name}")
+          PY
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
