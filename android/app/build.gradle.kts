@@ -15,6 +15,18 @@ val vkClientId = config("VK_CLIENT_ID")
 val vkClientSecret = config("VK_CLIENT_SECRET")
 val vkScopes = config("VK_SCOPES") // например: friends,wall,messages — только после одобрения VK
 
+// Release signing credentials are supplied only by CI secrets or local environment.
+// Never commit the signing keystore or passwords.
+val signingKeyBase64 = config("ANDROID_SIGNING_KEY_BASE64")
+val signingStorePassword = config("ANDROID_SIGNING_STORE_PASSWORD")
+val signingKeyAlias = config("ANDROID_SIGNING_KEY_ALIAS")
+val signingKeyPassword = config("ANDROID_SIGNING_KEY_PASSWORD")
+val releaseKeystore = layout.buildDirectory.file("kontakt-release.keystore").get().asFile
+if (signingKeyBase64.isNotBlank()) {
+    releaseKeystore.parentFile.mkdirs()
+    releaseKeystore.writeBytes(java.util.Base64.getDecoder().decode(signingKeyBase64))
+}
+
 android {
     namespace = "app.kontakt.client"
     compileSdk = 35
@@ -40,15 +52,31 @@ android {
         manifestPlaceholders["VKIDRedirectScheme"] = "vk${vkClientId.ifBlank { "0" }}"
     }
 
-    // Фиксированный debug-ключ (не секрет, пароль стандартный), чтобы SHA-1 отпечаток
-    // был одинаковым на любой сборке и его можно было один раз указать в настройках VK.
+    // Do not pin a repository-tracked debug signing key. Android's local debug key is generated
+    // automatically; release builds use a separately protected CI signing key.
     signingConfigs {
-        getByName("debug") {
-            storeFile = file("debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+        if (signingKeyBase64.isNotBlank()) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = signingStorePassword
+                keyAlias = signingKeyAlias
+                keyPassword = signingKeyPassword
+            }
         }
+    }
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            if (signingKeyBase64.isNotBlank()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+    }
+
+    lint {
+        abortOnError = true
+        checkReleaseBuilds = true
     }
 
     compileOptions {
