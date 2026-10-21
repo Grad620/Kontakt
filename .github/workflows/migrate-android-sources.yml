@@ -22,26 +22,28 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Android project into tracked folder
+      - name: Extract Android project only if sources are not yet tracked
         shell: bash
         run: |
           set -euo pipefail
-          test -f kontakt-project-fixed-repository.zip
-          rm -rf _migration_src android
-          mkdir -p _migration_src android
-          unzip -q kontakt-project-fixed-repository.zip -d _migration_src
-          SETTINGS="$(find _migration_src -type f \( -name settings.gradle.kts -o -name settings.gradle \) -print -quit)"
-          if [ -z "$SETTINGS" ]; then
-            echo "::error::Archive has no settings.gradle(.kts)"
-            find _migration_src -maxdepth 4 -type f | head -100
-            exit 1
+          if [ -f android/settings.gradle.kts ] || [ -f android/settings.gradle ]; then
+            echo "Using tracked Android sources; archive will not overwrite developer changes."
+          else
+            test -f kontakt-project-fixed-repository.zip
+            rm -rf _migration_src
+            mkdir -p _migration_src android
+            unzip -q kontakt-project-fixed-repository.zip -d _migration_src
+            SETTINGS="$(find _migration_src -type f \\( -name settings.gradle.kts -o -name settings.gradle \\) -print -quit)"
+            if [ -z "$SETTINGS" ]; then
+              echo "::error::Archive has no settings.gradle(.kts)"
+              find _migration_src -maxdepth 4 -type f | head -100
+              exit 1
+            fi
+            PROJECT_DIR="$(dirname "$SETTINGS")"
+            cp -a "$PROJECT_DIR"/. android/
+            test -f android/gradlew
+            test -f android/app/build.gradle.kts -o -f android/app/build.gradle
           fi
-          PROJECT_DIR="$(dirname "$SETTINGS")"
-          cp -a "$PROJECT_DIR"/. android/
-          test -f android/gradlew
-          test -f android/app/build.gradle.kts -o -f android/app/build.gradle
-          echo "Project root copied from $PROJECT_DIR"
-          find android -maxdepth 3 -type f | sort | head -100
 
       - name: Commit source files to repository
         shell: bash
@@ -65,36 +67,6 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Enable VK ID core library desugaring in CI workspace
-        working-directory: android
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          p = Path("app/build.gradle.kts")
-          if not p.exists():
-              raise SystemExit("Expected app/build.gradle.kts")
-          s = p.read_text()
-          if "isCoreLibraryDesugaringEnabled = true" not in s:
-              s, count = re.subn(
-                  r'compileOptions\s*\{',
-                  lambda m: m.group(0) + '\n        isCoreLibraryDesugaringEnabled = true',
-                  s, count=1)
-              if count == 0:
-                  raise SystemExit("No compileOptions block found")
-          if "desugar_jdk_libs" not in s:
-              s, count = re.subn(
-                  r'dependencies\s*\{',
-                  lambda m: m.group(0) + '\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")',
-                  s, count=1)
-              if count == 0:
-                  raise SystemExit("No dependencies block found")
-          p.write_text(s)
-          print("Core library desugaring enabled for CI build")
-          PY
 
       - name: Run unit tests
         working-directory: android
@@ -122,8 +94,3 @@ jobs:
           retention-days: 90
           if-no-files-found: error
 
-      - name: Open pull request after successful build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr create             --repo Grad620/Kontakt             --base fix/vk-id-build-config             --head migration/commit-android-source             --title "Commit Android source files from project archive"             --body "Extracts the existing Android project from kontakt-project-fixed-repository.zip into the tracked android/ directory. The migration workflow runs unit tests and assembles a debug APK before opening this PR. This does not claim live VK ID authentication has been verified."
