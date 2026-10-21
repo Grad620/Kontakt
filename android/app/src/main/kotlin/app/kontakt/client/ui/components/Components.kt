@@ -107,7 +107,7 @@ fun ScreenHeader(
             .fillMaxWidth()
             .statusBarsPadding()
             .heightIn(min = 56.dp)
-            .padding(start = VgSpacing.lg, end = VgSpacing.sm),
+            .padding(start = 16.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
