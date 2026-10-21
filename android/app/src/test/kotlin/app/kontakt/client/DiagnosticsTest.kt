@@ -21,6 +21,15 @@ class DiagnosticsTest {
     }
 
     @Test
+    fun profileTypeUnavailableIsRecordedAs1051() {
+        val log = DiagnosticsLog()
+        log.record("users.get", VkError.ProfileTypeUnavailable("Method is not available for this profile type"))
+        assertEquals("users.get", log.events.value.single().method)
+        assertEquals(1051, log.events.value.single().code)
+        assertEquals("метод недоступен для типа профиля", log.events.value.single().kind)
+    }
+
+    @Test
     fun entriesNeverContainVkMessageText() {
         val log = DiagnosticsLog()
         log.record("messages.getConversations", VkError.AccessDenied(15, "токен abc123 текст письма"))
