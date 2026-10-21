@@ -1,0 +1,454 @@
+package app.vgradesk.client.ui.screens
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import app.vgradesk.client.AppContainer
+import app.vgradesk.client.core.PagedState
+import app.vgradesk.client.core.Paginator
+import app.vgradesk.client.data.FeedPost
+import app.vgradesk.client.data.FeedRepository
+import app.vgradesk.client.data.ForYouRepository
+import app.vgradesk.client.data.PostSource
+import app.vgradesk.client.rec.Recommender
+import app.vgradesk.client.rec.Signal
+import app.vgradesk.client.rec.SignalClassifier
+import app.vgradesk.client.rec.SignalKind
+import app.vgradesk.client.rec.DwellTracker
+import app.vgradesk.client.ui.common.formatPostDate
+import app.vgradesk.client.ui.common.vmFactory
+import app.vgradesk.client.ui.components.Avatar
+import app.vgradesk.client.ui.components.PagedColumn
+import app.vgradesk.client.ui.components.ScreenHeader
+import app.vgradesk.client.ui.theme.Kontakt
+import app.vgradesk.client.ui.theme.VgIcons
+import coil.compose.AsyncImage
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+private const val FOR_YOU_DENIED =
+    "VK не выдал приложению доступ ни к одному источнику публикаций. Лента подписок требует прав wall и friends, " +
+        "которые VK выдаёт только по запросу в поддержку; доступность поиска и стен сообществ зависит от VK. " +
+        "Это ограничение VK, а не ошибка Kontakt."
+
+private const val FEED_DENIED =
+    "VK не выдал этому приложению доступ к ленте. Методу newsfeed.get нужны права wall и friends, " +
+        "которые VK выдаёт только по запросу в поддержку. Это ограничение VK, а не ошибка Kontakt."
+
+enum class FeedMode(val title: String) {
+    ForYou("Для вас"),
+    Subscriptions("Подписки"),
+}
+
+/** Данные для окна «Почему я это вижу?». */
+data class Explanation(val author: String, val lines: List<String>)
+
+class FeedViewModel(
+    forYouRepo: ForYouRepository,
+    feedRepo: FeedRepository,
+    private val recommender: Recommender,
+    online: StateFlow<Boolean>,
+) : ViewModel() {
+
+    private val forYouPager = Paginator<Int, FeedPost>(
+        scope = viewModelScope,
+        keyOf = { it.key },
+        deniedMessage = FOR_YOU_DENIED,
+        fetch = { cursor -> forYouRepo.page(cursor) },
+    )
+    private val subsPager = Paginator<String, FeedPost>(
+        scope = viewModelScope,
+        keyOf = { it.key },
+        deniedMessage = FEED_DENIED,
+        fetch = { cursor -> feedRepo.page(cursor) },
+    )
+
+    val forYouState: StateFlow<PagedState<FeedPost>> = forYouPager.state
+    val subsState: StateFlow<PagedState<FeedPost>> = subsPager.state
+    val sourceStatuses = forYouRepo.statuses
+    val interested: StateFlow<Set<String>> = recommender.interested
+
+    private val _mode = MutableStateFlow(FeedMode.ForYou)
+    val mode: StateFlow<FeedMode> = _mode.asStateFlow()
+
+    private val _explanation = MutableStateFlow<Explanation?>(null)
+    val explanation: StateFlow<Explanation?> = _explanation.asStateFlow()
+
+    private var subsStarted = false
+
+    /** Показанные публикации по ключу: нужны, чтобы по времени просмотра понять, какая публикация была на экране. */
+    private val shown = LinkedHashMap<String, FeedPost>()
+    private val tracker = DwellTracker(onDwell = { key, millis -> onDwell(key, millis) })
+
+    init {
+        forYouPager.refresh()
+        viewModelScope.launch { forYouPager.state.collect { rememberShown(it.items) } }
+        viewModelScope.launch { subsPager.state.collect { rememberShown(it.items) } }
+        // Сеть вернулась — повторяем загрузку, если она остановилась из-за отсутствия соединения.
+        viewModelScope.launch {
+            online.collect { isOnline ->
+                if (isOnline) {
+                    forYouPager.retryIfOffline()
+                    subsPager.retryIfOffline()
+                }
+            }
+        }
+    }
+
+    private fun rememberShown(items: List<FeedPost>) {
+        for (item in items) shown[item.key] = item
+        while (shown.size > MAX_SHOWN) {
+            val eldest = shown.keys.iterator()
+            eldest.next()
+            eldest.remove()
+        }
+    }
+
+    fun select(mode: FeedMode) {
+        _mode.value = mode
+        if (mode == FeedMode.Subscriptions && !subsStarted) {
+            subsStarted = true
+            subsPager.refresh()
+        }
+    }
+
+    fun refresh() = if (_mode.value == FeedMode.ForYou) forYouPager.refresh() else subsPager.refresh()
+    fun loadMore() = if (_mode.value == FeedMode.ForYou) forYouPager.loadMore() else subsPager.loadMore()
+    fun retry() = if (_mode.value == FeedMode.ForYou) forYouPager.retry() else subsPager.retry()
+
+    // --- время просмотра ---
+
+    fun onVisible(keys: Set<Any>) {
+        tracker.onVisible(keys.mapNotNullTo(HashSet()) { it as? String })
+    }
+
+    fun resume() = tracker.resume()
+    fun pause() = tracker.pause()
+
+    private fun onDwell(key: String, millis: Long) {
+        val post = shown[key] ?: return
+        val kind = SignalClassifier.fromDwell(millis)
+        if (kind != null) {
+            recommender.onSignal(Signal(kind, post, millis / 1000.0))
+        } else {
+            recommender.markSeen(post)
+        }
+    }
+
+    // --- явные действия пользователя ---
+
+    fun toggleInterested(post: FeedPost) {
+        val kind = if (post.key in recommender.interested.value) SignalKind.INTEREST_REMOVED else SignalKind.INTERESTED
+        recommender.onSignal(Signal(kind, post))
+    }
+
+    fun notInterested(post: FeedPost) {
+        shown.remove(post.key)
+        recommender.onSignal(Signal(SignalKind.NOT_INTERESTED, post))
+        forYouPager.removeWhere { it.key == post.key }
+        subsPager.removeWhere { it.key == post.key }
+    }
+
+    fun hideSource(post: FeedPost) {
+        shown.values.removeAll { it.authorId == post.authorId }
+        recommender.hideSource(post.authorId, post.authorName)
+        forYouPager.removeWhere { it.authorId == post.authorId }
+        subsPager.removeWhere { it.authorId == post.authorId }
+    }
+
+    fun explain(post: FeedPost) {
+        _explanation.value = Explanation(post.authorName, recommender.explain(post))
+    }
+
+    fun dismissExplanation() {
+        _explanation.value = null
+    }
+
+    override fun onCleared() {
+        tracker.pause()
+    }
+
+    private companion object {
+        const val MAX_SHOWN = 400
+    }
+}
+
+@Composable
+fun FeedScreen(container: AppContainer) {
+    val vm: FeedViewModel = viewModel(
+        factory = vmFactory {
+            FeedViewModel(container.forYouRepo, container.feedRepo, container.recommender, container.network.online)
+        },
+    )
+    val mode by vm.mode.collectAsStateWithLifecycle()
+    val forYou by vm.forYouState.collectAsStateWithLifecycle()
+    val subs by vm.subsState.collectAsStateWithLifecycle()
+    val statuses by vm.sourceStatuses.collectAsStateWithLifecycle()
+    val interested by vm.interested.collectAsStateWithLifecycle()
+    val explanation by vm.explanation.collectAsStateWithLifecycle()
+
+    // Время просмотра считается, только пока экран ленты открыт и приложение на виду.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { vm.resume() }
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { vm.pause() }
+    DisposableEffect(vm) { onDispose { vm.pause() } }
+
+    Column(Modifier.fillMaxSize()) {
+        ScreenHeader("Лента")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            FeedMode.entries.forEach { entry ->
+                FilterChip(
+                    selected = entry == mode,
+                    onClick = { vm.select(entry) },
+                    label = { Text(entry.title) },
+                )
+            }
+        }
+
+        if (mode == FeedMode.ForYou) {
+            val unavailable = statuses.filterValues { it == ForYouRepository.SourceState.Denied }.keys
+            if (unavailable.isNotEmpty()) {
+                Text(
+                    "VK не дал доступ к источникам: " + unavailable.joinToString { it.title.lowercase() } +
+                        ". Лента собрана из остальных.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                )
+            }
+        }
+        Spacer(Modifier.height(4.dp))
+
+        key(mode) {
+            val state = if (mode == FeedMode.ForYou) forYou else subs
+            PagedColumn(
+                state = state,
+                itemKey = { it.key },
+                emptyTitle = if (mode == FeedMode.ForYou) "Пока нечего показать" else "В ленте пока пусто",
+                emptyText = if (mode == FeedMode.ForYou) {
+                    "Новое появится после обновления. Всё свежее уже просмотрено или скрыто фильтром."
+                } else {
+                    "Новые публикации друзей и сообществ появятся здесь."
+                },
+                onRefresh = vm::refresh,
+                onLoadMore = vm::loadMore,
+                onRetry = vm::retry,
+                onVisibleKeys = vm::onVisible,
+                modifier = Modifier.weight(1f),
+            ) { post ->
+                PostCard(
+                    post = post,
+                    interested = post.key in interested,
+                    onInterested = { vm.toggleInterested(post) },
+                    onNotInterested = { vm.notInterested(post) },
+                    onHideSource = { vm.hideSource(post) },
+                    onWhy = { vm.explain(post) },
+                )
+            }
+        }
+    }
+
+    explanation?.let { info ->
+        AlertDialog(
+            onDismissRequest = vm::dismissExplanation,
+            title = { Text("Почему я это вижу?") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Источник: ${info.author}", style = MaterialTheme.typography.labelLarge)
+                    info.lines.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                }
+            },
+            confirmButton = { TextButton(onClick = vm::dismissExplanation) { Text("Понятно") } },
+        )
+    }
+}
+
+@Composable
+private fun PostCard(
+    post: FeedPost,
+    interested: Boolean,
+    onInterested: () -> Unit,
+    onNotInterested: () -> Unit,
+    onHideSource: () -> Unit,
+    onWhy: () -> Unit,
+) {
+    val style = Kontakt.style
+    var menuOpen by remember { mutableStateOf(false) }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = style.screenPadding, vertical = style.postGap),
+        shape = style.cardShape,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = if (style.cardBordered) BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) else null,
+    ) {
+        Column(Modifier.padding(bottom = 4.dp)) {
+            Row(
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Avatar(post.authorAvatar, post.authorName, 40.dp)
+                Spacer(Modifier.width(12.dp))
+                Column {
+                    Text(
+                        post.authorName,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    val topic = if (post.source == PostSource.Search && post.topic != null) " · тема «${post.topic}»" else ""
+                    Text(
+                        formatPostDate(post.date) + topic,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+
+            if (post.text.isNotBlank()) {
+                Text(
+                    post.text,
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 12,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp),
+                )
+            }
+
+            when (post.photoUrls.size) {
+                0 -> Unit
+                1 -> AsyncImage(
+                    model = post.photoUrls[0],
+                    contentDescription = "Фотография",
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .fillMaxWidth()
+                        .heightIn(max = 420.dp),
+                )
+                else -> LazyRow(
+                    modifier = Modifier.padding(top = 10.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(post.photoUrls) { url ->
+                        AsyncImage(
+                            model = url,
+                            contentDescription = "Фотография",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .height(220.dp)
+                                .width(260.dp)
+                                .clip(MaterialTheme.shapes.medium),
+                        )
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 4.dp, top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onClick = onInterested) {
+                    Icon(
+                        imageVector = if (interested) VgIcons.Star else VgIcons.StarOutline,
+                        contentDescription = null,
+                        tint = if (interested) Kontakt.colors.accentText else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        "Интересно",
+                        color = if (interested) Kontakt.colors.accentText else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(Modifier.weight(1f))
+                Text(
+                    "Нравится: ${post.likes} · Комм.: ${post.comments}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Column {
+                    IconButton(onClick = { menuOpen = true }) {
+                        Icon(VgIcons.More, contentDescription = "Ещё", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                        DropdownMenuItem(
+                            text = { Text("Почему я это вижу?") },
+                            onClick = {
+                                menuOpen = false
+                                onWhy()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Не интересно") },
+                            onClick = {
+                                menuOpen = false
+                                onNotInterested()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Не показывать «${post.authorName}»", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            onClick = {
+                                menuOpen = false
+                                onHideSource()
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
