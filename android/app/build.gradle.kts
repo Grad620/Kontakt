@@ -29,6 +29,8 @@ android {
         // Идентификатор приложения и список прав — не секреты. Секрет в BuildConfig не попадает.
         buildConfigField("String", "VK_CLIENT_ID", "\"$vkClientId\"")
         buildConfigField("String", "VK_SCOPES", "\"$vkScopes\"")
+        // Do not expose the client secret in BuildConfig; only expose whether both values exist.
+        buildConfigField("boolean", "VK_ID_CONFIGURED", (vkClientId.isNotBlank() && vkClientSecret.isNotBlank()).toString())
 
         // Требование VK ID SDK: значения подставляются в манифест.
         manifestPlaceholders["VKIDClientID"] = vkClientId.ifBlank { "0" }
