@@ -52,6 +52,7 @@ import app.kontakt.client.BuildConfig
 import app.kontakt.client.core.AccentId
 import app.kontakt.client.core.AppearanceState
 import app.kontakt.client.core.EffectsMode
+import app.kontakt.client.core.KontaktStyleId
 import app.kontakt.client.core.NavConfig
 import app.kontakt.client.core.TabId
 import app.kontakt.client.core.ThemeMode
@@ -110,6 +111,23 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                         )
                     }
                 }
+                Spacer(Modifier.height(16.dp))
+                Text("Стиль интерфейса", style = MaterialTheme.typography.labelLarge)
+                Spacer(Modifier.height(6.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    KontaktStyleId.entries.forEach { style ->
+                        FilterChip(
+                            selected = style == appearance.style,
+                            onClick = { scope.launch { settings.setStyle(style) } },
+                            label = { Text(style.styleLabel()) },
+                        )
+                    }
+                }
+                Text(
+                    "Kontakt — мягкие геометричные карточки. VK Classic — более компактные строки и чёткие границы.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Spacer(Modifier.height(16.dp))
                 Text("Акцентный цвет", style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(6.dp))
@@ -341,6 +359,11 @@ private fun ThemeMode.themeLabel(): String = when (this) {
     ThemeMode.System -> "Система"
     ThemeMode.Light -> "Светлая"
     ThemeMode.Dark -> "Тёмная"
+}
+
+private fun KontaktStyleId.styleLabel(): String = when (this) {
+    KontaktStyleId.Kontakt -> "Kontakt"
+    KontaktStyleId.VkClassic -> "VK Classic"
 }
 
 private fun EffectsMode.effectsLabel(): String = when (this) {
