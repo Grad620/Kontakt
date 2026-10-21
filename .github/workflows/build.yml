@@ -58,6 +58,19 @@ jobs:
       - name: Настроить Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Проверить настройки VK ID
+        shell: bash
+        env:
+          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID }}
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+        run: |
+          if [ -z "${VK_CLIENT_ID}" ]; then
+            echo "::warning title=VK ID не настроен::Не задан GitHub Actions Secret VK_CLIENT_ID. APK соберётся для проверки интерфейса, но вход через VK ID работать не будет."
+          fi
+          if [ -z "${VK_CLIENT_SECRET}" ]; then
+            echo "::warning title=VK ID secret отсутствует::Не задан GitHub Actions Secret VK_CLIENT_SECRET. Для полноценной авторизации нужно добавить его в настройки репозитория."
+          fi
+
       - name: Запустить unit-тесты
         working-directory: ${{ steps.project.outputs.dir }}
         env:
