@@ -11,10 +11,14 @@ enum class AccentId { White, Sky, Blue, Green, DarkGreen, Birch, Violet, Lilac }
  */
 enum class EffectsMode { Full, Light }
 
+/** Выбираемый пользователем визуальный стиль интерфейса. */
+enum class KontaktStyleId { Kontakt, VkClassic }
+
 /** Всё, что определяет внешний вид и состав вкладок. Приложение ждёт первого значения, чтобы не мигать. */
 data class AppearanceState(
     val theme: ThemeMode,
     val accent: AccentId,
     val effects: EffectsMode,
     val tabs: List<TabId>,
+    val style: KontaktStyleId = KontaktStyleId.Kontakt,
 )
