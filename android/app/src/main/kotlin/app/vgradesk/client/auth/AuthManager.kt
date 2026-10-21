@@ -27,7 +27,8 @@ sealed interface AuthState {
 class AuthManager(private val store: TokenStore) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    val isConfigured: Boolean = BuildConfig.VK_CLIENT_ID.isNotBlank()
+    // VK ID needs both the public app ID and its protected client secret.
+    val isConfigured: Boolean = BuildConfig.VK_ID_CONFIGURED
 
     @Volatile
     private var cached: String? = store.load()
