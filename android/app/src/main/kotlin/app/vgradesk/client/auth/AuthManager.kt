@@ -48,10 +48,20 @@ class AuthManager(private val store: TokenStore) {
 
         val callback = object : VKIDAuthCallback {
             override fun onAuth(accessToken: AccessToken) {
-                store.save(accessToken.token)
-                cached = accessToken.token
-                _busy.value = false
-                _state.value = AuthState.SignedIn
+                // Сначала надёжно сохраняем токен; не переводим UI в SignedIn,
+                // если Android Keystore недоступен или шифрование завершилось ошибкой.
+                try {
+                    store.save(accessToken.token)
+                    cached = accessToken.token
+                    _state.value = AuthState.SignedIn
+                } catch (_: Exception) {
+                    cached = null
+                    _state.value = AuthState.SignedOut(
+                        "VK авторизовал вас, но Kontakt не смог безопасно сохранить сессию. Попробуйте ещё раз.",
+                    )
+                } finally {
+                    _busy.value = false
+                }
             }
 
             override fun onFail(fail: VKIDAuthFail) {
