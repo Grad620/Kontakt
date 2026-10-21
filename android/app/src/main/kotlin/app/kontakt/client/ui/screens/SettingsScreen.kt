@@ -96,8 +96,8 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             SectionCard("Внешний вид") {
                 Text("Тема", style = MaterialTheme.typography.labelLarge)
