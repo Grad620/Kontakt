@@ -209,7 +209,12 @@ fun ErrorState(error: UiError, onRetry: () -> Unit, modifier: Modifier = Modifie
 }
 
 @Composable
-fun SectionCard(title: String, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+fun SectionCard(
+    title: String,
+    modifier: Modifier = Modifier,
+    titleTextAlign: TextAlign = TextAlign.Start,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     val style = Kontakt.style
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -218,7 +223,13 @@ fun SectionCard(title: String, modifier: Modifier = Modifier, content: @Composab
         border = if (style.cardBordered) BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) else null,
     ) {
         Column(Modifier.padding(VgSpacing.lg)) {
-            Text(title, style = MaterialTheme.typography.labelLarge, color = Kontakt.colors.accentText)
+            Text(
+                title,
+                style = MaterialTheme.typography.labelLarge,
+                color = Kontakt.colors.accentText,
+                textAlign = titleTextAlign,
+                modifier = if (titleTextAlign == TextAlign.Center) Modifier.fillMaxWidth() else Modifier,
+            )
             Spacer(Modifier.height(VgSpacing.sm))
             content()
         }
