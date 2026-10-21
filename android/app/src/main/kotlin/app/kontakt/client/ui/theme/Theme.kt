@@ -140,15 +140,15 @@ private fun colorScheme(accent: AccentId, dark: Boolean): ColorScheme {
             primary = fill, onPrimary = onFill, primaryContainer = container, onPrimaryContainer = onContainer,
             secondary = fill, onSecondary = onFill, secondaryContainer = container, onSecondaryContainer = onContainer,
             tertiary = fill, onTertiary = onFill, tertiaryContainer = container, onTertiaryContainer = onContainer,
-            background = Color(0xFFFFFFFF), onBackground = Color(0xFF222222),
-            surface = Color(0xFFFFFFFF), onSurface = Color(0xFF222222),
-            surfaceVariant = Color(0xFFF0F2F5), onSurfaceVariant = Color(0xFF707579),
+            background = Color(0xFFF0F2F5), onBackground = Color(0xFF17212B),
+            surface = Color(0xFFFFFFFF), onSurface = Color(0xFF17212B),
+            surfaceVariant = Color(0xFFE7ECF1), onSurfaceVariant = Color(0xFF6B7785),
             surfaceTint = Color.Transparent,
             outline = Color(0xFFB8C2CC), outlineVariant = Color(0xFFE1E4E8),
             error = Color(0xFFBA1A1A), onError = Color(0xFFFFFFFF),
-            surfaceContainerLowest = Color(0xFFFFFFFF), surfaceContainerLow = Color(0xFFF4F5F6),
-            surfaceContainer = Color(0xFFF0F2F5), surfaceContainerHigh = Color(0xFFE8EAED),
-            surfaceContainerHighest = Color(0xFFE1E4E8),
+            surfaceContainerLowest = Color(0xFFFFFFFF), surfaceContainerLow = Color(0xFFFFFFFF),
+            surfaceContainer = Color(0xFFE7ECF1), surfaceContainerHigh = Color(0xFFDDE4EB),
+            surfaceContainerHighest = Color(0xFFD3DCE5),
         )
     }
 }
