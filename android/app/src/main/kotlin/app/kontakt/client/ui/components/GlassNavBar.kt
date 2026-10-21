@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -71,7 +70,7 @@ fun GlassNavBar(
         Brush.verticalGradient(listOf(colors.glassHighlight, colors.glassEdge))
     }
 
-    var panelModifier = Modifier
+    var panelModifier: Modifier = Modifier
     if (!light) {
         panelModifier = panelModifier.shadow(
             elevation = 8.dp,
