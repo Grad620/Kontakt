@@ -222,7 +222,7 @@ fun SectionCard(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         border = if (style.cardBordered) BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) else null,
     ) {
-        Column(Modifier.padding(VgSpacing.lg)) {
+        Column(Modifier.padding(if (style.id == "vk_classic") 10.dp else 12.dp)) {
             Text(
                 title,
                 style = MaterialTheme.typography.labelLarge,
@@ -230,7 +230,7 @@ fun SectionCard(
                 textAlign = titleTextAlign,
                 modifier = if (titleTextAlign == TextAlign.Center) Modifier.fillMaxWidth() else Modifier,
             )
-            Spacer(Modifier.height(VgSpacing.sm))
+            Spacer(Modifier.height(6.dp))
             content()
         }
     }
