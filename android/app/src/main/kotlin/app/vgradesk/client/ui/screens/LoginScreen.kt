@@ -51,7 +51,7 @@ fun LoginScreen(container: AppContainer) {
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 420.dp),
-            horizontalAlignment = Alignment.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
             Box(
