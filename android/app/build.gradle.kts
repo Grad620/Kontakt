@@ -16,11 +16,11 @@ val vkClientSecret = config("VK_CLIENT_SECRET")
 val vkScopes = config("VK_SCOPES") // например: friends,wall,messages — только после одобрения VK
 
 android {
-    namespace = "app.kontakt.client"
+    namespace = "com.kontakt.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "app.kontakt.client"
+        applicationId = "com.kontakt.app"
         minSdk = 34
         targetSdk = 35
         versionCode = 1
