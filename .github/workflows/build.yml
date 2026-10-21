@@ -3,12 +3,13 @@ name: Build Kontakt APK
 on:
   push:
     branches: [main, master, fix/vk-id-build-config]
+    tags: ['v*']
   pull_request:
     branches: [main, master]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -107,3 +108,12 @@ jobs:
           path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
           retention-days: 90
           if-no-files-found: error
+
+      - name: Опубликовать постоянный GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Kontakt ${{ github.ref_name }}
+          generate_release_notes: true
+          files: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
+          fail_on_unmatched_files: true
