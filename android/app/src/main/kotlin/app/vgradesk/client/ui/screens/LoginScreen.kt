@@ -1,5 +1,6 @@
 package app.vgradesk.client.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +23,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -57,16 +60,14 @@ fun LoginScreen(container: AppContainer) {
             Box(
                 modifier = Modifier
                     .size(68.dp)
-                    .clip(RoundedCornerShape(22.dp))
-                    .background(MaterialTheme.colorScheme.primary),
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color.Black),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = "K",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = 34.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = (-2).sp,
+                Image(
+                    painter = painterResource(id = app.vgradesk.client.R.drawable.ic_launcher_foreground),
+                    contentDescription = null,
+                    modifier = Modifier.size(60.dp),
                 )
             }
 
