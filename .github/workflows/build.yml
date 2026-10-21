@@ -61,7 +61,7 @@ jobs:
       - name: Проверить настройки VK ID
         shell: bash
         env:
-          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID }}
+          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID || vars.VK_CLIENT_ID || '54842124' }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
         run: |
           if [ -z "${VK_CLIENT_ID}" ]; then
@@ -74,7 +74,7 @@ jobs:
       - name: Запустить unit-тесты
         working-directory: ${{ steps.project.outputs.dir }}
         env:
-          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID }}
+          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID || vars.VK_CLIENT_ID || '54842124' }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
         run: |
@@ -84,7 +84,7 @@ jobs:
       - name: Собрать APK
         working-directory: ${{ steps.project.outputs.dir }}
         env:
-          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID }}
+          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID || vars.VK_CLIENT_ID || '54842124' }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
         run: ./gradlew --no-daemon assembleDebug
