@@ -1,0 +1,59 @@
+name: Build Kontakt APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Скачать проект
+        uses: actions/checkout@v4
+
+      - name: Распаковать проект
+        id: project
+        run: |
+          set -e
+          mkdir -p _src
+          unzip -q -o kontakt-project.zip -d _src
+          SETTINGS=$(find _src -name settings.gradle.kts -o -name settings.gradle | head -1)
+          if [ -z "$SETTINGS" ]; then
+            echo "Не найден файл настроек Gradle"
+            exit 1
+          fi
+          DIR=$(dirname "$SETTINGS")
+          if [ ! -f "$DIR/gradlew" ]; then
+            echo "Не найден gradlew"
+            exit 1
+          fi
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Установить Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Настроить Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Собрать APK
+        working-directory: ${{ steps.project.outputs.dir }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Сохранить APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kontakt-debug-apk
+          path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
+          retention-days: 7
+          if-no-files-found: error
