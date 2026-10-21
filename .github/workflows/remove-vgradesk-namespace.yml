@@ -1,0 +1,92 @@
+name: One-time Kontakt namespace migration
+
+on:
+  push:
+    branches:
+      - refactor/remove-vgradesk-namespace
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: contains(github.event.head_commit.message, 'Run one-time Kontakt namespace migration')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/remove-vgradesk-namespace
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Rename package and remove old branding
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil
+
+          root = Path(".")
+          skip_dirs = {".git", ".gradle", "build"}
+          text_suffixes = {".kt", ".kts", ".java", ".xml", ".md", ".yml", ".yaml", ".properties", ".gradle", ".pro", ".txt", ".json", ".toml", ".sh"}
+          replacements = [
+              ("app.vgradesk.client", "app.kontakt.client"),
+              ("app/vgradesk/client", "app/kontakt/client"),
+              ("app/vgradesk", "app/kontakt"),
+              ("VgApp", "KontaktApp"),
+              ("VgRoot", "KontaktRoot"),
+              ("VgIcons", "KontaktIcons"),
+              ("VGradesk", "Kontakt"),
+              ("vgradesk", "kontakt"),
+          ]
+
+          for path in sorted(root.rglob("*")):
+              if not path.is_file() or any(part in skip_dirs for part in path.parts):
+                  continue
+              if path.name == "remove-vgradesk-namespace.yml":
+                  continue
+              if path.suffix.lower() not in text_suffixes:
+                  continue
+              try:
+                  original = path.read_text(encoding="utf-8")
+              except (UnicodeDecodeError, OSError):
+                  continue
+              updated = original
+              for old, new in replacements:
+                  updated = updated.replace(old, new)
+              if updated != original:
+                  path.write_text(updated, encoding="utf-8")
+
+          # Rename Kotlin package directories and files after updating source references.
+          for old, new in [
+              (Path("android/app/src/main/kotlin/app/vgradesk"), Path("android/app/src/main/kotlin/app/kontakt")),
+              (Path("android/app/src/test/kotlin/app/vgradesk"), Path("android/app/src/test/kotlin/app/kontakt")),
+          ]:
+              if old.exists():
+                  new.parent.mkdir(parents=True, exist_ok=True)
+                  if new.exists():
+                      shutil.copytree(old, new, dirs_exist_ok=True)
+                      shutil.rmtree(old)
+                  else:
+                      old.rename(new)
+
+          for base in [Path("android/app/src/main/kotlin/app/kontakt/client"), Path("android/app/src/test/kotlin/app/kontakt/client")]:
+              for old_name, new_name in [("VgApp.kt", "KontaktApp.kt"), ("VgRoot.kt", "KontaktRoot.kt"), ("VgIcons.kt", "KontaktIcons.kt")]:
+                  old = base / old_name
+                  if old.exists():
+                      old.rename(base / new_name)
+
+          # Remove this temporary migration workflow from the resulting source tree.
+          migration_workflow = Path(".github/workflows/remove-vgradesk-namespace.yml")
+          if migration_workflow.exists():
+              migration_workflow.unlink()
+          PY
+
+          if grep -Rni --exclude-dir=.git --exclude='*.keystore' -E 'vgradesk|VGradesk|VgApp|VgRoot|VgIcons|app\.vgradesk' .; then
+            echo "Legacy-name references remain; refusing to commit."
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor: remove legacy VGradesk namespace and branding"
+          git push origin HEAD:refactor/remove-vgradesk-namespace
