@@ -129,7 +129,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
 
     // Официальная авторизация VK ID (лицензия MIT)
-    implementation("com.vk.id:vkid:2.0.0")
+    implementation("com.vk.id:vkid:2.7.3")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
