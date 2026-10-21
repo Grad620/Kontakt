@@ -4,37 +4,32 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Minimal pixel snowflake: square blocks, no smooth diagonal strokes. -->
+    <!-- Bold, symmetrical 8-bit snowflake. Large square pixels avoid the spidery look. -->
     <path
         android:fillColor="#FFFFFFFF"
         android:pathData="
-            M52,16h4v8h-4z
-            M52,28h4v8h-4z
-            M52,40h4v8h-4z
-            M52,48h4v12h-4z
-            M52,64h4v8h-4z
-            M52,76h4v8h-4z
-            M52,88h4v4h-4z
-            M28,28h8v4h-8z
-            M36,32h8v4h-8z
-            M44,40h8v4h-8z
-            M56,40h8v4h-8z
-            M64,32h8v4h-8z
-            M72,28h8v4h-8z
-            M16,52h8v4h-8z
-            M28,52h8v4h-8z
-            M40,52h8v4h-8z
-            M60,52h8v4h-8z
-            M72,52h8v4h-8z
-            M84,52h8v4h-8z
-            M28,76h8v4h-8z
-            M36,72h8v4h-8z
-            M44,64h8v4h-8z
-            M56,64h8v4h-8z
-            M64,72h8v4h-8z
-            M72,76h8v4h-8z
-            M40,48h8v4h-8z
-            M60,48h8v4h-8z
-            M40,56h8v4h-8z
-            M60,56h8v4h-8z" />
+            M50,14h8v24h-8z
+            M50,70h8v24h-8z
+            M14,50h24v8h-24z
+            M70,50h24v8h-24z
+            M26,26h8v8h-8z
+            M34,34h8v8h-8z
+            M42,42h8v8h-8z
+            M58,58h8v8h-8z
+            M66,66h8v8h-8z
+            M74,74h8v8h-8z
+            M74,26h8v8h-8z
+            M66,34h8v8h-8z
+            M58,42h8v8h-8z
+            M42,58h8v8h-8z
+            M34,66h8v8h-8z
+            M26,74h8v8h-8z
+            M34,18h8v8h-8z
+            M66,18h8v8h-8z
+            M34,82h8v8h-8z
+            M66,82h8v8h-8z
+            M18,34h8v8h-8z
+            M18,66h8v8h-8z
+            M82,34h8v8h-8z
+            M82,66h8v8h-8z" />
 </vector>
