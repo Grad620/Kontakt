@@ -98,7 +98,7 @@ fun LoginScreen(container: AppContainer) {
             if (!auth.isConfigured) {
                 SectionCard("Нужно подключить VK ID", titleTextAlign = TextAlign.Center) {
                     Text(
-                        "В сборку не передан VK_CLIENT_ID. Это конфигурация разработчика, а не ошибка твоего аккаунта. Сначала подключим приложение VK ID и выпустим новую сборку.",
+                        "Не настроены оба обязательных параметра VK ID: идентификатор приложения и защищённый ключ. Это конфигурация сборки, а не ошибка твоего аккаунта. После настройки выпустим новую сборку.",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                     )
