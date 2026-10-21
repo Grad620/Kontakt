@@ -58,7 +58,7 @@ class KontaktApp : Application(), ImageLoaderFactory {
         ImageLoader.Builder(this)
             .memoryCache { MemoryCache.Builder(this).maxSizePercent(0.2).build() }
             .diskCache {
-                DiskCache.Builder(this)
+                DiskCache.Builder()
                     .directory(cacheDir.resolve("images"))
                     .maxSizeBytes(64L * 1024 * 1024)
                     .build()
