@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.kontakt.client.core.AccentId
 import app.kontakt.client.core.EffectsMode
+import app.kontakt.client.core.KontaktStyleId
 import app.kontakt.client.core.ThemeMode
 
 /** Отступы Kontakt: все значения кратны 4 dp. */
@@ -78,6 +79,19 @@ object KontaktStyles {
         screenPadding = 16.dp,
         postGap = 6.dp,
     )
+    val VkClassic = KontaktStyle(
+        id = "vk_classic",
+        cardShape = RoundedCornerShape(8.dp),
+        cardBordered = true,
+        rowDividers = true,
+        screenPadding = 12.dp,
+        postGap = 4.dp,
+    )
+
+    fun from(id: KontaktStyleId): KontaktStyle = when (id) {
+        KontaktStyleId.Kontakt -> Default
+        KontaktStyleId.VkClassic -> VkClassic
+    }
 }
 
 private val DefaultColors = KontaktColors(
@@ -181,6 +195,7 @@ fun VgTheme(
     mode: ThemeMode,
     accent: AccentId,
     effects: EffectsMode,
+    style: KontaktStyleId = KontaktStyleId.Kontakt,
     content: @Composable () -> Unit,
 ) {
     val dark = when (mode) {
@@ -204,7 +219,7 @@ fun VgTheme(
 
     CompositionLocalProvider(
         LocalKontaktColors provides extra,
-        LocalKontaktStyle provides KontaktStyles.Default,
+        LocalKontaktStyle provides KontaktStyles.from(style),
         LocalEffects provides effects,
     ) {
         MaterialTheme(
