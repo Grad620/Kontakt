@@ -51,7 +51,7 @@ fun LoginScreen(container: AppContainer) {
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 420.dp),
-            horizontalAlignment = Alignment.Start,
+            horizontalAlignment = Alignment.Center,
             verticalArrangement = Arrangement.Center,
         ) {
             Box(
@@ -74,6 +74,7 @@ fun LoginScreen(container: AppContainer) {
             Text(
                 text = "Kontakt",
                 style = MaterialTheme.typography.headlineLarge,
+                textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = (-1.1).sp,
             )
@@ -81,21 +82,24 @@ fun LoginScreen(container: AppContainer) {
             Text(
                 text = "Твой ВКонтакте. Без лишнего.",
                 style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(14.dp))
             Text(
                 text = "Удобная лента, понятная навигация и настройки под тебя. Начнём с безопасного входа в твой аккаунт.",
                 style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(30.dp))
 
             if (!auth.isConfigured) {
-                SectionCard("Нужно подключить VK ID") {
+                SectionCard("Нужно подключить VK ID", titleTextAlign = TextAlign.Center) {
                     Text(
                         "В сборку не передан VK_CLIENT_ID. Это конфигурация разработчика, а не ошибка твоего аккаунта. Сначала подключим приложение VK ID и выпустим новую сборку.",
                         style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
                     )
                 }
             } else {
@@ -126,6 +130,7 @@ fun LoginScreen(container: AppContainer) {
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
                 )
             }
 
@@ -141,6 +146,7 @@ fun LoginScreen(container: AppContainer) {
                         modifier = Modifier.padding(14.dp),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onErrorContainer,
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
@@ -149,6 +155,7 @@ fun LoginScreen(container: AppContainer) {
             Text(
                 text = "Пароль вводится на стороне VK ID. Kontakt не получает и не хранит его.",
                 style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
