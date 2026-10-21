@@ -93,7 +93,24 @@ jobs:
           VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID || vars.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
-        run: ./gradlew --no-daemon assembleDebug
+        run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleDebug
+
+      - name: Проверить, что VK ID включён в APK
+        working-directory: ${{ steps.project.outputs.dir }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUILD_CONFIG=$(find app/build/generated -path '*/app/kontakt/client/BuildConfig.java' -print -quit)
+          if [ -z "$BUILD_CONFIG" ]; then
+            echo "::error::Не найден сгенерированный BuildConfig.java"
+            exit 1
+          fi
+          if ! grep -Eq 'VK_ID_CONFIGURED = true;' "$BUILD_CONFIG"; then
+            echo "::error::В APK не включена конфигурация VK ID. APK не будет опубликован."
+            grep -E 'VK_ID_CONFIGURED =' "$BUILD_CONFIG" || true
+            exit 1
+          fi
+          echo "Проверка пройдена: VK_ID_CONFIGURED = true"
 
       - name: Сохранить APK
         uses: actions/upload-artifact@v4
