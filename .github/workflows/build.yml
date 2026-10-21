@@ -41,7 +41,7 @@ jobs:
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
             if [ -z "$VK_CLIENT_ID" ]; then
-              echo "::warning title=VK ID is not configured::Set repository variable VK_CLIENT_ID."
+              echo "::warning title=VK ID is not configured::Set repository variable VK_CLIENT_ID or repository secret VK_CLIENT_ID."
             fi
             if [ -z "$VK_CLIENT_SECRET" ]; then
               echo "::warning title=VK ID secret is missing::Set repository secret VK_CLIENT_SECRET."
