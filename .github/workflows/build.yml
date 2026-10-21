@@ -30,15 +30,23 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Report VK ID configuration
+        id: vkid-config
         env:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
         run: |
-          if [ -z "$VK_CLIENT_ID" ]; then
-            echo "::warning title=VK ID is not configured::Set the repository variable VK_CLIENT_ID."
-          fi
-          if [ -z "$VK_CLIENT_SECRET" ]; then
-            echo "::warning title=VK ID secret is missing::VK ID login cannot be tested until the credential configuration is complete."
+          if [ -n "$VK_CLIENT_ID" ] && [ -n "$VK_CLIENT_SECRET" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "VK ID credentials are present."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            if [ -z "$VK_CLIENT_ID" ]; then
+              echo "::warning title=VK ID is not configured::Set repository variable VK_CLIENT_ID."
+            fi
+            if [ -z "$VK_CLIENT_SECRET" ]; then
+              echo "::warning title=VK ID secret is missing::Set repository secret VK_CLIENT_SECRET."
+            fi
+            echo "::warning::Lint and unit tests will run, but a login-test APK will not be built until VK ID is configured."
           fi
 
       - name: Run Android Lint and unit tests
@@ -51,18 +59,8 @@ jobs:
           chmod +x gradlew
           ./gradlew --no-daemon lintDebug testDebugUnitTest
 
-      - name: Require VK ID credentials before producing a login-test APK
-        env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
-        run: |
-          set -euo pipefail
-          if [ -z "$VK_CLIENT_ID" ] || [ -z "$VK_CLIENT_SECRET" ]; then
-            echo "::error title=VK ID credentials are missing::Add repository variable VK_CLIENT_ID and repository secret VK_CLIENT_SECRET. No APK will be produced because it would not be able to test login."
-            exit 1
-          fi
-
       - name: Build debug APK for testing only
+        if: steps.vkid-config.outputs.configured == 'true'
         working-directory: android
         env:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID }}
@@ -71,6 +69,7 @@ jobs:
         run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleDebug
 
       - name: Verify resolved VK ID manifest values
+        if: steps.vkid-config.outputs.configured == 'true'
         working-directory: android
         env:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID }}
@@ -93,6 +92,7 @@ jobs:
           echo "Merged manifest has no unresolved VKIDClientID placeholder."
 
       - name: Upload debug APK (testing artifact, not a release)
+        if: steps.vkid-config.outputs.configured == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: Kontakt-debug-test-only
