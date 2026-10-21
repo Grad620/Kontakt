@@ -1,0 +1,99 @@
+name: Migrate Android sources from archive
+
+on:
+  push:
+    branches: [migration/commit-android-source]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  migrate-build-and-pr:
+    if: github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[source-migration]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout migration branch
+        uses: actions/checkout@v4
+        with:
+          ref: migration/commit-android-source
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Android project into tracked folder
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f kontakt-project-fixed-repository.zip
+          rm -rf _migration_src android
+          mkdir -p _migration_src android
+          unzip -q kontakt-project-fixed-repository.zip -d _migration_src
+          SETTINGS="$(find _migration_src -type f \( -name settings.gradle.kts -o -name settings.gradle \) -print -quit)"
+          if [ -z "$SETTINGS" ]; then
+            echo "::error::Archive has no settings.gradle(.kts)"
+            find _migration_src -maxdepth 4 -type f | head -100
+            exit 1
+          fi
+          PROJECT_DIR="$(dirname "$SETTINGS")"
+          cp -a "$PROJECT_DIR"/. android/
+          test -f android/gradlew
+          test -f android/app/build.gradle.kts -o -f android/app/build.gradle
+          echo "Project root copied from $PROJECT_DIR"
+          find android -maxdepth 3 -type f | sort | head -100
+
+      - name: Commit source files to repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add android
+          if git diff --cached --quiet; then
+            echo "No new source files to commit."
+          else
+            git commit -m "Add unpacked Android project sources [source-migration]"
+            git push origin migration/commit-android-source
+          fi
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run unit tests
+        working-directory: android
+        env:
+          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID }}
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+          VK_SCOPES: ${{ vars.VK_SCOPES }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon testDebugUnitTest
+
+      - name: Build debug APK
+        working-directory: android
+        env:
+          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID }}
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+          VK_SCOPES: ${{ vars.VK_SCOPES }}
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kontakt-source-migration-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Open pull request after successful build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create             --repo Grad620/Kontakt             --base fix/vk-id-build-config             --head migration/commit-android-source             --title "Commit Android source files from project archive"             --body "Extracts the existing Android project from kontakt-project-fixed-repository.zip into the tracked android/ directory. The migration workflow runs unit tests and assembles a debug APK before opening this PR. This does not claim live VK ID authentication has been verified."
