@@ -1,3 +1,5 @@
+import java.util.Base64
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -24,7 +26,7 @@ val signingKeyPassword = config("ANDROID_SIGNING_KEY_PASSWORD")
 val releaseKeystore = layout.buildDirectory.file("kontakt-release.keystore").get().asFile
 if (signingKeyBase64.isNotBlank()) {
     releaseKeystore.parentFile.mkdirs()
-    releaseKeystore.writeBytes(java.util.Base64.getDecoder().decode(signingKeyBase64))
+    releaseKeystore.writeBytes(Base64.getDecoder().decode(signingKeyBase64))
 }
 
 android {
