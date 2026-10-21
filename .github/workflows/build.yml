@@ -51,6 +51,17 @@ jobs:
           chmod +x gradlew
           ./gradlew --no-daemon lintDebug testDebugUnitTest
 
+      - name: Require VK ID credentials before producing a login-test APK
+        env:
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID }}
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "$VK_CLIENT_ID" ] || [ -z "$VK_CLIENT_SECRET" ]; then
+            echo "::error title=VK ID credentials are missing::Add repository variable VK_CLIENT_ID and repository secret VK_CLIENT_SECRET. No APK will be produced because it would not be able to test login."
+            exit 1
+          fi
+
       - name: Build debug APK for testing only
         working-directory: android
         env:
