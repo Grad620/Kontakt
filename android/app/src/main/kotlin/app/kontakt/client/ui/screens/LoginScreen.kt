@@ -98,7 +98,7 @@ fun LoginScreen(container: AppContainer) {
             if (!auth.isConfigured) {
                 SectionCard("Нужно подключить VK ID", titleTextAlign = TextAlign.Center) {
                     Text(
-                        "Не настроен идентификатор приложения VK ID. Проверьте VK_CLIENT_ID в настройках сборки.",
+                        "Конфигурация VK ID неполная. Проверьте VK_CLIENT_ID и VK_CLIENT_SECRET в настройках сборки GitHub Actions.",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                     )
@@ -156,6 +156,14 @@ fun LoginScreen(container: AppContainer) {
             Text(
                 text = "Пароль вводится на стороне VK ID. Kontakt не получает и не хранит его.",
                 style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "Kontakt · версия ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+                style = MaterialTheme.typography.labelSmall,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
