@@ -35,6 +35,25 @@ jobs:
           fi
           echo "dir=$DIR" >> "$GITHUB_OUTPUT"
 
+      - name: Включить desugaring для VK ID
+        working-directory: ${{ steps.project.outputs.dir }}
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path("app/build.gradle.kts")
+          s = p.read_text()
+          if "isCoreLibraryDesugaringEnabled = true" not in s:
+              s = re.sub(r'compileOptions\s*\{',
+                  lambda m: m.group(0) + '\n        isCoreLibraryDesugaringEnabled = true',
+                  s, count=1)
+          if "desugar_jdk_libs" not in s:
+              s = re.sub(r'dependencies\s*\{',
+                  lambda m: m.group(0) + '\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")',
+                  s, count=1)
+          p.write_text(s)
+          print("Desugaring enabled")
+          PY
       - name: Установить Java
         uses: actions/setup-java@v4
         with:
