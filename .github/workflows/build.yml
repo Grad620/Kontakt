@@ -5,7 +5,7 @@ on:
     branches: [main, master, fix/vk-id-build-config]
     tags: ['v*']
   pull_request:
-    branches: [main, master]
+    branches: [main, master, fix/vk-id-build-config]
   workflow_dispatch:
 
 permissions:
@@ -20,19 +20,25 @@ jobs:
       - name: Скачать проект
         uses: actions/checkout@v4
 
-      - name: Распаковать проект
+      - name: Найти исходники Android
         id: project
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p _src
-          unzip -q -o kontakt-project-fixed-repository.zip -d _src
-          SETTINGS=$(find _src \( -name settings.gradle.kts -o -name settings.gradle \) -print -quit)
-          if [ -z "$SETTINGS" ]; then
-            echo "Не найден файл настроек Gradle"
-            exit 1
+          if [ -f android/settings.gradle.kts ] || [ -f android/settings.gradle ]; then
+            DIR="android"
+            echo "Используются отслеживаемые исходники: $DIR"
+          else
+            mkdir -p _src
+            unzip -q -o kontakt-project-fixed-repository.zip -d _src
+            SETTINGS=$(find _src \( -name settings.gradle.kts -o -name settings.gradle \) -print -quit)
+            if [ -z "$SETTINGS" ]; then
+              echo "Не найден файл настроек Gradle"
+              exit 1
+            fi
+            DIR=$(dirname "$SETTINGS")
+            echo "Исходники пока берутся из ZIP: $DIR"
           fi
-          DIR=$(dirname "$SETTINGS")
           if [ ! -f "$DIR/gradlew" ]; then
             echo "Не найден gradlew: $DIR/gradlew"
             exit 1
@@ -42,7 +48,6 @@ jobs:
             exit 1
           fi
           echo "dir=$DIR" >> "$GITHUB_OUTPUT"
-          echo "Gradle project: $DIR"
 
       - name: Включить desugaring для VK ID
         working-directory: ${{ steps.project.outputs.dir }}
@@ -71,7 +76,7 @@ jobs:
                   raise SystemExit("Не найден блок dependencies; desugaring dependency не добавлена")
               s = updated
           p.write_text(s)
-          print("Desugaring enabled")
+          print("Desugaring enabled in CI workspace")
           PY
 
       - name: Установить Java
