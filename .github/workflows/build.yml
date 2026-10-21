@@ -32,7 +32,7 @@ jobs:
       - name: Report VK ID configuration
         id: vkid-config
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID }}
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
         run: |
           if [ -n "$VK_CLIENT_ID" ] && [ -n "$VK_CLIENT_SECRET" ]; then
@@ -52,7 +52,7 @@ jobs:
       - name: Run Android Lint and unit tests
         working-directory: android
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID }}
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
         run: |
@@ -63,7 +63,7 @@ jobs:
         if: steps.vkid-config.outputs.configured == 'true'
         working-directory: android
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID }}
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
         run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleDebug
@@ -72,7 +72,7 @@ jobs:
         if: steps.vkid-config.outputs.configured == 'true'
         working-directory: android
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID }}
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
         shell: bash
         run: |
           set -euo pipefail
@@ -139,7 +139,7 @@ jobs:
       - name: Build signed release APK
         working-directory: android
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID }}
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
           ANDROID_SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
