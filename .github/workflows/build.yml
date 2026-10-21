@@ -49,36 +49,6 @@ jobs:
           fi
           echo "dir=$DIR" >> "$GITHUB_OUTPUT"
 
-      - name: Включить desugaring для VK ID
-        working-directory: ${{ steps.project.outputs.dir }}
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          p = Path("app/build.gradle.kts")
-          if not p.exists():
-              raise SystemExit("Ожидался app/build.gradle.kts, но файл не найден")
-          s = p.read_text()
-          if "isCoreLibraryDesugaringEnabled = true" not in s:
-              updated, count = re.subn(
-                  r'compileOptions\s*\{',
-                  lambda m: m.group(0) + '\n        isCoreLibraryDesugaringEnabled = true',
-                  s, count=1)
-              if count == 0:
-                  raise SystemExit("Не найден блок compileOptions; desugaring не добавлен")
-              s = updated
-          if "desugar_jdk_libs" not in s:
-              updated, count = re.subn(
-                  r'dependencies\s*\{',
-                  lambda m: m.group(0) + '\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")',
-                  s, count=1)
-              if count == 0:
-                  raise SystemExit("Не найден блок dependencies; desugaring dependency не добавлена")
-              s = updated
-          p.write_text(s)
-          print("Desugaring enabled in CI workspace")
-          PY
-
       - name: Установить Java
         uses: actions/setup-java@v4
         with:
