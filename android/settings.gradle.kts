@@ -9,6 +9,7 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        maven(url = "https://nexus-external.vkteam.ru/repository/maven/")
     }
 }
 
