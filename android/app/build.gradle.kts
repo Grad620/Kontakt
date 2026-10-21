@@ -52,9 +52,16 @@ android {
         manifestPlaceholders["VKIDRedirectScheme"] = "vk${vkClientId.ifBlank { "0" }}"
     }
 
-    // Do not pin a repository-tracked debug signing key. Android's local debug key is generated
-    // automatically; release builds use a separately protected CI signing key.
+    // Keep the existing debug signing identity temporarily so test APKs can update the
+    // already-installed app. Migrate this key to a GitHub Actions secret before removing it
+    // from version control; changing it now would force an uninstall/reinstall on the phone.
     signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         if (signingKeyBase64.isNotBlank()) {
             create("release") {
                 storeFile = releaseKeystore
