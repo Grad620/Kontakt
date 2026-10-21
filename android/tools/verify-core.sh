@@ -8,8 +8,8 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 L=/opt/gradle-8.14.3/lib
 OUT="${1:-/tmp/kontakt-verify}"
 rm -rf "$OUT"; mkdir -p "$OUT/main" "$OUT/test"
-M="$ROOT/app/src/main/kotlin/app/vgradesk/client"
-T="$ROOT/app/src/test/kotlin/app/vgradesk/client"
+M="$ROOT/app/src/main/kotlin/app/kontakt/client"
+T="$ROOT/app/src/test/kotlin/app/kontakt/client"
 DEPS="$L/kotlin-stdlib-2.0.21.jar:$L/kotlinx-coroutines-core-jvm-1.6.4.jar:$L/kotlinx-serialization-core-jvm-1.6.2.jar:$L/kotlinx-serialization-json-jvm-1.6.2.jar:$L/junit-4.13.2.jar:$L/hamcrest-core-1.3.jar"
 
 MAIN_FILES=(

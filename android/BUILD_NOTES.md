@@ -6,7 +6,7 @@
 | — | Ни одной сборки APK не выполнено | **APK НЕ существует** |
 | 2026-10-21 | `bash tools/verify-core.sh` (настоящий kotlinc 2.0.21 из Gradle, «чистое» ядро + тесты) | OK, 65 тестов, 0 ошибок |
 
-Android-часть (Compose, OkHttp, DataStore, VK ID SDK, `VkApi`, `VkChunkLoader`, `SettingsStore`, `NetworkMonitor`, все экраны) **ни разу не компилировалась**. Проверена только чтением и статическими проверками: все внутренние импорты `app.vgradesk.client.*` разрешаются в существующие объявления (грубый скрипт; он не ловит ошибки типов).
+Android-часть (Compose, OkHttp, DataStore, VK ID SDK, `VkApi`, `VkChunkLoader`, `SettingsStore`, `NetworkMonitor`, все экраны) **ни разу не компилировалась**. Проверена только чтением и статическими проверками: все внутренние импорты `app.kontakt.client.*` разрешаются в существующие объявления (грубый скрипт; он не ловит ошибки типов).
 
 ## Что известно об окружении (контейнер разработки)
 - Linux, JDK 21, Gradle 8.14.3 (`/opt/gradle`), Maven; Android SDK отсутствует.

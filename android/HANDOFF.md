@@ -10,8 +10,8 @@
 
 ## Где что лежит
 - Проект: `/home/claude/VG` (рабочая папка сессии; контейнер временный — итог передаётся пользователю zip-архивом через SendUserFile).
-- Название: **Kontakt** (раньше VG/VGradesk). Пакет и applicationId остаются `app.vgradesk.client` (решение: не переименовывать, чтобы не ломать то, что уже сделано; пользователю не виден).
-- Исходники: `app/src/main/kotlin/app/vgradesk/client/{net,core,auth,data,rec,ui}`; тесты: `app/src/test/kotlin/...`.
+- Название: **Kontakt** (раньше VG/Kontakt). Пакет и applicationId остаются `app.kontakt.client` (решение: не переименовывать, чтобы не ломать то, что уже сделано; пользователю не виден).
+- Исходники: `app/src/main/kotlin/app/kontakt/client/{net,core,auth,data,rec,ui}`; тесты: `app/src/test/kotlin/...`.
 - CI: `.github/workflows/build.yml` (GitHub Actions, сборка debug APK, артефакт).
 - Документы: `README.md`, `PROJECT_SPEC.md`, `NEXT_STEPS.md`, `BUILD_NOTES.md`, `CHANGELOG.md`, `docs/`.
 
@@ -27,11 +27,11 @@
 ## Что реально проверено
 - Окружение: облачный контейнер без доступа к Gradle/Maven/Google/VK-репозиториям; Android SDK нет. **APK здесь собрать нельзя. Ни одна сборка не выполнялась.**
 - Компилятор Kotlin 2.0.21 из Gradle (`/opt/gradle-8.14.3/lib`) компилирует и тестирует «чистый» Kotlin: `bash tools/verify-core.sh` → **OK, 65 тестов** (фильтр рекламы и мусора с защитой сборов на помощь, Recommender, FeedMapping, ForYouRepository с поддельным загрузчиком, NavConfig, DiagnosticsLog, ColorMath/AccentPalette с проверкой контраста 8 акцентов × 2 темы).
-- Статически (грубым скриптом) проверено, что все внутренние импорты `app.vgradesk.client.*` указывают на существующие объявления. Типы и сигнатуры Compose/Android так не проверить.
+- Статически (грубым скриптом) проверено, что все внутренние импорты `app.kontakt.client.*` указывают на существующие объявления. Типы и сигнатуры Compose/Android так не проверить.
 
 ## Текущая задача и состояние (конец сессии 3)
 Выполнены шаги 1–8 из `NEXT_STEPS.md`: ядро, сеть, репозитории, дизайн-система, нижняя панель, настройки, лента, минимальный SDK 34, имя Kontakt, CI, документы.
-**НЕ компилировалось** (всё Android-зависимое): `VkApi`, `VkChunkLoader`, `FeedRepository`, `NetworkMonitor`, `SettingsStore`, `AppContainer`, `Theme.kt`, `GlassNavBar`, `PagedColumn`, `Components`, `MainShell`, `VgRoot`, все экраны (`FeedScreen`, `ChatsScreen`, `MusicScreen`, `ProfileScreen`, `SettingsScreen`, `LoginScreen`), `AuthManager`/VK ID.
+**НЕ компилировалось** (всё Android-зависимое): `VkApi`, `VkChunkLoader`, `FeedRepository`, `NetworkMonitor`, `SettingsStore`, `AppContainer`, `Theme.kt`, `GlassNavBar`, `PagedColumn`, `Components`, `MainShell`, `KontaktRoot`, все экраны (`FeedScreen`, `ChatsScreen`, `MusicScreen`, `ProfileScreen`, `SettingsScreen`, `LoginScreen`), `AuthManager`/VK ID.
 Проект теперь по сигнатурам согласован (старые вызовы `VgTheme(mode)`, `FeedViewModel(feedRepo)`, enum `Tab` убраны), но это проверено только поиском, не компилятором.
 
 ## Следующий конкретный шаг
