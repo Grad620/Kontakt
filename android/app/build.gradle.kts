@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("vkid.manifest.placeholders")
 }
 
 // Значения VK берутся из свойств Gradle (-PVK_CLIENT_ID=...) или переменных окружения.
