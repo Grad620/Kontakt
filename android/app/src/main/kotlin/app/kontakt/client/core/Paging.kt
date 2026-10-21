@@ -35,6 +35,12 @@ fun Throwable.toUiError(deniedMessage: String): UiError = when (this) {
     )
     is VkError.SessionExpired -> UiError(UiError.Kind.SessionExpired, "Сессия истекла. Войдите снова.")
     is VkError.AccessDenied -> UiError(UiError.Kind.AccessDenied, deniedMessage)
+    is VkError.ProfileTypeUnavailable -> UiError(
+        UiError.Kind.AccessDenied,
+        "VK отклонил запрос (код 1051): этот метод недоступен для токена VK ID, который Kontakt получил при входе. " +
+            "Это не проблема VPN и не исправляется добавлением scopes. Личные сообщения и часть ленты/друзей сейчас нельзя загрузить этим способом. " +
+            "Повторять запрос бессмысленно; доступ должен предоставить сам VK либо нужен официальный поддерживаемый способ авторизации для этого метода.",
+    )
     is VkError.RateLimited -> UiError(
         UiError.Kind.Other,
         "VK просит подождать: слишком много запросов. Повторите через минуту.",

@@ -26,6 +26,13 @@ class VkResponseParserTest {
     }
 
     @Test
+    fun errorCode1051MeansUnsupportedProfileType() {
+        assertThrows(VkError.ProfileTypeUnavailable::class.java) {
+            VkResponseParser.parse("""{"error":{"error_code":1051,"error_msg":"Method is not available for this profile type"}}""")
+        }
+    }
+
+    @Test
     fun rateLimitCodesAreMappedWithoutAutomaticRetry() {
         assertThrows(VkError.RateLimited::class.java) {
             VkResponseParser.parse("""{"error":{"error_code":6,"error_msg":"Too many requests"}}""")

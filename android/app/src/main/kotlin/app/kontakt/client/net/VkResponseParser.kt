@@ -37,6 +37,7 @@ object VkResponseParser {
             5 -> VkError.SessionExpired()
             6, 9 -> VkError.RateLimited()
             14 -> VkError.Captcha()
+            1051 -> VkError.ProfileTypeUnavailable(message)
             7, 15, 27, 28, 200, 201, 203, 204 -> VkError.AccessDenied(code, message)
             else -> VkError.Server(code, message)
         }
