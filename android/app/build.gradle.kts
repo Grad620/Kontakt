@@ -21,15 +21,16 @@ android {
 
     defaultConfig {
         applicationId = "com.kontakt.app"
-        minSdk = 34
+        minSdk = 29
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 5
+        versionName = "0.1.4"
 
         // Идентификатор приложения и список прав — не секреты. Секрет в BuildConfig не попадает.
         buildConfigField("String", "VK_CLIENT_ID", "\"$vkClientId\"")
         buildConfigField("String", "VK_SCOPES", "\"$vkScopes\"")
-        // Do not expose the client secret in BuildConfig; only expose whether both values exist.
+        // VK ID SDK setup requires both the application ID and protected client secret.
+        // Do not expose the secret itself in BuildConfig; only expose whether both values exist.
         buildConfigField("boolean", "VK_ID_CONFIGURED", (vkClientId.isNotBlank() && vkClientSecret.isNotBlank()).toString())
 
         // Требование VK ID SDK: значения подставляются в манифест.

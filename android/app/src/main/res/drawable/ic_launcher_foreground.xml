@@ -4,32 +4,29 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Bold, symmetrical 8-bit snowflake. Large square pixels avoid the spidery look. -->
+    <!-- Kontakt's approved angular snowflake mark: same shape inside the app and in the launcher. -->
     <path
-        android:fillColor="#FFFFFFFF"
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="5.5"
+        android:strokeLineCap="square"
+        android:strokeLineJoin="miter"
         android:pathData="
-            M50,14h8v24h-8z
-            M50,70h8v24h-8z
-            M14,50h24v8h-24z
-            M70,50h24v8h-24z
-            M26,26h8v8h-8z
-            M34,34h8v8h-8z
-            M42,42h8v8h-8z
-            M58,58h8v8h-8z
-            M66,66h8v8h-8z
-            M74,74h8v8h-8z
-            M74,26h8v8h-8z
-            M66,34h8v8h-8z
-            M58,42h8v8h-8z
-            M42,58h8v8h-8z
-            M34,66h8v8h-8z
-            M26,74h8v8h-8z
-            M34,18h8v8h-8z
-            M66,18h8v8h-8z
-            M34,82h8v8h-8z
-            M66,82h8v8h-8z
-            M18,34h8v8h-8z
-            M18,66h8v8h-8z
-            M82,34h8v8h-8z
-            M82,66h8v8h-8z" />
+            M54,14 L54,94
+            M54,54 L20,34
+            M54,54 L88,34
+            M54,54 L20,74
+            M54,54 L88,74
+            M54,28 L42,18
+            M54,28 L66,18
+            M54,80 L42,90
+            M54,80 L66,90
+            M34,42 L22,36
+            M34,42 L28,54
+            M74,42 L86,36
+            M74,42 L80,54
+            M34,66 L22,72
+            M34,66 L28,54
+            M74,66 L86,72
+            M74,66 L80,54" />
 </vector>
