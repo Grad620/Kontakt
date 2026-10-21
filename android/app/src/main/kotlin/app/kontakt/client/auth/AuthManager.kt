@@ -1,6 +1,9 @@
 package app.kontakt.client.auth
 
+import android.content.Context
+import android.util.Log
 import app.kontakt.client.BuildConfig
+import java.io.File
 import com.vk.id.AccessToken
 import com.vk.id.VKID
 import com.vk.id.VKIDAuthFail
@@ -24,7 +27,11 @@ sealed interface AuthState {
  * Вход через официальный VK ID SDK (пароль вводится только на стороне VK, не в форме VG).
  * Запрашиваются только права из BuildConfig.VK_SCOPES; по умолчанию — базовый доступ.
  */
-class AuthManager(private val store: TokenStore) {
+class AuthManager(
+    private val store: TokenStore,
+    context: Context,
+) {
+    private val appContext = context.applicationContext
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     // Login availability is based on the public VK application ID.
@@ -93,7 +100,17 @@ class AuthManager(private val store: TokenStore) {
                 throw e
             } catch (e: Exception) {
                 _busy.value = false
-                _state.value = AuthState.SignedOut("Не удалось открыть вход через VK ID.")
+                // Keep the user-facing message simple, but preserve the actual exception for diagnosis.
+                Log.e("KontaktAuth", "VK ID authorize() failed", e)
+                runCatching {
+                    File(appContext.filesDir, "last_crash_report.txt").writeText(
+                        "VKID_AUTHORIZE_ERROR\n" +
+                            e.stackTraceToString().take(6000),
+                    )
+                }
+                _state.value = AuthState.SignedOut(
+                    "Не удалось открыть вход через VK ID (" + e.javaClass.simpleName + "). Отчёт сохранён для диагностики.",
+                )
             }
         }
     }
