@@ -332,11 +332,11 @@ private fun PostCard(
     ) {
         Column(Modifier.padding(bottom = 4.dp)) {
             Row(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Avatar(post.authorAvatar, post.authorName, 40.dp)
-                Spacer(Modifier.width(12.dp))
+                Avatar(post.authorAvatar, post.authorName, 36.dp)
+                Spacer(Modifier.width(10.dp))
                 Column {
                     Text(
                         post.authorName,
@@ -361,7 +361,7 @@ private fun PostCard(
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 12,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp),
+                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 8.dp),
                 )
             }
 
@@ -372,14 +372,14 @@ private fun PostCard(
                     contentDescription = "Фотография",
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
-                        .padding(top = 10.dp)
+                        .padding(top = 8.dp)
                         .fillMaxWidth()
-                        .heightIn(max = 420.dp),
+                        .heightIn(max = 360.dp),
                 )
                 else -> LazyRow(
                     modifier = Modifier.padding(top = 10.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     items(post.photoUrls) { url ->
                         AsyncImage(
@@ -387,8 +387,8 @@ private fun PostCard(
                             contentDescription = "Фотография",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .height(220.dp)
-                                .width(260.dp)
+                                .height(196.dp)
+                                .width(236.dp)
                                 .clip(MaterialTheme.shapes.medium),
                         )
                     }
