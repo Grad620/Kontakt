@@ -19,6 +19,7 @@ class SettingsStore(private val context: Context) {
     private val accentKey = stringPreferencesKey("accent")
     private val effectsKey = stringPreferencesKey("effects")
     private val tabsKey = stringPreferencesKey("tabs")
+    private val styleKey = stringPreferencesKey("interface_style")
     private val hideAdsKey = booleanPreferencesKey("filter_ads")
     private val hideScamKey = booleanPreferencesKey("filter_scam")
     private val hideGoodsKey = booleanPreferencesKey("filter_goods")
@@ -35,13 +36,17 @@ class SettingsStore(private val context: Context) {
         .map { prefs -> EffectsMode.entries.firstOrNull { it.name == prefs[effectsKey] } ?: EffectsMode.Full }
         .distinctUntilChanged()
 
+    val style: Flow<KontaktStyleId> = context.vgDataStore.data
+        .map { prefs -> KontaktStyleId.entries.firstOrNull { it.name == prefs[styleKey] } ?: KontaktStyleId.Kontakt }
+        .distinctUntilChanged()
+
     val tabs: Flow<List<TabId>> = context.vgDataStore.data
         .map { prefs -> NavConfig.parse(prefs[tabsKey]) }
         .distinctUntilChanged()
 
     val appearance: Flow<AppearanceState> =
-        combine(themeMode, accent, effects, tabs) { theme, accent, effects, tabs ->
-            AppearanceState(theme, accent, effects, tabs)
+        combine(themeMode, accent, effects, tabs, style) { theme, accent, effects, tabs, style ->
+            AppearanceState(theme, accent, effects, tabs, style)
         }
 
     val filterConfig: Flow<FilterConfig> = context.vgDataStore.data
@@ -64,6 +69,10 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setEffects(mode: EffectsMode) {
         context.vgDataStore.edit { it[effectsKey] = mode.name }
+    }
+
+    suspend fun setStyle(style: KontaktStyleId) {
+        context.vgDataStore.edit { it[styleKey] = style.name }
     }
 
     suspend fun setTabs(tabs: List<TabId>) {
