@@ -4,7 +4,38 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Minimal pixel snowflake: square blocks, no smooth diagonal strokes. -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M34,34h40a6,6 0 0 1 6,6v22a6,6 0 0 1 -6,6H52l-10,10v-10h-8a6,6 0 0 1 -6,-6V40a6,6 0 0 1 6,-6z" />
+        android:pathData="
+            M52,16h4v8h-4z
+            M52,28h4v8h-4z
+            M52,40h4v8h-4z
+            M52,48h4v12h-4z
+            M52,64h4v8h-4z
+            M52,76h4v8h-4z
+            M52,88h4v4h-4z
+            M28,28h8v4h-8z
+            M36,32h8v4h-8z
+            M44,40h8v4h-8z
+            M56,40h8v4h-8z
+            M64,32h8v4h-8z
+            M72,28h8v4h-8z
+            M16,52h8v4h-8z
+            M28,52h8v4h-8z
+            M40,52h8v4h-8z
+            M60,52h8v4h-8z
+            M72,52h8v4h-8z
+            M84,52h8v4h-8z
+            M28,76h8v4h-8z
+            M36,72h8v4h-8z
+            M44,64h8v4h-8z
+            M56,64h8v4h-8z
+            M64,72h8v4h-8z
+            M72,76h8v4h-8z
+            M40,48h8v4h-8z
+            M60,48h8v4h-8z
+            M40,56h8v4h-8z
+            M60,56h8v4h-8z
+            M52,92h4v0h-4z" />
 </vector>
