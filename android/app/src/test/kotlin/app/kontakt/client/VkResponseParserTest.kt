@@ -1,0 +1,63 @@
+package app.kontakt.client
+
+import app.kontakt.client.net.ConversationsResponse
+import app.kontakt.client.net.FeedResponse
+import app.kontakt.client.net.VkError
+import app.kontakt.client.net.VkResponseParser
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
+import org.junit.Test
+
+class VkResponseParserTest {
+
+    @Test
+    fun errorCode5MeansSessionExpired() {
+        assertThrows(VkError.SessionExpired::class.java) {
+            VkResponseParser.parse("""{"error":{"error_code":5,"error_msg":"User authorization failed"}}""")
+        }
+    }
+
+    @Test
+    fun errorCode15MeansAccessDenied() {
+        val error = assertThrows(VkError.AccessDenied::class.java) {
+            VkResponseParser.parse("""{"error":{"error_code":15,"error_msg":"Access denied"}}""")
+        }
+        assertEquals(15, error.code)
+    }
+
+    @Test
+    fun captchaIsReportedNotBypassed() {
+        assertThrows(VkError.Captcha::class.java) {
+            VkResponseParser.parse("""{"error":{"error_code":14,"error_msg":"Captcha needed"}}""")
+        }
+    }
+
+    @Test
+    fun garbageIsMalformed() {
+        assertThrows(VkError.Malformed::class.java) { VkResponseParser.parse("<html>502</html>") }
+    }
+
+    @Test
+    fun conversationsDecode() {
+        val json = """
+            {"response":{"count":1,"items":[{"conversation":{"peer":{"id":7,"type":"user"},"unread_count":2},
+            "last_message":{"id":5,"date":10,"from_id":7,"text":"привет","out":0}}],
+            "profiles":[{"id":7,"first_name":"Анна","last_name":"Иванова"}],"groups":[]}}
+        """.trimIndent()
+        val data = VkResponseParser.decode<ConversationsResponse>(VkResponseParser.parse(json))
+        assertEquals(1, data.items.size)
+        assertEquals(2, data.items[0].conversation.unreadCount)
+        assertEquals("Анна Иванова", data.profiles[0].fullName)
+    }
+
+    @Test
+    fun feedDecodeKeepsNextFromAndSkipsUnknownFields() {
+        val json = """
+            {"response":{"items":[{"type":"post","source_id":-1,"date":1,"post_id":9,"text":"t","unknown":42,
+            "likes":{"count":3},"comments":{"count":1},"marked_as_ads":0}],"profiles":[],"groups":[],"next_from":"abc"}}
+        """.trimIndent()
+        val data = VkResponseParser.decode<FeedResponse>(VkResponseParser.parse(json))
+        assertEquals("abc", data.nextFrom)
+        assertEquals(3, data.items[0].likes?.count)
+    }
+}

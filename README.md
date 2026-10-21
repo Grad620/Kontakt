@@ -1,26 +1,42 @@
 # Kontakt
 
-Kontakt is an Android VK client under active development.
+Kontakt — Android-клиент ВКонтакте в разработке. Цель проекта — чистый интерфейс, удобная лента, чаты, музыка и профиль без встроенной рекламы.
 
-## Source of truth
+## Исходники
 
-The current Android project is stored in [`kontakt-project-fixed-repository.zip`](./kontakt-project-fixed-repository.zip). The GitHub Actions workflow extracts this archive into a temporary workspace before building. Keep this archive in version control until the Android source is migrated into normal tracked directories; do not treat generated APK artifacts as source code.
+Актуальный Android-проект хранится в каталоге [`android/`](./android/). Архив `kontakt-project-fixed-repository.zip` оставлен для совместимости с миграционным workflow; новые изменения следует вносить в отслеживаемые исходники в `android/`, а не только в ZIP.
 
-## Build and download a test APK
+## Скачать тестовый APK
 
-1. Open [GitHub Actions](../../actions/workflows/build.yml).
-2. Select **Build Kontakt APK** and open the latest successful run.
-3. Download the `Kontakt-debug-apk` artifact from the run's **Artifacts** section.
+1. Открой [GitHub Actions](../../actions/workflows/build.yml).
+2. Выбери последний успешный запуск **Build Kontakt APK**.
+3. В разделе **Artifacts** скачай `Kontakt-debug-apk`.
 
-Workflow runs can also be started manually from the Actions page. Debug APK artifacts are configured to be retained for 90 days; they are temporary build outputs, not permanent releases.
+Артефакты сборки хранятся 90 дней. Успешная сборка и unit-тесты подтверждают компиляцию проекта, но сами по себе не доказывают, что вход через VK ID проверен на реальном устройстве.
 
-## Development workflow
+## Настройка VK ID
 
-- Make changes on a feature branch and review them through a pull request.
-- A successful CI build verifies that the configured project compiles and its configured unit-test task passes; it does **not** prove VK ID sign-in works on a physical device.
-- Never commit API secrets, signing keys, or real user tokens.
-- Before publishing a user-facing build, verify VK ID login on-device and review the manifest/configuration for secrets.
+Для настоящей авторизации нужны зарегистрированное приложение VK ID, его **Client ID** и **Client Secret**. Официальная инструкция SDK: [VK ID Android SDK](https://github.com/VKCOM/vkid-android-sdk).
 
-## Current limitations
+В настройках репозитория GitHub открой **Settings → Secrets and variables → Actions** и добавь:
 
-The Android source is still packaged in a ZIP rather than tracked as ordinary source files. Migrating it into normal directories is a priority because it will make code review, edits by multiple contributors, and targeted diffs much safer and easier. No production release is implied by the presence of a successful debug build.
+- Repository secret `VK_CLIENT_ID` — ID приложения VK ID.
+- Repository secret `VK_CLIENT_SECRET` — защищённый ключ приложения VK ID.
+- При необходимости Repository variable `VK_SCOPES` — запрашиваемые разрешения, если они настроены проектом.
+
+Workflow перед сборкой проверяет наличие Client ID и Client Secret и выдаёт предупреждение, если они отсутствуют. Без этих значений APK может собраться для проверки интерфейса, но вход через VK ID работать не будет. Ключ Gemini API не заменяет учётные данные приложения VK ID.
+
+**Не вставляй секреты в исходники, коммиты, логи или сообщения.** GitHub Actions скрывает значения секретов в интерфейсе, но проект не может автоматически создать или восстановить их за владельца приложения.
+
+## Правила разработки
+
+- Делай изменения в отслеживаемых файлах внутри `android/`.
+- Используй feature-ветки и Pull Request для проверки изменений.
+- Не отключай тесты, чтобы скрыть ошибку сборки.
+- Не коммить пароли, токены, ключи приложения или данные пользователей.
+- Перед заявлением о готовности авторизации проверь реальный вход на устройстве.
+- APK из CI — отладочная сборка, а не автоматически готовый релиз.
+
+## Текущие ограничения
+
+VK ID пока нельзя считать работающим, пока не заданы корректные учётные данные приложения и не подтверждён реальный вход. Иконка Kontakt оформляется в виде минималистичной белой пиксельной снежинки на чёрном фоне.

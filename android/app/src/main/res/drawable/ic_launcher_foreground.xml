@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Bold, symmetrical 8-bit snowflake. Large square pixels avoid the spidery look. -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="
+            M50,14h8v24h-8z
+            M50,70h8v24h-8z
+            M14,50h24v8h-24z
+            M70,50h24v8h-24z
+            M26,26h8v8h-8z
+            M34,34h8v8h-8z
+            M42,42h8v8h-8z
+            M58,58h8v8h-8z
+            M66,66h8v8h-8z
+            M74,74h8v8h-8z
+            M74,26h8v8h-8z
+            M66,34h8v8h-8z
+            M58,42h8v8h-8z
+            M42,58h8v8h-8z
+            M34,66h8v8h-8z
+            M26,74h8v8h-8z
+            M34,18h8v8h-8z
+            M66,18h8v8h-8z
+            M34,82h8v8h-8z
+            M66,82h8v8h-8z
+            M18,34h8v8h-8z
+            M18,66h8v8h-8z
+            M82,34h8v8h-8z
+            M82,66h8v8h-8z" />
+</vector>
