@@ -21,12 +21,12 @@ class KontaktApp : Application(), ImageLoaderFactory {
         installCrashRecorder()
         container = AppContainer(this)
         // Ошибка инициализации VK ID не должна закрывать всё приложение.
-        if (BuildConfig.VK_CLIENT_ID.isNotBlank()) {
+        if (BuildConfig.VK_ID_CONFIGURED) {
             runCatching { VKID.init(this) }
                 .onFailure { error ->
                     runCatching {
                         File(filesDir, CRASH_REPORT).writeText(
-                            "VKID_INIT_ERROR\\n" + error.stackTraceToString().take(MAX_REPORT_CHARS),
+                            "VKID_INIT_ERROR\n" + error.stackTraceToString().take(MAX_REPORT_CHARS),
                         )
                     }
                 }
@@ -40,7 +40,7 @@ class KontaktApp : Application(), ImageLoaderFactory {
                 val writer = StringWriter()
                 error.printStackTrace(PrintWriter(writer))
                 File(filesDir, CRASH_REPORT).writeText(
-                    "UNCAUGHT_EXCEPTION on thread ${thread.name}\\n" +
+                    "UNCAUGHT_EXCEPTION on thread ${thread.name}\n" +
                         writer.toString().take(MAX_REPORT_CHARS),
                 )
             }
