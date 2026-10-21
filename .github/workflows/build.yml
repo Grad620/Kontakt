@@ -61,7 +61,7 @@ jobs:
       - name: Проверить настройки VK ID
         shell: bash
         env:
-          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID }}
+          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID || vars.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
         run: |
           if [ -z "${VK_CLIENT_ID}" ]; then
@@ -70,6 +70,12 @@ jobs:
           if [ -z "${VK_CLIENT_SECRET}" ]; then
             echo "::warning title=VK ID secret отсутствует::Не задан GitHub Actions Secret VK_CLIENT_SECRET. Для полноценной авторизации нужно добавить его в настройки репозитория."
           fi
+
+      - name: Показать SHA-1 отпечаток ключа подписи
+        working-directory: ${{ steps.project.outputs.dir }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:signingReport
 
       - name: Запустить unit-тесты
         working-directory: ${{ steps.project.outputs.dir }}
