@@ -22,7 +22,7 @@ jobs:
         run: |
           set -e
           mkdir -p _src
-          unzip -q -o kontakt-project.zip -d _src
+          unzip -q -o kontakt-project-fixed-repository.zip -d _src
           SETTINGS=$(find _src -name settings.gradle.kts -o -name settings.gradle | head -1)
           if [ -z "$SETTINGS" ]; then
             echo "Не найден файл настроек Gradle"
