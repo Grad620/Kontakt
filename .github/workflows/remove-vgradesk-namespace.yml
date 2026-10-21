@@ -1,3 +1,4 @@
+# Run one-time Kontakt namespace migration
 name: One-time Kontakt namespace migration
 
 on:
