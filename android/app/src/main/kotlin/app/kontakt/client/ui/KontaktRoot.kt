@@ -22,7 +22,7 @@ fun KontaktRoot(container: AppContainer) {
         Box(Modifier.fillMaxSize())
         return
     }
-    VgTheme(current.theme, current.accent, current.effects) {
+    VgTheme(current.theme, current.accent, current.effects, current.style) {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             val auth by container.auth.state.collectAsStateWithLifecycle()
             when (auth) {
