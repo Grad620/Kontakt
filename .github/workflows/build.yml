@@ -59,24 +59,27 @@ jobs:
           VK_SCOPES: ${{ vars.VK_SCOPES }}
         run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleDebug
 
-      - name: Verify merged manifest has the VK ID client ID placeholder
+      - name: Verify resolved VK ID manifest values
         working-directory: android
+        env:
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID }}
         shell: bash
         run: |
           set -euo pipefail
-          MANIFEST="app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml"
-          if [ ! -f "$MANIFEST" ]; then
-            MANIFEST=$(find app/build/intermediates -path '*merged_manifests/debug*AndroidManifest.xml' -print -quit)
-          fi
+          MANIFEST=$(find app/build/intermediates -path '*merged_manifests/debug*AndroidManifest.xml' -print -quit)
           if [ -z "$MANIFEST" ] || [ ! -f "$MANIFEST" ]; then
             echo "::error::Merged debug manifest was not generated."
             exit 1
           fi
-          if ! grep -q 'VKIDClientID' "$MANIFEST"; then
-            echo "::error::Merged manifest does not contain VKIDClientID. Do not distribute this APK."
+          if grep -Fq '${VKIDClientID}' "$MANIFEST"; then
+            echo "::error::Unresolved VKIDClientID placeholder in merged manifest."
             exit 1
           fi
-          echo "Merged manifest contains VKIDClientID."
+          if [ -n "$VK_CLIENT_ID" ] && ! grep -Fq "$VK_CLIENT_ID" "$MANIFEST"; then
+            echo "::error::Configured VK_CLIENT_ID is absent from merged manifest. Do not distribute this APK."
+            exit 1
+          fi
+          echo "Merged manifest has no unresolved VKIDClientID placeholder."
 
       - name: Upload debug APK (testing artifact, not a release)
         uses: actions/upload-artifact@v4
