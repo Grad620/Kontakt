@@ -33,7 +33,7 @@ jobs:
             rm -rf _migration_src
             mkdir -p _migration_src android
             unzip -q kontakt-project-fixed-repository.zip -d _migration_src
-            SETTINGS="$(find _migration_src -type f \\( -name settings.gradle.kts -o -name settings.gradle \\) -print -quit)"
+            SETTINGS="$(find _migration_src -type f \( -name settings.gradle.kts -o -name settings.gradle \) -print -quit)"
             if [ -z "$SETTINGS" ]; then
               echo "::error::Archive has no settings.gradle(.kts)"
               find _migration_src -maxdepth 4 -type f | head -100
