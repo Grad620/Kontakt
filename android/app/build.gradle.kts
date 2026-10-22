@@ -13,7 +13,7 @@ fun config(name: String): String =
 
 val vkClientId = config("VK_CLIENT_ID")
 val vkClientSecret = config("VK_CLIENT_SECRET")
-val vkScopes = config("VK_SCOPES")
+val vkScopes = config("VK_SCOPES").ifBlank { "friends,wall,messages,photos,docs,status,groups,video,audio,stories,pages,notes,notifications" }
 
 val signingKeyBase64 = config("ANDROID_SIGNING_KEY_BASE64")
 val signingStorePassword = config("ANDROID_SIGNING_STORE_PASSWORD")
