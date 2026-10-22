@@ -8,18 +8,13 @@ plugins {
     id("vkid.manifest.placeholders")
 }
 
-// Значения VK берутся из свойств Gradle (-PVK_CLIENT_ID=...) или переменных окружения.
-// В репозитории их нет. Без них проект всё равно собирается, но вход через VK ID будет недоступен.
 fun config(name: String): String =
     providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orElse("").get().trim()
 
-val vkStandaloneAppId = config("VK_STANDALONE_APP_ID").toIntOrNull()?.takeIf { it > 0 } ?: 0
 val vkClientId = config("VK_CLIENT_ID")
 val vkClientSecret = config("VK_CLIENT_SECRET")
-val vkScopes = config("VK_SCOPES") // например: friends,wall,messages — только после одобрения VK
+val vkScopes = config("VK_SCOPES")
 
-// Release signing credentials are supplied only by CI secrets or local environment.
-// Never commit the signing keystore or passwords.
 val signingKeyBase64 = config("ANDROID_SIGNING_KEY_BASE64")
 val signingStorePassword = config("ANDROID_SIGNING_STORE_PASSWORD")
 val signingKeyAlias = config("ANDROID_SIGNING_KEY_ALIAS")
@@ -38,28 +33,15 @@ android {
         applicationId = "com.kontakt.app"
         minSdk = 29
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.1.4"
+        versionCode = 6
+        versionName = "0.1.5"
 
-        // Идентификатор приложения и список прав — не секреты. Секрет в BuildConfig не попадает.
         buildConfigField("String", "VK_CLIENT_ID", "\"$vkClientId\"")
         buildConfigField("String", "VK_SCOPES", "\"$vkScopes\"")
-        // VK ID SDK setup requires both the application ID and protected client secret.
-        // Do not expose the secret itself in BuildConfig; only expose whether both values exist.
         buildConfigField("boolean", "VK_ID_CONFIGURED", (vkClientId.isNotBlank() && vkClientSecret.isNotBlank()).toString())
-        buildConfigField("boolean", "VK_STANDALONE_CONFIGURED", (vkStandaloneAppId > 0).toString())
-        resValue("integer", "com_vk_sdk_AppId", vkStandaloneAppId.toString())
-
-        // Требование VK ID SDK: значения подставляются в манифест.
-        manifestPlaceholders["VKIDClientID"] = vkClientId.ifBlank { "0" }
-        manifestPlaceholders["VKIDClientSecret"] = vkClientSecret.ifBlank { "unset" }
-        manifestPlaceholders["VKIDRedirectHost"] = "vk.ru"
-        manifestPlaceholders["VKIDRedirectScheme"] = "vk${vkClientId.ifBlank { "0" }}"
+        // VK ID manifest placeholders are supplied by the official vkid.manifest.placeholders plugin.
     }
 
-    // Keep the existing debug signing identity temporarily so test APKs can update the
-    // already-installed app. Migrate this key to a GitHub Actions secret before removing it
-    // from version control; changing it now would force an uninstall/reinstall on the phone.
     signingConfigs {
         getByName("debug") {
             storeFile = file("debug.keystore")
@@ -131,7 +113,6 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
 
-    // Официальная авторизация VK ID (лицензия MIT)
     implementation("com.vk.id:vkid:2.7.3")
     implementation("com.vk:android-sdk-core:4.1.0")
 
