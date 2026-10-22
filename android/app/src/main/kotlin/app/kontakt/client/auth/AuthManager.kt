@@ -53,6 +53,12 @@ class AuthManager(private val store: TokenStore) {
         }
     }
 
+    /** User-initiated cancellation is not an authentication error; return to the signed-out state quietly. */
+    fun onVkIdAuthCanceled() {
+        _busy.value = false
+        _state.value = AuthState.SignedOut()
+    }
+
     fun onVkIdAuthFailure(details: String) {
         _busy.value = false
         _state.value = AuthState.SignedOut("VK ID не завершил авторизацию: $details")
