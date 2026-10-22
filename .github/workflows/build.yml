@@ -112,6 +112,25 @@ jobs:
             echo "VK_CLIENT_SECRET is present; its value is not printed."
           fi
 
+      - name: Verify protected key is not embedded in BuildConfig source
+        working-directory: android
+        env:
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$VK_CLIENT_SECRET" ]; then
+            echo "VK_CLIENT_SECRET is not configured; skipping BuildConfig exposure check."
+            exit 0
+          fi
+          if [ -d app/build/generated/source/buildConfig ]; then
+            if grep -R -F -q -- "$VK_CLIENT_SECRET" app/build/generated/source/buildConfig; then
+              echo "::error title=Potential credential exposure::VK_CLIENT_SECRET was found in generated BuildConfig source."
+              exit 1
+            fi
+          fi
+          echo "Protected key was not found in generated BuildConfig source."
+ 
       - name: Upload debug APK (testing artifact, not a release)
         uses: actions/upload-artifact@v4
         with:
