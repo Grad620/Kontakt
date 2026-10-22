@@ -35,24 +35,18 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Report VK ID configuration
+      - name: Report Standalone VK configuration
         id: vkid-config
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: |
-          if [ -n "$VK_CLIENT_ID" ] && [ -n "$VK_CLIENT_SECRET" ]; then
+          if [[ "$VK_STANDALONE_APP_ID" =~ ^[1-9][0-9]*$ ]]; then
             echo "configured=true" >> "$GITHUB_OUTPUT"
-            echo "VK ID credentials are present."
+            echo "Standalone VK application ID is present."
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            if [ -z "$VK_CLIENT_ID" ]; then
-              echo "::warning title=VK ID is not configured::Set repository variable VK_CLIENT_ID or repository secret VK_CLIENT_ID."
-            fi
-            if [ -z "$VK_CLIENT_SECRET" ]; then
-              echo "::warning title=VK ID secret is missing::Set repository secret VK_CLIENT_SECRET."
-            fi
-            echo "::warning::Lint and unit tests will run, but a login-test APK will not be built until VK ID is configured."
+            echo "::warning title=Standalone VK app is not configured::Set repository secret VK_STANDALONE_APP_ID after registering a Standalone app in VK developer settings."
+            echo "::warning::Lint and unit tests will run, but the login-test APK will not be built until Standalone VK is configured."
           fi
 
       - name: Run Android Lint and unit tests
@@ -61,6 +55,7 @@ jobs:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
+          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon lintDebug testDebugUnitTest
@@ -72,6 +67,7 @@ jobs:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
+          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleDebug
 
       - name: Verify resolved VK ID manifest values
@@ -148,6 +144,7 @@ jobs:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
+          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
           ANDROID_SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
           ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}
           ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
