@@ -5,7 +5,7 @@ import app.kontakt.client.BuildConfig
 import com.vk.id.VKID
 import com.vk.id.AccessToken
 import com.vk.id.auth.VKIDAuthCallback
-import com.vk.id.auth.VKIDAuthFail
+import com.vk.id.VKIDAuthFail
 import com.vk.id.auth.VKIDAuthParams
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -73,10 +73,11 @@ class AuthManager(private val store: TokenStore) {
                 override fun onFail(fail: VKIDAuthFail) {
                     _busy.value = false
                     val detail = fail::class.simpleName.orEmpty()
+                    val description = fail.description.take(180)
                     val message = if (detail.contains("Canceled", ignoreCase = true)) {
                         "Вход отменён. Нажмите «Продолжить через VK», чтобы попробовать снова."
                     } else {
-                        "VK ID не завершил вход ($detail). Проверьте настройки приложения VK ID и попробуйте ещё раз."
+                        "VK ID не завершил вход ($detail): $description"
                     }
                     _state.value = AuthState.SignedOut(message)
                 }
