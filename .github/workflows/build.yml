@@ -62,18 +62,18 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "${VK_CLIENT_ID}" ]]; then
-            echo "::warning title=VK ID is not configured::VK_CLIENT_ID is missing. The APK can be built for UI testing, but VK ID login cannot be verified."
-          elif [[ ! "${VK_CLIENT_ID}" =~ ^[0-9]+$ ]]; then
-            echo "::error title=Invalid VK ID configuration::VK_CLIENT_ID must contain only digits. Its value is not printed."
+            echo "::error title=VK ID configuration missing::Set VK_CLIENT_ID as a repository variable or secret. The value is never printed."
             exit 1
-          else
-            echo "VK_CLIENT_ID is present and has numeric format."
+          fi
+          if [[ ! "${VK_CLIENT_ID}" =~ ^[0-9]+$ ]]; then
+            echo "::error title=Invalid VK ID configuration::VK_CLIENT_ID must be numeric. Its value is never printed."
+            exit 1
           fi
           if [[ -z "${VK_CLIENT_SECRET}" ]]; then
-            echo "::warning title=VK ID secret is missing::VK_CLIENT_SECRET is not configured. Check the VK ID SDK setup before testing login."
-          else
-            echo "VK_CLIENT_SECRET is present; its value is not printed."
+            echo "::error title=VK ID protected key missing::Set VK_CLIENT_SECRET as a repository Actions secret. Its value is never printed."
+            exit 1
           fi
+          echo "VK ID configuration is present (values withheld). This check does not prove that the dashboard configuration or device sign-in is correct."
 
       - name: Run Android Lint and unit tests
         working-directory: android
