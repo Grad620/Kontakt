@@ -1,0 +1,37 @@
+name: Apply Kontakt design patch
+
+on:
+  push:
+    branches:
+      - design/style-system
+    paths:
+      - "kontakt-design-style-system.patch"
+
+permissions:
+  contents: write
+
+jobs:
+  apply-patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: design/style-system
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Apply five patch commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          PATCH="kontakt-design-style-system.patch"
+          test -s "$PATCH"
+          cp "$PATCH" /tmp/kontakt-design-style-system.patch
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm "$PATCH"
+          git add "$PATCH"
+          git commit -m "chore: stage Claude design patch for application"
+          git am --3way /tmp/kontakt-design-style-system.patch
+          git push origin HEAD:design/style-system
