@@ -113,22 +113,47 @@ jobs:
           VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleDebug
 
-      - name: Report debug signing certificate fingerprint
+      - name: Verify APK signing certificate fingerprint
         working-directory: android
         shell: bash
         run: |
           set -euo pipefail
           KEYSTORE="app/debug.keystore"
           APK=$(find app/build/outputs/apk/debug -name '*.apk' -print -quit)
+          APKSIGNER="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner"
           if [ ! -f "$KEYSTORE" ] || [ -z "$APK" ]; then
             echo "::error::Debug keystore or debug APK is missing."
             exit 1
           fi
-          echo "Configured debug keystore certificate (SHA-1):"
-          keytool -list -v -keystore "$KEYSTORE" -storepass android -alias androiddebugkey | grep -E 'SHA1:|SHA-1:'
-          echo "Certificate embedded in built APK:"
-          "$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner" verify --print-certs "$APK" | grep -E 'Signer #1 certificate SHA-1 digest:'
-          echo "Compare these fingerprints with the Android certificate registered in the VK ID dashboard. This step does not verify dashboard settings or successful OAuth."
+          KEY_INFO=$(keytool -list -v -keystore "$KEYSTORE" -storepass android -alias androiddebugkey 2>&1) || {
+            echo "::error::Could not read configured debug signing certificate."
+            exit 1
+          }
+          KEY_SHA1=$(printf '%s\n' "$KEY_INFO" | awk -F': ' '/SHA1:|SHA-1:/{print $2; exit}')
+          if [ -z "$KEY_SHA1" ]; then
+            echo "::error::Could not extract SHA-1 from configured debug keystore."
+            exit 1
+          fi
+          echo "Configured debug keystore SHA-1: $KEY_SHA1"
+          if ! APK_INFO=$("$APKSIGNER" verify --print-certs "$APK" 2>&1); then
+            echo "::error::apksigner could not verify the generated APK. Diagnostic output:"
+            echo "$APK_INFO"
+            exit 1
+          fi
+          printf '%s\n' "$APK_INFO"
+          APK_SHA1=$(printf '%s\n' "$APK_INFO" | awk 'BEGIN{IGNORECASE=1} /certificate SHA-1 digest:/{print $NF; exit}')
+          if [ -z "$APK_SHA1" ]; then
+            echo "::error::APK signature verified, but apksigner did not report a SHA-1 certificate digest."
+            exit 1
+          fi
+          echo "APK signer SHA-1: $APK_SHA1"
+          NORMAL_KEY_SHA1=$(printf '%s' "$KEY_SHA1" | tr '[:lower:]' '[:upper:]' | tr -d ':')
+          NORMAL_APK_SHA1=$(printf '%s' "$APK_SHA1" | tr '[:lower:]' '[:upper:]' | tr -d ':')
+          if [ "$NORMAL_KEY_SHA1" != "$NORMAL_APK_SHA1" ]; then
+            echo "::error::APK signer does not match the configured debug keystore."
+            exit 1
+          fi
+          echo "APK signer matches the configured debug keystore. Compare this SHA-1 with the Android platform entry in the VK ID dashboard; this does not prove OAuth succeeds."
 
       - name: Verify resolved VK ID manifest values
         working-directory: android
