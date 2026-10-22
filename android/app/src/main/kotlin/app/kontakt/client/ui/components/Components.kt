@@ -527,7 +527,7 @@ fun SearchField(
                 if (value.isNotEmpty()) {
                     Box(
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(40.dp)
                             .clip(CircleShape)
                             .clickable(role = Role.Button) { onValueChange("") },
                         contentAlignment = Alignment.Center,
@@ -596,7 +596,7 @@ fun SegmentedTabs(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(44.dp)
+                        .height(48.dp)
                         .selectable(selected = selected, role = Role.Tab, onClick = { onSelect(index) }),
                     contentAlignment = Alignment.Center,
                 ) {
