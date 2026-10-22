@@ -139,7 +139,7 @@ fun LoginScreen(container: AppContainer) {
             if (!auth.isConfigured) {
                 SectionCard("Нужно подключить приложение VK", titleTextAlign = TextAlign.Center) {
                     Text(
-                        "Для доступа к методам VK API нужен ID приложения типа Standalone. Добавьте VK_STANDALONE_APP_ID в секреты сборки GitHub Actions и укажите Android-пакет com.kontakt.app и SHA-1 сертификата.",
+                        "Для входа нужен Client ID и защищённый ключ приложения VK ID из кабинета id.vk.ru. Добавьте их в GitHub Actions как VK_CLIENT_ID и VK_CLIENT_SECRET. В Android-платформе укажите пакет com.kontakt.app и отпечаток сертификата этой сборки.",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                     )
