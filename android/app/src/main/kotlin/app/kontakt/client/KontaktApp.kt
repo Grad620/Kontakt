@@ -6,6 +6,8 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
+import app.kontakt.client.BuildConfig
+import com.vk.id.VKID
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -18,6 +20,7 @@ class KontaktApp : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
         installCrashRecorder()
+        if (BuildConfig.VK_ID_CONFIGURED) VKID.init(this)
         container = AppContainer(this)
     }
 
