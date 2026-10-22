@@ -2,7 +2,6 @@ package app.kontakt.client.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,9 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,7 +20,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,8 +36,13 @@ import app.kontakt.client.data.ChatsRepository
 import app.kontakt.client.ui.common.formatChatTime
 import app.kontakt.client.ui.common.vmFactory
 import app.kontakt.client.ui.components.Avatar
+import app.kontakt.client.ui.components.CountBadge
 import app.kontakt.client.ui.components.PagedColumn
 import app.kontakt.client.ui.components.ScreenHeader
+import app.kontakt.client.ui.components.SearchField
+import app.kontakt.client.ui.components.SkeletonKind
+import app.kontakt.client.ui.theme.Kontakt
+import app.kontakt.client.ui.theme.KontaktIcons
 import kotlinx.coroutines.flow.StateFlow
 
 private const val CHATS_DENIED =
@@ -73,19 +76,15 @@ fun ChatsScreen(container: AppContainer) {
         },
     )
 
-    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    // Список лежит на цвете карточки (как в мессенджерах), а не на сером фоне страницы.
+    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
         ScreenHeader("Сообщения")
-        OutlinedTextField(
+        SearchField(
             value = query,
             onValueChange = { query = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            placeholder = { Text("Поиск по чатам") },
-            singleLine = true,
-            shape = CircleShape,
+            placeholder = "Поиск по чатам",
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         )
-        Spacer(Modifier.height(4.dp))
         PagedColumn(
             state = filtered,
             itemKey = { it.peerId },
@@ -98,6 +97,8 @@ fun ChatsScreen(container: AppContainer) {
             onRefresh = vm::refresh,
             onLoadMore = vm::loadMore,
             onRetry = vm::retry,
+            skeleton = SkeletonKind.Chats,
+            emptyIcon = if (query.isBlank()) KontaktIcons.Chat else KontaktIcons.Search,
             modifier = Modifier.weight(1f),
         ) { chat -> ChatRow(chat) }
     }
@@ -105,16 +106,18 @@ fun ChatsScreen(container: AppContainer) {
 
 @Composable
 private fun ChatRow(chat: ChatItem) {
+    val style = Kontakt.style
     val unread = chat.unread > 0
-    Column {
+    val tint = if (style.unreadTint && unread) Kontakt.colors.accentSoft else Color.Transparent
+    Column(Modifier.background(tint)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(76.dp)
+                .height(style.chatRowHeight)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Avatar(chat.avatar, chat.title, 52.dp)
+            Avatar(chat.avatar, chat.title, style.chatAvatar)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -129,7 +132,7 @@ private fun ChatRow(chat: ChatItem) {
                     Text(
                         formatChatTime(chat.time),
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (unread) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (unread) Kontakt.colors.accentText else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -137,34 +140,22 @@ private fun ChatRow(chat: ChatItem) {
                         (if (chat.lastIsOutgoing) "Вы: " else "") + chat.lastText,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = if (unread) FontWeight.Medium else FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (unread) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
                     )
                     if (unread) {
                         Spacer(Modifier.width(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary)
-                                .padding(horizontal = 7.dp, vertical = 3.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                if (chat.unread > 99) "99+" else chat.unread.toString(),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                            )
-                        }
+                        CountBadge(chat.unread)
                     }
                 }
             }
         }
-        androidx.compose.material3.HorizontalDivider(
-            modifier = Modifier.padding(start = 80.dp),
+        HorizontalDivider(
+            modifier = Modifier.padding(start = 28.dp + style.chatAvatar),
             thickness = 0.6.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
         )
     }
 }

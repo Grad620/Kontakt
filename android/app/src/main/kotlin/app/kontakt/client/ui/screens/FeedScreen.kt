@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +34,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -59,8 +61,11 @@ import app.kontakt.client.rec.DwellTracker
 import app.kontakt.client.ui.common.formatPostDate
 import app.kontakt.client.ui.common.vmFactory
 import app.kontakt.client.ui.components.Avatar
+import app.kontakt.client.ui.components.InfoBanner
 import app.kontakt.client.ui.components.PagedColumn
 import app.kontakt.client.ui.components.ScreenHeader
+import app.kontakt.client.ui.components.SegmentedTabs
+import app.kontakt.client.ui.components.SkeletonKind
 import app.kontakt.client.ui.theme.Kontakt
 import app.kontakt.client.ui.theme.KontaktIcons
 import coil.compose.AsyncImage
@@ -236,34 +241,22 @@ fun FeedScreen(container: AppContainer) {
 
     Column(Modifier.fillMaxSize()) {
         ScreenHeader("Лента")
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            FeedMode.entries.forEach { entry ->
-                FilterChip(
-                    selected = entry == mode,
-                    onClick = { vm.select(entry) },
-                    label = { Text(entry.title) },
-                )
-            }
-        }
+        SegmentedTabs(
+            titles = FeedMode.entries.map { it.title },
+            selectedIndex = mode.ordinal,
+            onSelect = { vm.select(FeedMode.entries[it]) },
+        )
 
         if (mode == FeedMode.ForYou) {
             val unavailable = statuses.filterValues { it == ForYouRepository.SourceState.Denied }.keys
             if (unavailable.isNotEmpty()) {
-                Text(
+                Spacer(Modifier.height(4.dp))
+                InfoBanner(
                     "VK не дал доступ к источникам: " + unavailable.joinToString { it.title.lowercase() } +
                         ". Лента собрана из остальных.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
                 )
             }
         }
-        Spacer(Modifier.height(4.dp))
 
         key(mode) {
             val state = if (mode == FeedMode.ForYou) forYou else subs
@@ -280,6 +273,8 @@ fun FeedScreen(container: AppContainer) {
                 onLoadMore = vm::loadMore,
                 onRetry = vm::retry,
                 onVisibleKeys = vm::onVisible,
+                skeleton = SkeletonKind.Posts,
+                emptyIcon = KontaktIcons.Feed,
                 modifier = Modifier.weight(1f),
             ) { post ->
                 PostCard(
@@ -320,21 +315,22 @@ private fun PostCard(
 ) {
     val style = Kontakt.style
     var menuOpen by remember { mutableStateOf(false) }
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = style.screenPadding, vertical = style.postGap),
+            .padding(horizontal = style.screenPadding, vertical = style.postGap / 2),
         shape = style.cardShape,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        color = MaterialTheme.colorScheme.surface,
         border = if (style.cardBordered) BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) else null,
     ) {
-        Column(Modifier.padding(bottom = 4.dp)) {
+        Column(Modifier.padding(bottom = 2.dp)) {
             Row(
-                modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 10.dp),
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Avatar(post.authorAvatar, post.authorName, 36.dp)
+                Avatar(post.authorAvatar, post.authorName, 40.dp)
                 Spacer(Modifier.width(10.dp))
                 Column {
                     Text(
@@ -347,7 +343,7 @@ private fun PostCard(
                     Text(
                         formatPostDate(post.date) + topic,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = muted,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -360,7 +356,7 @@ private fun PostCard(
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 12,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 8.dp),
+                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 10.dp),
                 )
             }
 
@@ -371,7 +367,7 @@ private fun PostCard(
                     contentDescription = "Фотография",
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
-                        .padding(top = 8.dp)
+                        .padding(top = 10.dp)
                         .fillMaxWidth()
                         .heightIn(max = 360.dp),
                 )
@@ -394,34 +390,33 @@ private fun PostCard(
                 }
             }
 
+            // Счётчики VK только показываются (кнопок «нравится» и «комментировать» здесь нет).
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, end = 4.dp, top = 4.dp),
+                    .padding(start = 12.dp, end = 4.dp, top = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                CountLabel(KontaktIcons.Like, post.likes, "Нравится")
+                Spacer(Modifier.width(16.dp))
+                CountLabel(KontaktIcons.Comment, post.comments, "Комментарии")
+                Spacer(Modifier.weight(1f))
                 TextButton(onClick = onInterested) {
                     Icon(
                         imageVector = if (interested) KontaktIcons.Star else KontaktIcons.StarOutline,
                         contentDescription = null,
-                        tint = if (interested) Kontakt.colors.accentText else MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = if (interested) Kontakt.colors.accentText else muted,
                         modifier = Modifier.size(20.dp),
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
                         "Интересно",
-                        color = if (interested) Kontakt.colors.accentText else MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (interested) Kontakt.colors.accentText else muted,
                     )
                 }
-                Spacer(Modifier.weight(1f))
-                Text(
-                    "Нравится: ${post.likes} · Комм.: ${post.comments}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
                 Column {
                     IconButton(onClick = { menuOpen = true }) {
-                        Icon(KontaktIcons.More, contentDescription = "Ещё", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Icon(KontaktIcons.More, contentDescription = "Ещё", tint = muted)
                     }
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                         DropdownMenuItem(
@@ -449,5 +444,27 @@ private fun PostCard(
                 }
             }
         }
+    }
+}
+
+/** Значок и число: счётчик лайков или комментариев VK. Для чтения с экрана — «Нравится: 5». */
+@Composable
+private fun CountLabel(icon: ImageVector, count: Int, description: String) {
+    Row(
+        modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "$description: $count" },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp),
+        )
+        Spacer(Modifier.width(5.dp))
+        Text(
+            count.toString(),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

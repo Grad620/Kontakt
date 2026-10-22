@@ -13,7 +13,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,11 +32,14 @@ import app.kontakt.client.data.ProfileRepository
 import app.kontakt.client.ui.common.vmFactory
 import app.kontakt.client.ui.components.Avatar
 import app.kontakt.client.ui.components.ErrorState
+import app.kontakt.client.ui.components.LinkRow
 import app.kontakt.client.ui.components.LoadingBox
 import app.kontakt.client.ui.components.LocalBottomBarPadding
 import app.kontakt.client.ui.components.LocalOpenSettings
 import app.kontakt.client.ui.components.ScreenHeader
 import app.kontakt.client.ui.components.SectionCard
+import app.kontakt.client.ui.theme.Kontakt
+import app.kontakt.client.ui.theme.KontaktIcons
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -93,31 +95,55 @@ fun ProfileScreen(container: AppContainer) {
 @Composable
 private fun ProfileContent(profile: Profile, modifier: Modifier) {
     val openSettings = LocalOpenSettings.current
+    val style = Kontakt.style
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+            .padding(horizontal = style.screenPadding),
+        verticalArrangement = Arrangement.spacedBy(style.postGap),
     ) {
+        Spacer(Modifier.height(style.postGap / 2))
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+            shape = style.cardShape,
             color = MaterialTheme.colorScheme.surface,
         ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Avatar(profile.avatar, profile.name, 68.dp)
-                Spacer(Modifier.width(14.dp))
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(profile.name, style = MaterialTheme.typography.titleLarge)
+            if (style.classic) {
+                // VK Classic: аватар слева, имя и статус рядом.
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Avatar(profile.avatar, profile.name, 72.dp)
+                    Spacer(Modifier.width(14.dp))
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(profile.name, style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            profile.status ?: "Профиль ВКонтакте",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            } else {
+                // Kontakt: аватар по центру, как на экране профиля в мессенджерах.
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Avatar(profile.avatar, profile.name, 96.dp)
+                    Spacer(Modifier.height(6.dp))
+                    Text(profile.name, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
                     Text(
                         profile.status ?: "Профиль ВКонтакте",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
@@ -131,15 +157,20 @@ private fun ProfileContent(profile: Profile, modifier: Modifier) {
             )
         }
 
-        SectionCard("Настройки") {
-            Text(
-                "Тема, акцентный цвет, навигация и фильтры ленты.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            if (openSettings != null) {
-                Spacer(Modifier.height(8.dp))
-                OutlinedButton(onClick = openSettings) { Text("Открыть настройки") }
+        if (openSettings != null) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = style.cardShape,
+                color = MaterialTheme.colorScheme.surface,
+            ) {
+                Column(Modifier.padding(horizontal = style.sectionPadding, vertical = 4.dp)) {
+                    LinkRow(
+                        icon = KontaktIcons.Settings,
+                        title = "Настройки",
+                        subtitle = "Тема, стиль, акцент, навигация и фильтры ленты",
+                        onClick = openSettings,
+                    )
+                }
             }
         }
         Spacer(Modifier.height(LocalBottomBarPadding.current + 16.dp))

@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.kontakt.client.AppContainer
 import app.kontakt.client.auth.AuthState
+import app.kontakt.client.ui.components.StatusBarBackdrop
 import app.kontakt.client.ui.screens.LoginScreen
 import app.kontakt.client.ui.theme.VgTheme
 
@@ -25,9 +26,12 @@ fun KontaktRoot(container: AppContainer) {
     VgTheme(current.theme, current.accent, current.effects, current.style) {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             val auth by container.auth.state.collectAsStateWithLifecycle()
-            when (auth) {
-                is AuthState.SignedIn -> MainShell(container, current.tabs, current.effects)
-                is AuthState.SignedOut -> LoginScreen(container)
+            // В VK Classic цвет шапки продолжается под строкой состояния на всех экранах, включая вход.
+            StatusBarBackdrop {
+                when (auth) {
+                    is AuthState.SignedIn -> MainShell(container, current.tabs, current.effects)
+                    is AuthState.SignedOut -> LoginScreen(container)
+                }
             }
         }
     }

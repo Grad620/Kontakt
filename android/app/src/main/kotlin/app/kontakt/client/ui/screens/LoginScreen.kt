@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -43,7 +45,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.kontakt.client.AppContainer
 import app.kontakt.client.BuildConfig
 import app.kontakt.client.auth.AuthState
+import app.kontakt.client.core.EffectsMode
 import app.kontakt.client.ui.components.SectionCard
+import app.kontakt.client.ui.theme.Kontakt
 import app.kontakt.client.ui.theme.VgSpacing
 
 @Composable
@@ -52,15 +56,21 @@ fun LoginScreen(container: AppContainer) {
     val state by auth.state.collectAsStateWithLifecycle()
     val busy by auth.busy.collectAsStateWithLifecycle()
     val message = (state as? AuthState.SignedOut)?.message
-    val logoPulse by rememberInfiniteTransition(label = "kontaktLogoPulse").animateFloat(
-        initialValue = 0.985f,
-        targetValue = 1.015f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1800, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "logoPulse",
-    )
+    // В облегчённом режиме эффектов логотип неподвижен: бесконечная анимация тратит заряд.
+    val logoPulse = if (Kontakt.effects == EffectsMode.Light) {
+        1f
+    } else {
+        val pulse by rememberInfiniteTransition(label = "kontaktLogoPulse").animateFloat(
+            initialValue = 0.985f,
+            targetValue = 1.015f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 1800, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse,
+            ),
+            label = "logoPulse",
+        )
+        pulse
+    }
 
     Box(
         modifier = Modifier
@@ -72,7 +82,8 @@ fun LoginScreen(container: AppContainer) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .widthIn(max = 420.dp),
+                .widthIn(max = 420.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {

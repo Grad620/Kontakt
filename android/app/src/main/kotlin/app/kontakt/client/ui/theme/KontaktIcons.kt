@@ -73,6 +73,35 @@ object KontaktIcons {
         )
     }
 
+    /** Три ровные линии: кнопка бокового меню VK Classic. */
+    val Menu: ImageVector by lazy {
+        icon("Menu", "M4 6h16v2H4zM4 11h16v2H4zM4 16h16v2H4z")
+    }
+    /** Круг и ручка: поиск. */
+    val Search: ImageVector by lazy {
+        icon(
+            "Search",
+            "M10.5 3a7.5 7.5 0 0 1 5.9 12.1l4.3 4.3-1.4 1.4-4.3-4.3A7.5 7.5 0 1 1 10.5 3zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11z",
+        )
+    }
+    val Check: ImageVector by lazy {
+        icon("Check", "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z")
+    }
+    val ChevronRight: ImageVector by lazy {
+        icon("ChevronRight", "M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z")
+    }
+    /** Контур сердца: счётчик «Нравится» (только показ, не кнопка). */
+    val Like: ImageVector by lazy {
+        icon(
+            "Like",
+            "M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z",
+        )
+    }
+    /** Контур облачка: счётчик комментариев (только показ). */
+    val Comment: ImageVector by lazy {
+        icon("Comment", "M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z")
+    }
+
     private fun icon(name: String, pathData: String): ImageVector =
         ImageVector.Builder(
             name = name,

@@ -26,9 +26,12 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.kontakt.client.core.EffectsMode
 import app.kontakt.client.core.PagedState
+import app.kontakt.client.ui.theme.Kontakt
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.max
 import kotlin.math.min
@@ -53,15 +56,18 @@ fun <T> PagedColumn(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     onVisibleKeys: ((Set<Any>) -> Unit)? = null,
+    skeleton: SkeletonKind? = null,
+    emptyIcon: ImageVector? = null,
     itemContent: @Composable (T) -> Unit,
 ) {
     val error = state.error
     when {
-        state.loading -> LoadingBox(modifier)
+        state.loading -> if (skeleton != null) SkeletonList(skeleton, modifier) else LoadingBox(modifier)
         error != null -> ErrorState(error, onRetry, modifier)
-        state.items.isEmpty() -> StateMessage(emptyTitle, emptyText, modifier, "Обновить", onRefresh)
+        state.items.isEmpty() -> StateMessage(emptyTitle, emptyText, modifier, "Обновить", onRefresh, emptyIcon)
         else -> {
             val listState = rememberLazyListState()
+            val animateRows = Kontakt.effects == EffectsMode.Full
             val nearEnd by remember {
                 derivedStateOf {
                     val info = listState.layoutInfo
@@ -105,7 +111,10 @@ fun <T> PagedColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = LocalBottomBarPadding.current),
                 ) {
-                    items(state.items, key = itemKey) { item -> itemContent(item) }
+                    items(state.items, key = itemKey) { item ->
+                        // При удалении («Не интересно») соседние элементы плавно смыкаются.
+                        Box(if (animateRows) Modifier.animateItem() else Modifier) { itemContent(item) }
+                    }
                     item(key = FOOTER_KEY) {
                         val inline = state.inlineError
                         when {

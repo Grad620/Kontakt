@@ -1,6 +1,9 @@
 package app.kontakt.client.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -32,10 +36,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.kontakt.client.core.EffectsMode
+import app.kontakt.client.ui.theme.Kontakt
 
 data class NavItem(val route: String, val label: String, val icon: ImageVector)
 
-/** Flat, edge-to-edge navigation inspired by familiar messenger layouts. */
+/** Плоская нижняя панель вкладок на всю ширину (стиль Kontakt); в VK Classic её заменяет боковое меню. */
 val GlassNavBarHeight = 62.dp
 
 @Composable
@@ -62,10 +68,22 @@ fun GlassNavBar(
         ) {
             items.forEach { item ->
                 val selected = item.route == selectedRoute
+                val light = Kontakt.effects == EffectsMode.Light
+                // Выбранная вкладка — акцентным текстом (читаем на любом из восьми акцентов), а не сырой заливкой.
                 val tint by animateColorAsState(
-                    targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    animationSpec = tween(150),
+                    targetValue = if (selected) Kontakt.colors.accentText else MaterialTheme.colorScheme.onSurfaceVariant,
+                    animationSpec = if (light) snap() else tween(150),
                     label = "tabTint",
+                )
+                val iconScale by animateFloatAsState(
+                    targetValue = if (selected) 1.1f else 1f,
+                    animationSpec = if (light) snap() else spring(dampingRatio = 0.45f, stiffness = 600f),
+                    label = "tabScale",
+                )
+                val pill by animateColorAsState(
+                    targetValue = if (selected) Kontakt.colors.accentSoft else Color.Transparent,
+                    animationSpec = if (light) snap() else tween(180),
+                    label = "tabPill",
                 )
                 Column(
                     modifier = Modifier
@@ -81,10 +99,20 @@ fun GlassNavBar(
                         modifier = Modifier
                             .size(width = 44.dp, height = 29.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(if (selected) tint.copy(alpha = 0.12f) else Color.Transparent),
+                            .background(pill),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(item.icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
+                        Icon(
+                            item.icon,
+                            contentDescription = null,
+                            tint = tint,
+                            modifier = Modifier
+                                .size(22.dp)
+                                .graphicsLayer {
+                                    scaleX = iconScale
+                                    scaleY = iconScale
+                                },
+                        )
                     }
                     Text(
                         item.label,
