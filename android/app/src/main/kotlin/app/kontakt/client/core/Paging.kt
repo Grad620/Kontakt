@@ -35,6 +35,12 @@ fun Throwable.toUiError(deniedMessage: String): UiError = when (this) {
     )
     is VkError.SessionExpired -> UiError(UiError.Kind.SessionExpired, "Сессия истекла. Войдите снова.")
     is VkError.AccessDenied -> UiError(UiError.Kind.AccessDenied, deniedMessage)
+    is VkError.ProfileTypeUnavailable -> UiError(
+        UiError.Kind.AccessDenied,
+        "VK отклонил метод ${method ?: "API"} (код 1051): он недоступен для типа авторизации, полученного через VK ID. " +
+            "Это не ошибка VPN. Повторять запрос бессмысленно, а добавление scopes не меняет тип токена. " +
+            "Для доступа нужен поддерживаемый VK способ авторизации или разрешение VK для этого приложения.",
+    )
     is VkError.RateLimited -> UiError(
         UiError.Kind.Other,
         "VK просит подождать: слишком много запросов. Повторите через минуту.",

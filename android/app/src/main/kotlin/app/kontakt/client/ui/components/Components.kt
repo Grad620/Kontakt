@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -107,7 +108,7 @@ fun ScreenHeader(
             .fillMaxWidth()
             .statusBarsPadding()
             .heightIn(min = 56.dp)
-            .padding(start = VgSpacing.lg, end = VgSpacing.sm),
+            .padding(start = 16.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -218,19 +219,19 @@ fun SectionCard(
     val style = Kontakt.style
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = style.cardShape,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(if (style.id == "vk_classic") 8.dp else 14.dp),
+        color = MaterialTheme.colorScheme.surface,
         border = if (style.cardBordered) BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) else null,
     ) {
-        Column(Modifier.padding(VgSpacing.lg)) {
+        Column(Modifier.padding(if (style.id == "vk_classic") 10.dp else 14.dp)) {
             Text(
-                title,
-                style = MaterialTheme.typography.labelLarge,
-                color = Kontakt.colors.accentText,
+                title.uppercase(),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = titleTextAlign,
                 modifier = if (titleTextAlign == TextAlign.Center) Modifier.fillMaxWidth() else Modifier,
             )
-            Spacer(Modifier.height(VgSpacing.sm))
+            Spacer(Modifier.height(8.dp))
             content()
         }
     }

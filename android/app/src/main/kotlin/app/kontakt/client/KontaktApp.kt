@@ -6,7 +6,6 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
-import com.vk.id.VKID
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -20,17 +19,6 @@ class KontaktApp : Application(), ImageLoaderFactory {
         super.onCreate()
         installCrashRecorder()
         container = AppContainer(this)
-        // Ошибка инициализации VK ID не должна закрывать всё приложение.
-        if (BuildConfig.VK_CLIENT_ID.isNotBlank()) {
-            runCatching { VKID.init(this) }
-                .onFailure { error ->
-                    runCatching {
-                        File(filesDir, CRASH_REPORT).writeText(
-                            "VKID_INIT_ERROR\\n" + error.stackTraceToString().take(MAX_REPORT_CHARS),
-                        )
-                    }
-                }
-        }
     }
 
     private fun installCrashRecorder() {
@@ -40,7 +28,7 @@ class KontaktApp : Application(), ImageLoaderFactory {
                 val writer = StringWriter()
                 error.printStackTrace(PrintWriter(writer))
                 File(filesDir, CRASH_REPORT).writeText(
-                    "UNCAUGHT_EXCEPTION on thread ${thread.name}\\n" +
+                    "UNCAUGHT_EXCEPTION on thread ${thread.name}\n" +
                         writer.toString().take(MAX_REPORT_CHARS),
                 )
             }

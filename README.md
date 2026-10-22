@@ -9,10 +9,10 @@ Kontakt — Android-клиент ВКонтакте в разработке. Ц�
 ## Скачать тестовый APK
 
 1. Открой [GitHub Actions](../../actions/workflows/build.yml).
-2. Выбери последний успешный запуск **Build Kontakt APK**.
-3. В разделе **Artifacts** скачай `Kontakt-debug-apk`.
+2. Выбери последний успешный запуск **Kontakt Android CI**.
+3. В разделе **Artifacts** скачай `Kontakt-debug-test-only`.
 
-Артефакты сборки хранятся 90 дней. Успешная сборка и unit-тесты подтверждают компиляцию проекта, но сами по себе не доказывают, что вход через VK ID проверен на реальном устройстве.
+Тестовый APK хранится 90 дней. Успешная сборка и unit-тесты подтверждают компиляцию проекта, но сами по себе не доказывают, что вход через VK ID проверен на реальном устройстве.
 
 ## Настройка VK ID
 
@@ -20,7 +20,7 @@ Kontakt — Android-клиент ВКонтакте в разработке. Ц�
 
 В настройках репозитория GitHub открой **Settings → Secrets and variables → Actions** и добавь:
 
-- Repository secret `VK_CLIENT_ID` — ID приложения VK ID.
+- Repository variable или secret `VK_CLIENT_ID` — ID приложения VK ID.
 - Repository secret `VK_CLIENT_SECRET` — защищённый ключ приложения VK ID.
 - При необходимости Repository variable `VK_SCOPES` — запрашиваемые разрешения, если они настроены проектом.
 

@@ -77,7 +77,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val settings = container.settings
     val appearance by settings.appearance.collectAsStateWithLifecycle(
-        initialValue = AppearanceState(ThemeMode.System, AccentId.Blue, EffectsMode.Full, NavConfig.DEFAULT),
+        initialValue = AppearanceState(ThemeMode.System, AccentId.Sky, EffectsMode.Full, NavConfig.DEFAULT),
     )
     val filter by container.filterConfig.collectAsStateWithLifecycle()
     val counts by container.filterStats.counts.collectAsStateWithLifecycle()
@@ -96,8 +96,8 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             SectionCard("Внешний вид") {
                 Text("Тема", style = MaterialTheme.typography.labelLarge)
@@ -374,7 +374,7 @@ private fun EffectsMode.effectsLabel(): String = when (this) {
 @Composable
 private fun AccentGrid(selected: AccentId, onSelect: (AccentId) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        AccentId.entries.chunked(4).forEach { rowItems ->
+        listOf(AccentId.White, AccentId.Sky, AccentId.Green).chunked(3).forEach { rowItems ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 rowItems.forEach { id -> AccentSwatch(id, id == selected) { onSelect(id) } }
             }

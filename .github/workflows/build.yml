@@ -1,139 +1,185 @@
-name: Build Kontakt APK
+name: Kontakt Android CI
 
 on:
   push:
-    branches: [main, master, fix/vk-id-build-config, work/visible-kontakt-ui]
+    branches: [main, master, fix/security-ci-release, work/visible-kontakt-ui]
     tags: ['v*']
   pull_request:
-    branches: [main, master, fix/vk-id-build-config]
+    branches: [main, master, work/visible-kontakt-ui, fix/security-ci-release]
   workflow_dispatch:
 
 permissions:
   contents: read
 
+# Cancel superseded runs for the same branch and event, while keeping push builds
+# separate from PR checks so a PR cannot cancel the APK-producing push run.
+concurrency:
+  group: kontakt-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  verify:
+    name: Lint, unit tests and debug build
     runs-on: ubuntu-latest
     timeout-minutes: 45
-
     steps:
-      - name: Скачать проект
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Найти исходники Android
-        id: project
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -f android/settings.gradle.kts ] || [ -f android/settings.gradle ]; then
-            DIR="android"
-            echo "Используются отслеживаемые исходники: $DIR"
-          else
-            mkdir -p _src
-            unzip -q -o kontakt-project-fixed-repository.zip -d _src
-            SETTINGS=$(find _src \( -name settings.gradle.kts -o -name settings.gradle \) -print -quit)
-            if [ -z "$SETTINGS" ]; then
-              echo "Не найден файл настроек Gradle"
-              exit 1
-            fi
-            DIR=$(dirname "$SETTINGS")
-            echo "Исходники пока берутся из ZIP: $DIR"
-          fi
-          if [ ! -f "$DIR/gradlew" ]; then
-            echo "Не найден gradlew: $DIR/gradlew"
-            exit 1
-          fi
-          if [ ! -f "$DIR/app/build.gradle.kts" ] && [ ! -f "$DIR/app/build.gradle" ]; then
-            echo "Не найден Gradle build-файл Android-модуля app в $DIR"
-            exit 1
-          fi
-          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
-
-      - name: Установить Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Настроить Gradle
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Проверить настройки VK ID
-        shell: bash
+      - name: Report Standalone VK configuration
+        id: vkid-config
         env:
-          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID || vars.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: |
-          if [ -z "${VK_CLIENT_ID}" ]; then
-            echo "::warning title=VK ID не настроен::Не задан GitHub Actions Secret VK_CLIENT_ID. APK соберётся для проверки интерфейса, но вход через VK ID работать не будет."
-          fi
-          if [ -z "${VK_CLIENT_SECRET}" ]; then
-            echo "::warning title=VK ID secret отсутствует::Не задан GitHub Actions Secret VK_CLIENT_SECRET. Для полноценной авторизации нужно добавить его в настройки репозитория."
+          if [[ "$VK_STANDALONE_APP_ID" =~ ^[1-9][0-9]*$ ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "Standalone VK application ID is present."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Standalone VK app is not configured::Set repository secret VK_STANDALONE_APP_ID after registering a Standalone app in VK developer settings."
+            echo "::warning::Lint and unit tests will run, but the login-test APK will not be built until Standalone VK is configured."
           fi
 
-      - name: Показать SHA-1 отпечаток ключа подписи
-        working-directory: ${{ steps.project.outputs.dir }}
-        run: |
-          chmod +x gradlew
-          ./gradlew --no-daemon :app:signingReport
-
-      - name: Запустить unit-тесты
-        working-directory: ${{ steps.project.outputs.dir }}
+      - name: Run Android Lint and unit tests
+        working-directory: android
         env:
-          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID || vars.VK_CLIENT_ID }}
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
+          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon testDebugUnitTest
+          ./gradlew --no-daemon lintDebug testDebugUnitTest
 
-      - name: Собрать APK
-        working-directory: ${{ steps.project.outputs.dir }}
+      - name: Build debug APK for testing only
+        working-directory: android
         env:
-          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID || vars.VK_CLIENT_ID }}
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
+          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleDebug
 
-      - name: Проверить, что VK ID включён в APK
-        working-directory: ${{ steps.project.outputs.dir }}
+      - name: Verify resolved VK ID manifest values
+        if: steps.vkid-config.outputs.configured == 'true'
+        working-directory: android
+        env:
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
         shell: bash
         run: |
           set -euo pipefail
-          BUILD_CONFIG=$(find app/build/generated -path '*/app/kontakt/client/BuildConfig.java' -print -quit)
-          if [ -z "$BUILD_CONFIG" ]; then
-            echo "::error::Не найден сгенерированный BuildConfig.java"
+          MANIFEST=$(find app/build/intermediates -path '*merged_manifests/debug*AndroidManifest.xml' -print -quit)
+          if [ -z "$MANIFEST" ] || [ ! -f "$MANIFEST" ]; then
+            echo "::error::Merged debug manifest was not generated."
             exit 1
           fi
-          if ! grep -Eq 'VK_ID_CONFIGURED = true;' "$BUILD_CONFIG"; then
-            echo "::error::В APK не включена конфигурация VK ID. APK не будет опубликован."
-            grep -E 'VK_ID_CONFIGURED =' "$BUILD_CONFIG" || true
+          if grep -Fq '${VKIDClientID}' "$MANIFEST"; then
+            echo "::error::Unresolved VKIDClientID placeholder in merged manifest."
             exit 1
           fi
-          echo "Проверка пройдена: VK_ID_CONFIGURED = true"
+          if [ -n "$VK_CLIENT_ID" ] && ! grep -Fq "$VK_CLIENT_ID" "$MANIFEST"; then
+            echo "::error::Configured VK_CLIENT_ID is absent from merged manifest. Do not distribute this APK."
+            exit 1
+          fi
+          echo "Merged manifest has no unresolved VKIDClientID placeholder."
 
-      - name: Сохранить APK
+      - name: Upload debug APK (testing artifact, not a release)
         uses: actions/upload-artifact@v4
         with:
-          name: Kontakt-debug-apk
-          path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
+          name: Kontakt-debug-test-only
+          path: android/app/build/outputs/apk/debug/*.apk
           retention-days: 90
           if-no-files-found: error
 
   release:
+    name: Build signed release APK
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Require release signing credentials
+        env:
+          ANDROID_SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
+          ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}
+          ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
+          ANDROID_SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in ANDROID_SIGNING_KEY_BASE64 ANDROID_SIGNING_STORE_PASSWORD ANDROID_SIGNING_KEY_ALIAS ANDROID_SIGNING_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error title=Release signing is not configured::Missing GitHub Actions secret: $name"
+              exit 1
+            fi
+          done
+
+      - name: Build signed release APK
+        working-directory: android
+        env:
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+          VK_SCOPES: ${{ vars.VK_SCOPES }}
+          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
+          ANDROID_SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
+          ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}
+          ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
+          ANDROID_SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon --no-build-cache assembleRelease
+
+      - name: Verify APK is signed
+        working-directory: android
+        run: |
+          set -euo pipefail
+          APK=$(find app/build/outputs/apk/release -name '*.apk' -print -quit)
+          test -n "$APK"
+          "$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner" verify --verbose "$APK"
+
+      - name: Upload signed release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kontakt-signed-release
+          path: android/app/build/outputs/apk/release/*.apk
+          retention-days: 30
+          if-no-files-found: error
+
+  publish:
+    name: Publish signed release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: release
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Скачать APK сборки
+      - name: Download signed release APK
         uses: actions/download-artifact@v4
         with:
-          name: Kontakt-debug-apk
+          name: Kontakt-signed-release
           path: dist/
 
-      - name: Опубликовать постоянный GitHub Release
+      - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: Kontakt ${{ github.ref_name }}

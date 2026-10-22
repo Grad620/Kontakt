@@ -1,13 +1,18 @@
 package app.kontakt.client.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -93,43 +98,50 @@ private fun ProfileContent(profile: Profile, modifier: Modifier) {
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .padding(horizontal = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Spacer(Modifier.height(8.dp))
-        Avatar(profile.avatar, profile.name, 96.dp)
-        Spacer(Modifier.height(12.dp))
-        Text(profile.name, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
-        if (profile.status != null) {
-            Text(
-                profile.status,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Avatar(profile.avatar, profile.name, 68.dp)
+                Spacer(Modifier.width(14.dp))
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(profile.name, style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        profile.status ?: "Профиль ВКонтакте",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
-        Spacer(Modifier.height(24.dp))
 
         SectionCard("Друзья") {
             Text(
-                "Список друзей требует права friends, которое VK выдаёт только по запросу. " +
-                    "В этой версии раздел недоступен.",
+                "Список друзей появится, когда VK предоставит Kontakt доступ к соответствующему методу API.",
                 style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Spacer(Modifier.height(12.dp))
 
         SectionCard("Настройки") {
             Text(
-                "Тема, акцентный цвет, вкладки нижней панели, фильтры ленты, выход из аккаунта.",
+                "Тема, акцентный цвет, навигация и фильтры ленты.",
                 style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (openSettings != null) {
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(onClick = openSettings) { Text("Открыть настройки") }
             }
         }
-        // Плавающая панель навигации не должна закрывать последний блок.
         Spacer(Modifier.height(LocalBottomBarPadding.current + 16.dp))
     }
 }

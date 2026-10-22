@@ -46,6 +46,7 @@ jobs:
           VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
+          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon --stacktrace assembleDebug
@@ -64,6 +65,7 @@ jobs:
           VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
+          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: ./gradlew --no-daemon --stacktrace testDebugUnitTest
 
       - name: Отчёт о тестах (если были ошибки)

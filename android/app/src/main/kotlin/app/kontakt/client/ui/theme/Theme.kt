@@ -1,7 +1,6 @@
 package app.kontakt.client.ui.theme
 
 import android.graphics.Color as AndroidColor
-import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -21,7 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.LocalActivity
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -125,30 +125,30 @@ private fun colorScheme(accent: AccentId, dark: Boolean): ColorScheme {
             primary = fill, onPrimary = onFill, primaryContainer = container, onPrimaryContainer = onContainer,
             secondary = fill, onSecondary = onFill, secondaryContainer = container, onSecondaryContainer = onContainer,
             tertiary = fill, onTertiary = onFill, tertiaryContainer = container, onTertiaryContainer = onContainer,
-            background = Color(0xFF0B0D10), onBackground = Color(0xFFE6E9ED),
-            surface = Color(0xFF0B0D10), onSurface = Color(0xFFE6E9ED),
-            surfaceVariant = Color(0xFF21262C), onSurfaceVariant = Color(0xFFA6AEB9),
+            background = Color(0xFF17212B), onBackground = Color(0xFFE6EDF3),
+            surface = Color(0xFF17212B), onSurface = Color(0xFFE6EDF3),
+            surfaceVariant = Color(0xFF202B36), onSurfaceVariant = Color(0xFF9EABB8),
             surfaceTint = Color.Transparent,
-            outline = Color(0xFF6F7782), outlineVariant = Color(0xFF2F353C),
+            outline = Color(0xFF536170), outlineVariant = Color(0xFF293744),
             error = Color(0xFFFF8A80), onError = Color(0xFF3B0A06),
-            surfaceContainerLowest = Color(0xFF07080A), surfaceContainerLow = Color(0xFF14171B),
-            surfaceContainer = Color(0xFF191D22), surfaceContainerHigh = Color(0xFF21262C),
-            surfaceContainerHighest = Color(0xFF2A3037),
+            surfaceContainerLowest = Color(0xFF111A23), surfaceContainerLow = Color(0xFF202B36),
+            surfaceContainer = Color(0xFF222F3B), surfaceContainerHigh = Color(0xFF263442),
+            surfaceContainerHighest = Color(0xFF2D3B49),
         )
     } else {
         lightColorScheme(
             primary = fill, onPrimary = onFill, primaryContainer = container, onPrimaryContainer = onContainer,
             secondary = fill, onSecondary = onFill, secondaryContainer = container, onSecondaryContainer = onContainer,
             tertiary = fill, onTertiary = onFill, tertiaryContainer = container, onTertiaryContainer = onContainer,
-            background = Color(0xFFF6F7F9), onBackground = Color(0xFF15181C),
-            surface = Color(0xFFF6F7F9), onSurface = Color(0xFF15181C),
-            surfaceVariant = Color(0xFFE4E8ED), onSurfaceVariant = Color(0xFF5B6470),
+            background = Color(0xFFF0F2F5), onBackground = Color(0xFF17212B),
+            surface = Color(0xFFFFFFFF), onSurface = Color(0xFF17212B),
+            surfaceVariant = Color(0xFFE7ECF1), onSurfaceVariant = Color(0xFF6B7785),
             surfaceTint = Color.Transparent,
-            outline = Color(0xFF8A93A0), outlineVariant = Color(0xFFD3D9E0),
+            outline = Color(0xFFB8C2CC), outlineVariant = Color(0xFFE1E4E8),
             error = Color(0xFFBA1A1A), onError = Color(0xFFFFFFFF),
-            surfaceContainerLowest = Color(0xFFFFFFFF), surfaceContainerLow = Color(0xFFF1F3F6),
-            surfaceContainer = Color(0xFFEBEEF2), surfaceContainerHigh = Color(0xFFE4E8ED),
-            surfaceContainerHighest = Color(0xFFDDE2E8),
+            surfaceContainerLowest = Color(0xFFFFFFFF), surfaceContainerLow = Color(0xFFFFFFFF),
+            surfaceContainer = Color(0xFFE7ECF1), surfaceContainerHigh = Color(0xFFDDE4EB),
+            surfaceContainerHighest = Color(0xFFD3DCE5),
         )
     }
 }
@@ -184,10 +184,10 @@ private val VgTypography = Typography(
 )
 
 private val VgShapes = Shapes(
-    small = RoundedCornerShape(8.dp),
-    medium = RoundedCornerShape(14.dp),
-    large = RoundedCornerShape(20.dp),
-    extraLarge = RoundedCornerShape(28.dp),
+    small = RoundedCornerShape(6.dp),
+    medium = RoundedCornerShape(10.dp),
+    large = RoundedCornerShape(14.dp),
+    extraLarge = RoundedCornerShape(20.dp),
 )
 
 @Composable
@@ -205,7 +205,7 @@ fun VgTheme(
     }
 
     // Иконки статус-бара и панели навигации подстраиваются под выбранную тему.
-    val activity = LocalContext.current as? ComponentActivity
+    val activity = LocalActivity.current as? ComponentActivity
     DisposableEffect(activity, dark) {
         activity?.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT) { dark },

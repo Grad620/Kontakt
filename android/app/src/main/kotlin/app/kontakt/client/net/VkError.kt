@@ -5,6 +5,7 @@ sealed class VkError(message: String, cause: Throwable? = null) : Exception(mess
     class Network(cause: Throwable) : VkError("Нет соединения с сетью", cause)
     class SessionExpired : VkError("Сессия истекла")
     class AccessDenied(val code: Int, val vkMessage: String) : VkError(vkMessage)
+    class ProfileTypeUnavailable(val vkMessage: String, val method: String? = null) : VkError(vkMessage)
     class RateLimited : VkError("Слишком много запросов")
     class Captcha : VkError("VK запросил проверку (капчу)")
     class Server(val code: Int, val vkMessage: String) : VkError(vkMessage)

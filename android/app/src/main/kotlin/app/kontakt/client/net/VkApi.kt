@@ -51,6 +51,9 @@ class VkApi(
                 }
                 delay(BACKOFF_MS[minOf(attempt, BACKOFF_MS.size - 1)])
                 attempt++
+            } catch (e: VkError.ProfileTypeUnavailable) {
+                diagnostics.record(method, e)
+                throw VkError.ProfileTypeUnavailable(e.vkMessage, method)
             } catch (e: VkError) {
                 diagnostics.record(method, e)
                 throw e

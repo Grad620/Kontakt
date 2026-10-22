@@ -2,6 +2,7 @@ package app.kontakt.client.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,10 +21,19 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,6 +52,15 @@ fun LoginScreen(container: AppContainer) {
     val state by auth.state.collectAsStateWithLifecycle()
     val busy by auth.busy.collectAsStateWithLifecycle()
     val message = (state as? AuthState.SignedOut)?.message
+    val logoPulse by rememberInfiniteTransition(label = "kontaktLogoPulse").animateFloat(
+        initialValue = 0.985f,
+        targetValue = 1.015f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "logoPulse",
+    )
 
     Box(
         modifier = Modifier
@@ -59,15 +78,26 @@ fun LoginScreen(container: AppContainer) {
         ) {
             Box(
                 modifier = Modifier
-                    .size(68.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color.Black),
+                    .size(84.dp)
+                    .shadow(18.dp, RoundedCornerShape(26.dp), ambientColor = Color(0x554C7DFF), spotColor = Color(0x554C7DFF))
+                    .clip(RoundedCornerShape(26.dp))
+                    .background(
+                        Brush.linearGradient(
+                            listOf(Color(0xFF4778F5), Color(0xFF7557D9), Color(0xFF4C9BCB)),
+                        ),
+                    )
+                    .border(1.dp, Color.White.copy(alpha = 0.22f), RoundedCornerShape(26.dp)),
                 contentAlignment = Alignment.Center,
             ) {
                 Image(
                     painter = painterResource(id = app.kontakt.client.R.drawable.ic_launcher_foreground),
                     contentDescription = null,
-                    modifier = Modifier.size(60.dp),
+                    modifier = Modifier
+                        .size(72.dp)
+                        .graphicsLayer {
+                            scaleX = logoPulse
+                            scaleY = logoPulse
+                        },
                 )
             }
 
@@ -96,9 +126,9 @@ fun LoginScreen(container: AppContainer) {
             Spacer(Modifier.height(30.dp))
 
             if (!auth.isConfigured) {
-                SectionCard("Нужно подключить VK ID", titleTextAlign = TextAlign.Center) {
+                SectionCard("Нужно подключить приложение VK", titleTextAlign = TextAlign.Center) {
                     Text(
-                        "Конфигурация VK ID неполная. Проверьте VK_CLIENT_ID и VK_CLIENT_SECRET в настройках сборки GitHub Actions.",
+                        "Для доступа к методам VK API нужен ID приложения типа Standalone. Добавьте VK_STANDALONE_APP_ID в секреты сборки GitHub Actions и укажите Android-пакет com.kontakt.app и SHA-1 сертификата.",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                     )
@@ -117,18 +147,14 @@ fun LoginScreen(container: AppContainer) {
                     ),
                 ) {
                     Text(
-                        text = if (busy) "Подключаемся к VK ID…" else "Продолжить через VK ID",
+                        text = if (busy) "Подключаемся к VK ID…" else "Продолжить через VK",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    text = if (BuildConfig.VK_SCOPES.isBlank()) {
-                        "Запрашивается базовый доступ. Дополнительные права не запрашиваются."
-                    } else {
-                        "Запрашиваемые права: ${BuildConfig.VK_SCOPES}"
-                    },
+                    text = "Kontakt запросит права для сообщений, друзей, ленты, фото, видео и других разделов. Пароль вводится только в официальном окне VK.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -154,7 +180,7 @@ fun LoginScreen(container: AppContainer) {
 
             Spacer(Modifier.height(24.dp))
             Text(
-                text = "Пароль вводится на стороне VK ID. Kontakt не получает и не хранит его.",
+                text = "Пароль вводится на стороне VK. Kontakt не получает и не хранит его.",
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -11,3 +11,8 @@ captures/
 *.apk
 *.aab
 .DS_Store
+
+# Ignore new local signing files. The existing debug keystore remains tracked temporarily
+# so test APKs can update the installed app without changing its signing identity.
+*.jks
+*.keystore

@@ -34,6 +34,7 @@ class DiagnosticsLog(
             is VkError.Network -> "нет соединения или тайм-аут" to null
             is VkError.SessionExpired -> "сессия истекла" to 5
             is VkError.AccessDenied -> "нет доступа к методу" to error.code
+            is VkError.ProfileTypeUnavailable -> "метод недоступен для типа профиля" to 1051
             is VkError.RateLimited -> "лимит запросов VK" to 6
             is VkError.Captcha -> "VK запросил капчу" to 14
             is VkError.Server -> "ошибка VK" to error.code

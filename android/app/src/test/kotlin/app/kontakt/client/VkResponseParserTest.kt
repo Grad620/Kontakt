@@ -26,6 +26,45 @@ class VkResponseParserTest {
     }
 
     @Test
+    fun errorCode1051MeansUnsupportedProfileType() {
+        assertThrows(VkError.ProfileTypeUnavailable::class.java) {
+            VkResponseParser.parse("""{"error":{"error_code":1051,"error_msg":"Method is not available for this profile type"}}""")
+        }
+    }
+
+    @Test
+    fun profileTypeErrorCanCarryTheMethodName() {
+        val error = VkError.ProfileTypeUnavailable("Method is not available for this profile type", "messages.getConversations")
+        assertEquals("messages.getConversations", error.method)
+    }
+
+    @Test
+    fun rateLimitCodesAreMappedWithoutAutomaticRetry() {
+        assertThrows(VkError.RateLimited::class.java) {
+            VkResponseParser.parse("""{"error":{"error_code":6,"error_msg":"Too many requests"}}""")
+        }
+        assertThrows(VkError.RateLimited::class.java) {
+            VkResponseParser.parse("""{"error":{"error_code":9,"error_msg":"Flood control"}}""")
+        }
+    }
+
+    @Test
+    fun unknownApiErrorPreservesCodeAndMessage() {
+        val error = assertThrows(VkError.Server::class.java) {
+            VkResponseParser.parse("""{"error":{"error_code":999,"error_msg":"Unexpected error"}}""")
+        }
+        assertEquals(999, error.code)
+        assertEquals("Unexpected error", error.vkMessage)
+    }
+
+    @Test
+    fun missingResponseAndErrorIsMalformed() {
+        assertThrows(VkError.Malformed::class.java) {
+            VkResponseParser.parse("""{"items":[]}""")
+        }
+    }
+
+    @Test
     fun captchaIsReportedNotBypassed() {
         assertThrows(VkError.Captcha::class.java) {
             VkResponseParser.parse("""{"error":{"error_code":14,"error_msg":"Captcha needed"}}""")

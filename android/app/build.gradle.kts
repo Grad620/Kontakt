@@ -1,3 +1,5 @@
+import java.util.Base64
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -11,9 +13,22 @@ plugins {
 fun config(name: String): String =
     providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orElse("").get().trim()
 
+val vkStandaloneAppId = config("VK_STANDALONE_APP_ID").toIntOrNull()?.takeIf { it > 0 } ?: 0
 val vkClientId = config("VK_CLIENT_ID")
 val vkClientSecret = config("VK_CLIENT_SECRET")
 val vkScopes = config("VK_SCOPES") // например: friends,wall,messages — только после одобрения VK
+
+// Release signing credentials are supplied only by CI secrets or local environment.
+// Never commit the signing keystore or passwords.
+val signingKeyBase64 = config("ANDROID_SIGNING_KEY_BASE64")
+val signingStorePassword = config("ANDROID_SIGNING_STORE_PASSWORD")
+val signingKeyAlias = config("ANDROID_SIGNING_KEY_ALIAS")
+val signingKeyPassword = config("ANDROID_SIGNING_KEY_PASSWORD")
+val releaseKeystore = layout.buildDirectory.file("kontakt-release.keystore").get().asFile
+if (signingKeyBase64.isNotBlank()) {
+    releaseKeystore.parentFile.mkdirs()
+    releaseKeystore.writeBytes(Base64.getDecoder().decode(signingKeyBase64))
+}
 
 android {
     namespace = "app.kontakt.client"
@@ -32,6 +47,8 @@ android {
         // VK ID SDK setup requires both the application ID and protected client secret.
         // Do not expose the secret itself in BuildConfig; only expose whether both values exist.
         buildConfigField("boolean", "VK_ID_CONFIGURED", (vkClientId.isNotBlank() && vkClientSecret.isNotBlank()).toString())
+        buildConfigField("boolean", "VK_STANDALONE_CONFIGURED", (vkStandaloneAppId > 0).toString())
+        resValue("integer", "com_vk_sdk_AppId", vkStandaloneAppId.toString())
 
         // Требование VK ID SDK: значения подставляются в манифест.
         manifestPlaceholders["VKIDClientID"] = vkClientId.ifBlank { "0" }
@@ -40,8 +57,9 @@ android {
         manifestPlaceholders["VKIDRedirectScheme"] = "vk${vkClientId.ifBlank { "0" }}"
     }
 
-    // Фиксированный debug-ключ (не секрет, пароль стандартный), чтобы SHA-1 отпечаток
-    // был одинаковым на любой сборке и его можно было один раз указать в настройках VK.
+    // Keep the existing debug signing identity temporarily so test APKs can update the
+    // already-installed app. Migrate this key to a GitHub Actions secret before removing it
+    // from version control; changing it now would force an uninstall/reinstall on the phone.
     signingConfigs {
         getByName("debug") {
             storeFile = file("debug.keystore")
@@ -49,6 +67,28 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        if (signingKeyBase64.isNotBlank()) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = signingStorePassword
+                keyAlias = signingKeyAlias
+                keyPassword = signingKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            if (signingKeyBase64.isNotBlank()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+    }
+
+    lint {
+        abortOnError = true
+        checkReleaseBuilds = true
     }
 
     compileOptions {
@@ -92,7 +132,8 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
 
     // Официальная авторизация VK ID (лицензия MIT)
-    implementation("com.vk.id:vkid:2.0.0")
+    implementation("com.vk.id:vkid:2.7.3")
+    implementation("com.vk:android-sdk-core:4.1.0")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")

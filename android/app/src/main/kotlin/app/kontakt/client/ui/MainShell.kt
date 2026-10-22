@@ -97,10 +97,22 @@ fun MainShell(container: AppContainer, tabs: List<TabId>, effects: EffectsMode) 
                 navController = navController,
                 startDestination = startRoute,
                 modifier = Modifier.fillMaxSize(),
-                enterTransition = { if (light) EnterTransition.None else fadeIn(tween(160)) },
-                exitTransition = { if (light) ExitTransition.None else fadeOut(tween(120)) },
-                popEnterTransition = { if (light) EnterTransition.None else fadeIn(tween(160)) },
-                popExitTransition = { if (light) ExitTransition.None else fadeOut(tween(120)) },
+                enterTransition = {
+                    if (light) EnterTransition.None
+                    else slideInHorizontally(tween(220)) { it / 12 } + fadeIn(tween(180))
+                },
+                exitTransition = {
+                    if (light) ExitTransition.None
+                    else slideOutHorizontally(tween(180)) { -it / 18 } + fadeOut(tween(150))
+                },
+                popEnterTransition = {
+                    if (light) EnterTransition.None
+                    else slideInHorizontally(tween(220)) { -it / 12 } + fadeIn(tween(180))
+                },
+                popExitTransition = {
+                    if (light) ExitTransition.None
+                    else slideOutHorizontally(tween(180)) { it / 18 } + fadeOut(tween(150))
+                },
             ) {
                 composable(TabId.Chats.id) { ChatsScreen(container) }
                 composable(TabId.Feed.id) { FeedScreen(container) }
