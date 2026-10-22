@@ -29,7 +29,15 @@ class SettingsStore(private val context: Context) {
         .distinctUntilChanged()
 
     val accent: Flow<AccentId> = context.vgDataStore.data
-        .map { prefs -> AccentId.entries.firstOrNull { it.name == prefs[accentKey] } ?: AccentId.Blue }
+        .map { prefs ->
+            when (prefs[accentKey]) {
+                AccentId.White.name -> AccentId.White
+                AccentId.Green.name -> AccentId.Green
+                AccentId.Sky.name, AccentId.Blue.name, AccentId.DarkGreen.name, AccentId.Birch.name,
+                AccentId.Violet.name, AccentId.Lilac.name -> AccentId.Sky
+                else -> AccentId.Sky
+            }
+        }
         .distinctUntilChanged()
 
     val effects: Flow<EffectsMode> = context.vgDataStore.data
