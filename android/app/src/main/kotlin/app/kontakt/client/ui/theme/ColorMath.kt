@@ -62,15 +62,15 @@ object Neutrals {
     fun background(dark: Boolean) = if (dark) DARK_BACKGROUND else LIGHT_BACKGROUND
 }
 
-/** Восемь акцентов Kontakt. Значения — из ТЗ; белый в светлой теме рисуется графитовым, иначе он невиден. */
+/** Три спокойных акцента Kontakt. Белый в светлой теме использует графитовую заливку для читаемых кнопок. */
 object AccentPalette {
     private const val GRAPHITE = 0x2B2D33
 
     fun nominal(id: AccentId): Int = when (id) {
-        AccentId.White -> 0xF5F5F7
-        AccentId.Sky -> 0x45A9F5
+        AccentId.White -> 0xF3F5F6
+        AccentId.Sky -> 0x4A9FE3
         AccentId.Blue -> 0x356AE6
-        AccentId.Green -> 0x39B86B
+        AccentId.Green -> 0x399B70
         AccentId.DarkGreen -> 0x16845B
         AccentId.Birch -> 0x83CFC0
         AccentId.Violet -> 0x7F55E3 // чуть темнее значения из ТЗ (#865CE8): белый текст на кнопке должен читаться (контраст 4,9)
