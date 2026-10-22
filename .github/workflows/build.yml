@@ -37,6 +37,23 @@ jobs:
 
       # The debug APK is signed with android/app/debug.keystore in build.gradle.kts.
       # Report only its public SHA-1 fingerprint so it can be compared with VK ID settings.
+      - name: Validate VK ID credentials
+        env:
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$VK_CLIENT_ID" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error title=VK ID is not configured::Set VK_CLIENT_ID to the numeric Client ID from the VK ID cabinet (not a legacy Standalone ID)."
+            exit 1
+          fi
+          if [[ -z "$VK_CLIENT_SECRET" ]]; then
+            echo "::error title=VK ID is not configured::Set VK_CLIENT_SECRET in GitHub Actions secrets. The value will not be printed."
+            exit 1
+          fi
+          echo "VK ID configuration values are present; values are hidden."
+
       - name: Report debug signing certificate fingerprint
         shell: bash
         run: |
