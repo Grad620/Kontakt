@@ -76,6 +76,23 @@ jobs:
           VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleDebug
 
+      - name: Report debug signing certificate fingerprint
+        working-directory: android
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEYSTORE="app/debug.keystore"
+          APK=$(find app/build/outputs/apk/debug -name '*.apk' -print -quit)
+          if [ ! -f "$KEYSTORE" ] || [ -z "$APK" ]; then
+            echo "::error::Debug keystore or debug APK is missing."
+            exit 1
+          fi
+          echo "Configured debug keystore certificate (SHA-1):"
+          keytool -list -v -keystore "$KEYSTORE" -storepass android -alias androiddebugkey | grep -E 'SHA1:|SHA-1:'
+          echo "Certificate embedded in built APK:"
+          "$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner" verify --print-certs "$APK" | grep -E 'Signer #1 certificate SHA-1 digest:'
+          echo "Compare these fingerprints with the Android certificate registered in the VK ID dashboard. This step does not verify dashboard settings or successful OAuth."
+
       - name: Verify resolved VK ID manifest values
         working-directory: android
         env:
