@@ -4,9 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.vk.api.sdk.VK
-import com.vk.api.sdk.VKApiConfig
-import com.vk.api.sdk.VKDefaultValidationHandler
+import com.vk.id.AccessToken
+import com.vk.id.VKID
+import com.vk.id.VKIDAuthFail
+import com.vk.id.auth.VKIDAuthCallback
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,11 +31,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val app = application as KontaktApp
         val container = app.container
-        if (BuildConfig.VK_STANDALONE_CONFIGURED) {
-            try {
-                VK.setConfig(VKApiConfig(context = this, appId = resources.getInteger(R.integer.com_vk_sdk_AppId), validationHandler = VKDefaultValidationHandler(this), keyValueStorage = container.tokenStore))
-                container.auth.attachLauncher(VK.login(this) { result -> container.auth.onLegacyAuthResult(result) })
-            } catch (error: Exception) { container.auth.onLegacyAuthSetupFailure(error) }
+        if (BuildConfig.VK_ID_CONFIGURED) {
+            container.auth.attachLauncher {
+                VKID.instance.authorize(this, object : VKIDAuthCallback {
+                    override fun onAuth(accessToken: AccessToken) {
+                        container.auth.onVkIdAuthSuccess(accessToken.token)
+                    }
+
+                    override fun onFail(fail: VKIDAuthFail) {
+                        container.auth.onVkIdAuthFailure(fail.toString())
+                    }
+                })
+            }
         }
         val reportFile = File(filesDir, KontaktApp.CRASH_REPORT)
         val report = runCatching { reportFile.takeIf { it.isFile }?.readText() }.getOrNull()
