@@ -56,20 +56,6 @@ jobs:
             echo "VK_CLIENT_SECRET is present; its value is not printed."
           fi
 
-      - name: Report Standalone VK configuration
-        id: vkid-config
-        env:
-          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
-        run: |
-          if [[ "$VK_STANDALONE_APP_ID" =~ ^[1-9][0-9]*$ ]]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-            echo "Standalone VK application ID is present."
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::warning title=Standalone VK app is not configured::Set repository secret VK_STANDALONE_APP_ID after registering a Standalone app in VK developer settings."
-            echo "::warning::Lint and unit tests will run, but the login-test APK will not be built until Standalone VK is configured."
-          fi
-
       - name: Run Android Lint and unit tests
         working-directory: android
         env:
@@ -91,10 +77,10 @@ jobs:
         run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleDebug
 
       - name: Verify resolved VK ID manifest values
-        if: steps.vkid-config.outputs.configured == 'true'
         working-directory: android
         env:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
         shell: bash
         run: |
           set -euo pipefail
@@ -103,15 +89,28 @@ jobs:
             echo "::error::Merged debug manifest was not generated."
             exit 1
           fi
-          if grep -Fq '${VKIDClientID}' "$MANIFEST"; then
-            echo "::error::Unresolved VKIDClientID placeholder in merged manifest."
+          if grep -Fq '${VKIDClientID}' "$MANIFEST" || grep -Fq '${VKIDClientSecret}' "$MANIFEST"; then
+            echo "::error::Unresolved VK ID manifest placeholder."
             exit 1
           fi
-          if [ -n "$VK_CLIENT_ID" ] && ! grep -Fq "$VK_CLIENT_ID" "$MANIFEST"; then
-            echo "::error::Configured VK_CLIENT_ID is absent from merged manifest. Do not distribute this APK."
-            exit 1
+          if [ -n "$VK_CLIENT_ID" ]; then
+            if [[ ! "$VK_CLIENT_ID" =~ ^[0-9]+$ ]]; then
+              echo "::error::VK_CLIENT_ID must contain only digits. Its value is not printed."
+              exit 1
+            fi
+            if ! grep -Fq "$VK_CLIENT_ID" "$MANIFEST"; then
+              echo "::error::Configured VK_CLIENT_ID is absent from merged manifest. Do not distribute this APK."
+              exit 1
+            fi
+            echo "Merged manifest contains the configured VK ID."
+          else
+            echo "::warning title=VK ID is not configured::APK is suitable for UI testing only; VK ID sign-in is disabled."
           fi
-          echo "Merged manifest has no unresolved VKIDClientID placeholder."
+          if [ -z "$VK_CLIENT_SECRET" ]; then
+            echo "::warning title=VK ID secret is missing::VK ID sign-in is disabled until VK_CLIENT_SECRET is configured."
+          else
+            echo "VK_CLIENT_SECRET is present; its value is not printed."
+          fi
 
       - name: Upload debug APK (testing artifact, not a release)
         uses: actions/upload-artifact@v4
