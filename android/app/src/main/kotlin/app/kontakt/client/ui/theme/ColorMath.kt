@@ -146,10 +146,10 @@ object AccentPalette {
 
     /**
      * Цвет заливки (кнопки, выбранная вкладка, шапка VK Classic) в данной теме.
-     * В VK Classic «Синий» — классический синий цвет шапки VK (#4A76A8): белый текст на нём читается.
+     * В VK Classic голубой и синий акценты — классический синий цвет шапки VK (#4A76A8): белый текст на нём читается.
      */
     fun fill(id: AccentId, dark: Boolean, style: KontaktStyleId = KontaktStyleId.Kontakt): Int = when {
-        style == KontaktStyleId.VkClassic && id == AccentId.Blue && !dark -> CLASSIC_BLUE
+        style == KontaktStyleId.VkClassic && !dark && (id == AccentId.Sky || id == AccentId.Blue) -> CLASSIC_BLUE
         id == AccentId.White && !dark -> GRAPHITE
         else -> nominal(id)
     }

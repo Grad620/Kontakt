@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -42,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
@@ -62,6 +64,9 @@ import app.kontakt.client.ui.components.SubScreenHeader
 import app.kontakt.client.ui.icon
 import app.kontakt.client.ui.label
 import app.kontakt.client.ui.theme.AccentPalette
+import app.kontakt.client.ui.theme.ColorMath
+import app.kontakt.client.ui.theme.Kontakt
+import app.kontakt.client.ui.theme.Neutrals
 import app.kontakt.client.ui.theme.KontaktIcons
 import coil.imageLoader
 import kotlinx.coroutines.Dispatchers
@@ -89,6 +94,9 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
     var confirmReset by rememberSaveable { mutableStateOf(false) }
     var confirmSignOut by rememberSaveable { mutableStateOf(false) }
 
+    val style = Kontakt.style
+    val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
     Column(Modifier.fillMaxSize()) {
         SubScreenHeader("Настройки", onBack)
         Column(
@@ -96,9 +104,10 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
-                .padding(horizontal = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(horizontal = style.screenPadding),
+            verticalArrangement = Arrangement.spacedBy(style.postGap),
         ) {
+            Spacer(Modifier.height(style.postGap / 2))
             SectionCard("Внешний вид") {
                 Text("Тема", style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(6.dp))
@@ -113,25 +122,28 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                 }
                 Spacer(Modifier.height(16.dp))
                 Text("Стиль интерфейса", style = MaterialTheme.typography.labelLarge)
-                Spacer(Modifier.height(6.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    KontaktStyleId.entries.forEach { style ->
-                        FilterChip(
-                            selected = style == appearance.style,
-                            onClick = { scope.launch { settings.setStyle(style) } },
-                            label = { Text(style.styleLabel()) },
+                Spacer(Modifier.height(8.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    KontaktStyleId.entries.forEach { id ->
+                        StyleOption(
+                            id = id,
+                            selected = id == appearance.style,
+                            accent = appearance.accent,
+                            dark = dark,
+                            onClick = { scope.launch { settings.setStyle(id) } },
+                            modifier = Modifier.weight(1f),
                         )
                     }
                 }
-                Text(
-                    "Kontakt — мягкие геометричные карточки. VK Classic — более компактные строки и чёткие границы.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
                 Spacer(Modifier.height(16.dp))
                 Text("Акцентный цвет", style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(6.dp))
-                AccentGrid(selected = appearance.accent, onSelect = { scope.launch { settings.setAccent(it) } })
+                AccentGrid(
+                    selected = appearance.accent,
+                    style = appearance.style,
+                    dark = dark,
+                    onSelect = { scope.launch { settings.setAccent(it) } },
+                )
                 Text(
                     "В светлой теме белый акцент рисуется графитовым: иначе он сливается с фоном.",
                     style = MaterialTheme.typography.bodySmall,
@@ -160,7 +172,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
 
             SectionCard("Навигация") {
                 Text(
-                    "Какие разделы показывать в нижней панели и в каком порядке. Должен остаться хотя бы один.",
+                    "Какие разделы показывать (внизу в Kontakt, в боковом меню в VK Classic) и в каком порядке. Должен остаться хотя бы один.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(Modifier.height(8.dp))
@@ -372,19 +384,21 @@ private fun EffectsMode.effectsLabel(): String = when (this) {
 }
 
 @Composable
-private fun AccentGrid(selected: AccentId, onSelect: (AccentId) -> Unit) {
+private fun AccentGrid(selected: AccentId, style: KontaktStyleId, dark: Boolean, onSelect: (AccentId) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         listOf(AccentId.White, AccentId.Sky, AccentId.Green).chunked(3).forEach { rowItems ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                rowItems.forEach { id -> AccentSwatch(id, id == selected) { onSelect(id) } }
+                rowItems.forEach { id ->
+                    AccentSwatch(id, id == selected, AccentPalette.fill(id, dark, style)) { onSelect(id) }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun AccentSwatch(id: AccentId, selected: Boolean, onClick: () -> Unit) {
-    val color = Color(0xFF000000.toInt() or AccentPalette.nominal(id))
+private fun AccentSwatch(id: AccentId, selected: Boolean, fill: Int, onClick: () -> Unit) {
+    val color = rgb(fill)
     Column(
         modifier = Modifier
             .width(72.dp)
@@ -405,7 +419,17 @@ private fun AccentSwatch(id: AccentId, selected: Boolean, onClick: () -> Unit) {
                 .padding(5.dp)
                 .clip(CircleShape)
                 .background(color),
-        )
+            contentAlignment = Alignment.Center,
+        ) {
+            if (selected) {
+                Icon(
+                    KontaktIcons.Check,
+                    contentDescription = null,
+                    tint = rgb(ColorMath.onColor(fill)),
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
         Spacer(Modifier.height(4.dp))
         Text(
             AccentPalette.label(id),
@@ -464,4 +488,123 @@ private fun SwitchRow(title: String, description: String, checked: Boolean, onCh
         }
         Switch(checked = checked, onCheckedChange = onChange)
     }
+}
+
+private fun rgb(value: Int): Color = Color(0xFF000000.toInt() or value)
+
+/** Карточка выбора стиля: миниатюра экрана в палитре самого стиля, название и короткое описание. */
+@Composable
+private fun StyleOption(
+    id: KontaktStyleId,
+    selected: Boolean,
+    accent: AccentId,
+    dark: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(14.dp)
+    Column(
+        modifier = modifier
+            .clip(shape)
+            .border(
+                width = if (selected) 2.dp else 1.dp,
+                color = if (selected) Kontakt.colors.accentText else MaterialTheme.colorScheme.outlineVariant,
+                shape = shape,
+            )
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        StylePreview(id, accent, dark)
+        Text(id.styleLabel(), style = MaterialTheme.typography.titleMedium)
+        Text(
+            id.styleHint(),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** Схематичный экран: Kontakt — список и нижняя панель, VK Classic — цветная шапка с меню и список. */
+@Composable
+private fun StylePreview(id: KontaktStyleId, accent: AccentId, dark: Boolean) {
+    val n = Neutrals.of(id, dark)
+    val classic = id == KontaktStyleId.VkClassic
+    val bar = rgb(n.fieldStrong)
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(116.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(rgb(n.background)),
+    ) {
+        Column(Modifier.fillMaxSize()) {
+            if (classic) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(22.dp)
+                        .background(rgb(AccentPalette.classicHeader(accent, dark)))
+                        .padding(horizontal = 8.dp),
+                    contentAlignment = Alignment.CenterStart,
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        repeat(3) {
+                            Box(
+                                Modifier
+                                    .width(10.dp)
+                                    .height(1.5.dp)
+                                    .background(rgb(AccentPalette.onClassicHeader(accent, dark))),
+                            )
+                        }
+                    }
+                }
+            } else {
+                Spacer(Modifier.height(6.dp))
+            }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .background(rgb(n.card))
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                repeat(3) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.size(16.dp).clip(CircleShape).background(bar))
+                        Spacer(Modifier.width(6.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Box(Modifier.width(46.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(bar))
+                            Box(Modifier.width(30.dp).height(3.dp).clip(RoundedCornerShape(2.dp)).background(bar.copy(alpha = 0.6f)))
+                        }
+                    }
+                }
+            }
+            if (!classic) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(18.dp)
+                        .background(rgb(n.card)),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    repeat(4) { index ->
+                        Box(
+                            Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(if (index == 0) rgb(AccentPalette.fill(accent, dark, id)) else bar),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun KontaktStyleId.styleHint(): String = when (this) {
+    KontaktStyleId.Kontakt -> "Как в современных мессенджерах: нижняя панель, мягкие карточки"
+    KontaktStyleId.VkClassic -> "Цветная шапка, меню слева, плоские блоки на сером"
 }

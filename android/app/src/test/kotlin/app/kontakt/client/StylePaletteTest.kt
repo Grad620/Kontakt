@@ -101,9 +101,11 @@ class StylePaletteTest {
     }
 
     @Test
-    fun classicBlueIsTheClassicHeaderBlueAndKontaktBlueIsUntouched() {
-        assertEquals(0x4A76A8, AccentPalette.fill(AccentId.Blue, dark = false, style = KontaktStyleId.VkClassic))
-        assertEquals(AccentPalette.nominal(AccentId.Blue), AccentPalette.fill(AccentId.Blue, dark = false, style = KontaktStyleId.Kontakt))
+    fun classicSkyAndBlueUseTheClassicHeaderBlueAndKontaktKeepsItsOwnShades() {
+        for (id in listOf(AccentId.Sky, AccentId.Blue)) {
+            assertEquals(0x4A76A8, AccentPalette.fill(id, dark = false, style = KontaktStyleId.VkClassic))
+            assertEquals(AccentPalette.nominal(id), AccentPalette.fill(id, dark = false, style = KontaktStyleId.Kontakt))
+        }
         assertEquals(
             AccentPalette.nominal(AccentId.Green),
             AccentPalette.fill(AccentId.Green, dark = false, style = KontaktStyleId.VkClassic),
