@@ -75,24 +75,6 @@ jobs:
           fi
           echo "VK ID configuration is present (values withheld). This check does not prove that the dashboard configuration or device sign-in is correct."
 
-      - name: Validate VK ID credentials without printing them
-        env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ -z "${VK_CLIENT_ID//[[:space:]]/}" || ! "$VK_CLIENT_ID" =~ ^[0-9]+$ || "$VK_CLIENT_ID" == "0" ]]; then
-            echo "::warning title=VK ID Client ID missing or invalid::Set VK_CLIENT_ID to the numeric Client ID from the VK ID cabinet. No ID value is printed."
-          else
-            echo "VK ID Client ID is present and numeric."
-          fi
-          if [[ -z "${VK_CLIENT_SECRET//[[:space:]]/}" ]]; then
-            echo "::warning title=VK ID client secret missing::Set VK_CLIENT_SECRET from the VK ID cabinet. The value is not printed."
-          else
-            echo "VK ID client secret is present; its value is not printed."
-          fi
-
       - name: Run Android Lint and unit tests
         working-directory: android
         env:
