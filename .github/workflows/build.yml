@@ -192,6 +192,23 @@ jobs:
             fi
           done
 
+      - name: Require valid VK ID configuration for release
+        env:
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$VK_CLIENT_ID" || ! "$VK_CLIENT_ID" =~ ^[0-9]+$ ]]; then
+            echo "::error title=Release blocked::Set VK_CLIENT_ID to the numeric ID from the VK ID cabinet. The value is not printed."
+            exit 1
+          fi
+          if [[ -z "$VK_CLIENT_SECRET" || "$VK_CLIENT_SECRET" == "unset" ]]; then
+            echo "::error title=Release blocked::VK_CLIENT_SECRET is missing. Configure it as a GitHub Actions secret; its value is never printed."
+            exit 1
+          fi
+          echo "VK ID release configuration is present. This check does not prove that VK cabinet settings or device sign-in work."
+
       - name: Build signed release APK
         working-directory: android
         env:
