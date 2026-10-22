@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
         val container = app.container
         if (BuildConfig.VK_STANDALONE_CONFIGURED) {
             try {
-                VK.setConfig(VKApiConfig(context = this, appId = resources.getInteger(app.kontakt.client.R.integer.com_vk_sdk_AppId), validationHandler = VKDefaultValidationHandler(this), keyValueStorage = container.tokenStore))
+                VK.setConfig(VKApiConfig(context = this, appId = resources.getInteger(R.integer.com_vk_sdk_AppId), validationHandler = VKDefaultValidationHandler(this), keyValueStorage = container.tokenStore))
                 container.auth.attachLauncher(VK.login(this) { result -> container.auth.onLegacyAuthResult(result) })
             } catch (error: Exception) { container.auth.onLegacyAuthSetupFailure(error) }
         }
