@@ -8,6 +8,7 @@ import com.vk.id.AccessToken
 import com.vk.id.VKID
 import com.vk.id.VKIDAuthFail
 import com.vk.id.auth.VKIDAuthCallback
+import com.vk.id.auth.VKIDAuthParams
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,18 +34,29 @@ class MainActivity : ComponentActivity() {
         val container = app.container
         if (BuildConfig.VK_ID_CONFIGURED) {
             container.auth.attachLauncher {
-                VKID.instance.authorize(this, object : VKIDAuthCallback {
-                    override fun onAuth(accessToken: AccessToken) {
-                        container.auth.onVkIdAuthSuccess(accessToken.token)
-                    }
-
-                    override fun onFail(fail: VKIDAuthFail) {
-                        when (fail) {
-                            is VKIDAuthFail.Canceled -> container.auth.onVkIdAuthCanceled()
-                            else -> container.auth.onVkIdAuthFailure(fail.toString())
+                val requestedScopes = BuildConfig.VK_SCOPES
+                    .split(',')
+                    .map(String::trim)
+                    .filter(String::isNotEmpty)
+                    .toSet()
+                VKID.instance.authorize(
+                    lifecycleOwner = this,
+                    callback = object : VKIDAuthCallback {
+                        override fun onAuth(accessToken: AccessToken) {
+                            container.auth.onVkIdAuthSuccess(accessToken.token)
                         }
-                    }
-                })
+
+                        override fun onFail(fail: VKIDAuthFail) {
+                            when (fail) {
+                                is VKIDAuthFail.Canceled -> container.auth.onVkIdAuthCanceled()
+                                else -> container.auth.onVkIdAuthFailure(fail.toString())
+                            }
+                        }
+                    },
+                    params = VKIDAuthParams {
+                        scopes = requestedScopes
+                    },
+                )
             }
         }
         val reportFile = File(filesDir, KontaktApp.CRASH_REPORT)
