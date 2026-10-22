@@ -35,6 +35,25 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      # The debug APK is signed with android/app/debug.keystore in build.gradle.kts.
+      # Report only its public SHA-1 fingerprint so it can be compared with VK ID settings.
+      - name: Report debug signing certificate fingerprint
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEYSTORE="android/app/debug.keystore"
+          if [ ! -f "$KEYSTORE" ]; then
+            echo "::error::Configured debug keystore is missing: $KEYSTORE"
+            exit 1
+          fi
+          SHA1=$(keytool -list -v -keystore "$KEYSTORE" -storepass android -alias androiddebugkey 2>/dev/null | awk -F': ' '/SHA1:/{print $2; found=1} END{if (!found) exit 1}')
+          if [ -z "$SHA1" ]; then
+            echo "::error::Could not read SHA-1 fingerprint from the configured debug keystore."
+            exit 1
+          fi
+          echo "Debug signing certificate SHA-1: $SHA1"
+          echo "Application ID: com.kontakt.app"
+
       - name: Validate VK ID configuration
         env:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
