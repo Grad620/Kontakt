@@ -2,10 +2,10 @@ name: Kontakt Android CI
 
 on:
   push:
-    branches: [main, master, fix/security-ci-release, work/visible-kontakt-ui]
+    branches: [main, master, fix/security-ci-release, work/visible-kontakt-ui, design/style-system]
     tags: ['v*']
   pull_request:
-    branches: [main, master, work/visible-kontakt-ui, fix/security-ci-release]
+    branches: [main, master, work/visible-kontakt-ui, fix/security-ci-release, design/style-system]
   workflow_dispatch:
 
 permissions:
@@ -114,12 +114,9 @@ jobs:
 
       - name: Set up Java
         uses: actions/setup-java@v4
-        with:
+      with:
           distribution: temurin
           java-version: '17'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
 
       - name: Require release signing credentials
         env:
