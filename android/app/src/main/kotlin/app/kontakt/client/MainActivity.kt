@@ -4,6 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.vk.api.sdk.VK
+import com.vk.api.sdk.VKApiConfig
+import com.vk.api.sdk.VKDefaultValidationHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +30,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val app = application as KontaktApp
         val container = app.container
+        if (BuildConfig.VK_STANDALONE_CONFIGURED) {
+            try {
+                VK.setConfig(VKApiConfig(context = this, appId = resources.getInteger(app.kontakt.client.R.integer.com_vk_sdk_AppId), validationHandler = VKDefaultValidationHandler(this), keyValueStorage = container.tokenStore))
+                container.auth.attachLauncher(VK.login(this) { result -> container.auth.onLegacyAuthResult(result) })
+            } catch (error: Exception) { container.auth.onLegacyAuthSetupFailure(error) }
+        }
         val reportFile = File(filesDir, KontaktApp.CRASH_REPORT)
         val report = runCatching { reportFile.takeIf { it.isFile }?.readText() }.getOrNull()
 
@@ -61,5 +70,10 @@ class MainActivity : ComponentActivity() {
                 KontaktRoot(container)
             }
         }
+    }
+
+    override fun onDestroy() {
+        (application as? KontaktApp)?.container?.auth?.detachLauncher()
+        super.onDestroy()
     }
 }

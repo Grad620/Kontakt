@@ -39,7 +39,7 @@ class AppContainer(context: Context) {
 
     val tokenStore = TokenStore(appContext)
     val settings = SettingsStore(appContext)
-    val auth = AuthManager(tokenStore, appContext)
+    val auth = AuthManager(tokenStore)
     val api = VkApi(auth, diagnostics)
 
     val filterStats = FilterStats()

@@ -126,9 +126,9 @@ fun LoginScreen(container: AppContainer) {
             Spacer(Modifier.height(30.dp))
 
             if (!auth.isConfigured) {
-                SectionCard("Нужно подключить VK ID", titleTextAlign = TextAlign.Center) {
+                SectionCard("Нужно подключить приложение VK", titleTextAlign = TextAlign.Center) {
                     Text(
-                        "Конфигурация VK ID неполная. Проверьте VK_CLIENT_ID и VK_CLIENT_SECRET в настройках сборки GitHub Actions.",
+                        "Для доступа к методам VK API нужен ID приложения типа Standalone. Добавьте VK_STANDALONE_APP_ID в секреты сборки GitHub Actions и укажите Android-пакет com.kontakt.app и SHA-1 сертификата.",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                     )
@@ -147,18 +147,14 @@ fun LoginScreen(container: AppContainer) {
                     ),
                 ) {
                     Text(
-                        text = if (busy) "Подключаемся к VK ID…" else "Продолжить через VK ID",
+                        text = if (busy) "Подключаемся к VK ID…" else "Продолжить через VK",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    text = if (BuildConfig.VK_SCOPES.isBlank()) {
-                        "Запрашивается базовый доступ. Дополнительные права не запрашиваются."
-                    } else {
-                        "Запрашиваемые права: ${BuildConfig.VK_SCOPES}"
-                    },
+                    text = "Kontakt запросит права для сообщений, друзей, ленты, фото, видео и других разделов. Пароль вводится только в официальном окне VK.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -184,7 +180,7 @@ fun LoginScreen(container: AppContainer) {
 
             Spacer(Modifier.height(24.dp))
             Text(
-                text = "Пароль вводится на стороне VK ID. Kontakt не получает и не хранит его.",
+                text = "Пароль вводится на стороне VK. Kontakt не получает и не хранит его.",
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

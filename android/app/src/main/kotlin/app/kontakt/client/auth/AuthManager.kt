@@ -17,14 +17,9 @@ sealed interface AuthState {
 /** Official classic VK Android SDK token flow. Passwords are entered only in VK's auth UI. */
 class AuthManager(private val store: TokenStore) {
     val isConfigured: Boolean = BuildConfig.VK_STANDALONE_CONFIGURED
-
-    @Volatile
-    private var cached: String? = store.load()
-
+    @Volatile private var cached: String? = store.load()
     private var launcher: ActivityResultLauncher<Collection<VKScope>>? = null
-    private val _state = MutableStateFlow<AuthState>(
-        if (cached != null) AuthState.SignedIn else AuthState.SignedOut(),
-    )
+    private val _state = MutableStateFlow<AuthState>(if (cached != null) AuthState.SignedIn else AuthState.SignedOut())
     val state: StateFlow<AuthState> = _state.asStateFlow()
     private val _busy = MutableStateFlow(false)
     val busy: StateFlow<Boolean> = _busy.asStateFlow()
@@ -35,9 +30,7 @@ class AuthManager(private val store: TokenStore) {
 
     fun onLegacyAuthSetupFailure(error: Throwable) {
         _busy.value = false
-        _state.value = AuthState.SignedOut(
-            "Не удалось подготовить официальный вход VK (${error.javaClass.simpleName}). Проверьте ID Standalone-приложения.",
-        )
+        _state.value = AuthState.SignedOut("Не удалось подготовить вход VK (${error.javaClass.simpleName}). Проверьте ID Standalone-приложения.")
     }
 
     fun signIn() {
@@ -49,42 +42,32 @@ class AuthManager(private val store: TokenStore) {
         }
         _busy.value = true
         try {
-            authLauncher.launch(
-                setOf(
-                    VKScope.MESSAGES, VKScope.FRIENDS, VKScope.PHOTOS, VKScope.DOCS,
-                    VKScope.STATUS, VKScope.WALL, VKScope.GROUPS, VKScope.VIDEO,
-                    VKScope.AUDIO, VKScope.STORIES, VKScope.PAGES, VKScope.NOTES,
-                    VKScope.NOTIFICATIONS,
-                ),
-            )
+            authLauncher.launch(setOf(
+                VKScope.MESSAGES, VKScope.FRIENDS, VKScope.PHOTOS, VKScope.DOCS,
+                VKScope.STATUS, VKScope.WALL, VKScope.GROUPS, VKScope.VIDEO,
+                VKScope.AUDIO, VKScope.STORIES, VKScope.PAGES, VKScope.NOTES,
+                VKScope.NOTIFICATIONS,
+            ))
         } catch (e: Exception) {
             _busy.value = false
-            _state.value = AuthState.SignedOut(
-                "Не удалось открыть вход VK (${e.javaClass.simpleName}). Проверьте настройки приложения и подпись.",
-            )
+            _state.value = AuthState.SignedOut("Не удалось открыть вход VK (${e.javaClass.simpleName}). Проверьте настройки приложения и подпись.")
         }
     }
 
     fun onLegacyAuthResult(result: VKAuthenticationResult) {
         _busy.value = false
         when (result) {
-            is VKAuthenticationResult.Success -> {
-                try {
-                    val token = result.token.accessToken
-                    store.save(token)
-                    cached = token
-                    _state.value = AuthState.SignedIn
-                } catch (_: Exception) {
-                    cached = null
-                    _state.value = AuthState.SignedOut(
-                        "VK выполнил вход, но Kontakt не смог безопасно сохранить сессию. Повторите попытку.",
-                    )
-                }
+            is VKAuthenticationResult.Success -> try {
+                val token = result.token.accessToken
+                store.save(token)
+                cached = token
+                _state.value = AuthState.SignedIn
+            } catch (_: Exception) {
+                cached = null
+                _state.value = AuthState.SignedOut("VK выполнил вход, но Kontakt не смог безопасно сохранить сессию. Повторите попытку.")
             }
             is VKAuthenticationResult.Failed -> {
-                _state.value = AuthState.SignedOut(
-                    "VK не завершил авторизацию: ${result.exception.message ?: "вход отменён или отклонён"}.",
-                )
+                _state.value = AuthState.SignedOut("VK не завершил авторизацию: ${result.exception.message ?: "вход отменён или отклонён"}.")
             }
         }
     }
@@ -93,9 +76,7 @@ class AuthManager(private val store: TokenStore) {
         if (_state.value is AuthState.SignedOut) return
         wipe("Сессия истекла. Войдите снова.")
     }
-
     fun signOut() { wipe(null) }
-
     private fun wipe(message: String?) {
         runCatching { VK.logout() }
         store.clear()
