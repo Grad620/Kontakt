@@ -72,6 +72,10 @@ class StylePaletteTest {
                     val ratio = ColorMath.contrast(text, surface)
                     assertTrue("акцентный текст $id ($style, dark=$dark): $ratio", ratio >= 4.5)
                 }
+                val onSoft = ColorMath.contrast(text, AccentPalette.container(id, dark, style))
+                assertTrue("акцентный текст на мягкой подложке $id ($style, dark=$dark): $onSoft", onSoft >= 4.5)
+                val bodyOnSoft = ColorMath.contrast(n.onSurface, AccentPalette.container(id, dark, style))
+                assertTrue("основной текст на мягкой подложке $id ($style, dark=$dark): $bodyOnSoft", bodyOnSoft >= 4.5)
                 val onContainer = ColorMath.contrast(
                     AccentPalette.onContainer(id, dark, style),
                     AccentPalette.container(id, dark, style),

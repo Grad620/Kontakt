@@ -157,11 +157,18 @@ object AccentPalette {
     fun onFill(id: AccentId, dark: Boolean, style: KontaktStyleId = KontaktStyleId.Kontakt): Int =
         ColorMath.onColor(fill(id, dark, style))
 
-    /** Цвет акцентного текста и значков на фоне и на карточках: контраст не ниже 4,5 с обоими. */
+    /**
+     * Цвет акцентного текста и значков: контраст не ниже 4,5 с фоном, карточкой и бледной подложкой акцента
+     * (выбранный пункт меню, непрочитанный диалог VK Classic). Цвет только темнеет (светлая тема) или светлеет
+     * (тёмная), поэтому выполненное для одной поверхности условие не ломается при подгонке под следующую.
+     */
     fun text(id: AccentId, dark: Boolean, style: KontaktStyleId = KontaktStyleId.Kontakt): Int {
         val n = Neutrals.of(style, dark)
-        val onBackground = ColorMath.ensureContrast(fill(id, dark, style), n.background, 4.5, towardsDark = !dark)
-        return ColorMath.ensureContrast(onBackground, n.card, 4.5, towardsDark = !dark)
+        var color = fill(id, dark, style)
+        for (surface in listOf(n.background, n.card, container(id, dark, style))) {
+            color = ColorMath.ensureContrast(color, surface, 4.5, towardsDark = !dark)
+        }
+        return color
     }
 
     /** Бледная подложка акцента (выбранные чипы, мягкие выделения, непрочитанные чаты в VK Classic). */
