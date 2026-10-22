@@ -2,17 +2,15 @@ name: Kontakt Android CI
 
 on:
   push:
-    branches: [main, master, fix/security-ci-release, work/visible-kontakt-ui, design/style-system]
+    branches: [main, master, fix/security-ci-release, work/visible-kontakt-ui, design/style-system, fix/vkid-sdk-auth]
     tags: ['v*']
   pull_request:
-    branches: [main, master, work/visible-kontakt-ui, fix/security-ci-release, design/style-system]
+    branches: [main, master, work/visible-kontakt-ui, fix/security-ci-release, design/style-system, fix/vkid-sdk-auth]
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# Cancel superseded runs for the same branch and event, while keeping push builds
-# separate from PR checks so a PR cannot cancel the APK-producing push run.
 concurrency:
   group: kontakt-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
@@ -35,19 +33,24 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Report Standalone VK configuration
+      - name: Validate VK ID configuration
         id: vkid-config
         env:
-          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+        shell: bash
         run: |
-          if [[ "$VK_STANDALONE_APP_ID" =~ ^[1-9][0-9]*$ ]]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-            echo "Standalone VK application ID is present."
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::warning title=Standalone VK app is not configured::Set repository secret VK_STANDALONE_APP_ID after registering a Standalone app in VK developer settings."
-            echo "::warning::Lint and unit tests will run, but the login-test APK will not be built until Standalone VK is configured."
+          set -euo pipefail
+          if [[ ! "${VK_CLIENT_ID}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error title=VK ID Client ID missing or invalid::Set VK_CLIENT_ID to the numeric Client ID from the VK ID cabinet (id.vk.ru), not an old Standalone app ID."
+            exit 1
           fi
+          if [[ -z "${VK_CLIENT_SECRET}" ]]; then
+            echo "::error title=VK ID protected key missing::Set VK_CLIENT_SECRET from the VK ID cabinet in GitHub Actions Secrets."
+            exit 1
+          fi
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+          echo "VK ID configuration is present (values not printed)."
 
       - name: Run Android Lint and unit tests
         working-directory: android
@@ -55,7 +58,6 @@ jobs:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
-          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon lintDebug testDebugUnitTest
@@ -66,7 +68,6 @@ jobs:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
-          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleDebug
 
       - name: Verify resolved VK ID manifest values
@@ -82,15 +83,19 @@ jobs:
             echo "::error::Merged debug manifest was not generated."
             exit 1
           fi
-          if grep -Fq '${VKIDClientID}' "$MANIFEST"; then
-            echo "::error::Unresolved VKIDClientID placeholder in merged manifest."
+          if grep -Fq '${VKIDClientID}' "$MANIFEST" || grep -Fq '${VKIDRedirectScheme}' "$MANIFEST"; then
+            echo "::error::Unresolved VK ID manifest placeholders."
             exit 1
           fi
-          if [ -n "$VK_CLIENT_ID" ] && ! grep -Fq "$VK_CLIENT_ID" "$MANIFEST"; then
-            echo "::error::Configured VK_CLIENT_ID is absent from merged manifest. Do not distribute this APK."
+          if ! grep -Fq "$VK_CLIENT_ID" "$MANIFEST"; then
+            echo "::error::Configured VK_CLIENT_ID is absent from merged manifest."
             exit 1
           fi
-          echo "Merged manifest has no unresolved VKIDClientID placeholder."
+          if grep -Fq 'VKIDClientSecret" android:value="unset' "$MANIFEST"; then
+            echo "::error::VK ID protected key placeholder is unresolved."
+            exit 1
+          fi
+          echo "VK ID manifest placeholders are resolved."
 
       - name: Upload debug APK (testing artifact, not a release)
         uses: actions/upload-artifact@v4
@@ -142,7 +147,6 @@ jobs:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
-          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
           ANDROID_SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
           ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}
           ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
