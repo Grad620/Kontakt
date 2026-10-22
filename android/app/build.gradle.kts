@@ -17,6 +17,27 @@ val vkClientId = config("VK_CLIENT_ID")
 val vkClientSecret = config("VK_CLIENT_SECRET")
 val vkScopes = config("VK_SCOPES") // например: friends,wall,messages — только после одобрения VK
 
+// ЗАЩИЩЁННЫЙ КЛЮЧ VK ID ПОПАДАЕТ В МАНИФЕСТ КАЖДОГО APK (так устроен SDK), значит любой APK с ним —
+// только для тестов в закрытом кругу. Сборки типа release с ключом запрещены, пока владелец явно не
+// подтвердит, что файл останется приватным (KONTAKT_VK_KEY_PRIVATE_ONLY=yes). Отладочные сборки
+// (assembleDebug и т. д.) это правило не затрагивает. Подробности: docs/VK_ID_SECURITY.md.
+val vkKeyPrivateOnlyAck = config("KONTAKT_VK_KEY_PRIVATE_ONLY") == "yes"
+
+gradle.taskGraph.whenReady {
+    val releaseRequested = allTasks.any { task ->
+        task.project == project &&
+            task.name.endsWith("Release") &&
+            (task.name.startsWith("assemble") || task.name.startsWith("bundle") || task.name.startsWith("package"))
+    }
+    if (releaseRequested && vkClientSecret.isNotBlank() && !vkKeyPrivateOnlyAck) {
+        throw GradleException(
+            "Сборка release заблокирована: защищённый ключ VK ID попадёт в APK и его можно извлечь. " +
+                "Публичный релиз с таким ключом запрещён. Если файл останется строго приватным, " +
+                "задайте KONTAKT_VK_KEY_PRIVATE_ONLY=yes. См. android/docs/VK_ID_SECURITY.md."
+        )
+    }
+}
+
 // Release signing credentials are supplied only by CI secrets or local environment.
 // Never commit the signing keystore or passwords.
 val signingKeyBase64 = config("ANDROID_SIGNING_KEY_BASE64")
