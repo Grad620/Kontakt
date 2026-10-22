@@ -39,7 +39,10 @@ class MainActivity : ComponentActivity() {
                     }
 
                     override fun onFail(fail: VKIDAuthFail) {
-                        container.auth.onVkIdAuthFailure(fail.toString())
+                        when (fail) {
+                            is VKIDAuthFail.Canceled -> container.auth.onVkIdAuthCanceled()
+                            else -> container.auth.onVkIdAuthFailure(fail.toString())
+                        }
                     }
                 })
             }
