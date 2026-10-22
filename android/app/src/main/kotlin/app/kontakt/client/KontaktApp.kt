@@ -6,7 +6,6 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
-import app.kontakt.client.BuildConfig
 import com.vk.id.VKID
 import java.io.File
 import java.io.PrintWriter
