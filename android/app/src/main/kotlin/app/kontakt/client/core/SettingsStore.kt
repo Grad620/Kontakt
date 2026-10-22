@@ -45,7 +45,7 @@ class SettingsStore(private val context: Context) {
         .distinctUntilChanged()
 
     val style: Flow<KontaktStyleId> = context.vgDataStore.data
-        .map { prefs -> KontaktStyleId.entries.firstOrNull { it.name == prefs[styleKey] } ?: KontaktStyleId.Kontakt }
+        .map { prefs -> KontaktStyleId.parse(prefs[styleKey]) }
         .distinctUntilChanged()
 
     val tabs: Flow<List<TabId>> = context.vgDataStore.data

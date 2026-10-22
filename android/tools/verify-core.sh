@@ -21,7 +21,7 @@ MAIN_FILES=(
 )
 TEST_FILES=(
   "$T/TestSupport.kt" "$T/ContentFilterTest.kt" "$T/TokenizerTest.kt" "$T/SignalsTest.kt"
-  "$T/NavConfigTest.kt" "$T/DiagnosticsTest.kt" "$T/RecommenderTest.kt" "$T/FeedMappingTest.kt" "$T/ForYouRepositoryTest.kt" "$T/ColorMathTest.kt"
+  "$T/NavConfigTest.kt" "$T/DiagnosticsTest.kt" "$T/RecommenderTest.kt" "$T/FeedMappingTest.kt" "$T/ForYouRepositoryTest.kt" "$T/ColorMathTest.kt" "$T/StylePaletteTest.kt"
 )
 echo "== компиляция основного кода"
 bash "$ROOT/tools/kc.sh" -jvm-target 17 -cp "$DEPS" -d "$OUT/main" "${MAIN_FILES[@]}" 2>&1 | grep -v 'JAVA_TOOL_OPTIONS' || true

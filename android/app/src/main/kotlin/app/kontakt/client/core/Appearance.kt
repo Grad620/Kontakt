@@ -12,7 +12,14 @@ enum class AccentId { White, Sky, Blue, Green, DarkGreen, Birch, Violet, Lilac }
 enum class EffectsMode { Full, Light }
 
 /** Выбираемый пользователем визуальный стиль интерфейса. */
-enum class KontaktStyleId { Kontakt, VkClassic }
+enum class KontaktStyleId {
+    Kontakt, VkClassic;
+
+    companion object {
+        /** Неизвестное или пустое сохранённое значение безопасно превращается в стиль Kontakt. */
+        fun parse(raw: String?): KontaktStyleId = entries.firstOrNull { it.name == raw } ?: Kontakt
+    }
+}
 
 /** Всё, что определяет внешний вид и состав вкладок. Приложение ждёт первого значения, чтобы не мигать. */
 data class AppearanceState(
