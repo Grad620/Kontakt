@@ -35,6 +35,27 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Validate VK ID configuration
+        env:
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${VK_CLIENT_ID}" ]]; then
+            echo "::warning title=VK ID is not configured::VK_CLIENT_ID is missing. The APK can be built for UI testing, but VK ID login cannot be verified."
+          elif [[ ! "${VK_CLIENT_ID}" =~ ^[0-9]+$ ]]; then
+            echo "::error title=Invalid VK ID configuration::VK_CLIENT_ID must contain only digits. Its value is not printed."
+            exit 1
+          else
+            echo "VK_CLIENT_ID is present and has numeric format."
+          fi
+          if [[ -z "${VK_CLIENT_SECRET}" ]]; then
+            echo "::warning title=VK ID secret is missing::VK_CLIENT_SECRET is not configured. Check the VK ID SDK setup before testing login."
+          else
+            echo "VK_CLIENT_SECRET is present; its value is not printed."
+          fi
+
       - name: Report Standalone VK configuration
         id: vkid-config
         env:
