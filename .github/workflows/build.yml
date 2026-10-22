@@ -61,7 +61,6 @@ jobs:
           ./gradlew --no-daemon lintDebug testDebugUnitTest
 
       - name: Build debug APK for testing only
-        if: steps.vkid-config.outputs.configured == 'true'
         working-directory: android
         env:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
@@ -94,7 +93,6 @@ jobs:
           echo "Merged manifest has no unresolved VKIDClientID placeholder."
 
       - name: Upload debug APK (testing artifact, not a release)
-        if: steps.vkid-config.outputs.configured == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: Kontakt-debug-test-only
