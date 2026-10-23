@@ -54,12 +54,12 @@
 
 1. Зарегистрируйте приложение в кабинете VK ID для разработчиков (найдите «VK ID регистрация приложения» в документации VK; названия пунктов меню у VK меняются). Платформа — Android.
 2. Укажите там:
-   - имя пакета: `app.kontakt.client`
+   - **Package name / application ID: `com.kontakt.app`**. Не указывайте `app.kontakt.client`: это Kotlin/Android `namespace`, а установленный APK имеет `applicationId = com.kontakt.app`.
    - SHA-1 отпечаток сертификата: `2D:8F:47:E1:62:7E:35:EC:2B:A6:51:B7:2D:4E:1B:48:75:3F:E3:53` (фиксированный debug-ключ проекта, `app/debug.keystore`)
 3. По README VK ID SDK понадобятся: ID приложения, его секретное значение, redirect host `vk.ru` и scheme `vk<ID приложения>` (последние два уже подставляются автоматически).
 4. В GitHub: Settings → Secrets and variables → Actions:
    - Secrets: `VK_CLIENT_ID`, `VK_CLIENT_SECRET`
-   - Variables (необязательно): `VK_SCOPES` — список прав через запятую, например `friends,wall,messages`. **Заполняйте только после того, как VK одобрил эти права**, иначе вход может завершиться ошибкой. Пока пусто — запрашивается базовый доступ.
+   - `VK_SCOPES` пока оставьте пустым. Не вставляйте сюда старые разрешения API (`friends,wall,messages`) наугад: scopes VK ID и разрешения старого VK API — не одно и то же. Сначала проверяем базовый вход, затем отдельно подтверждаем доступность каждого метода API.
 5. Запустите сборку заново (Actions → Run workflow).
 
 ### Что секрет, а что нет
