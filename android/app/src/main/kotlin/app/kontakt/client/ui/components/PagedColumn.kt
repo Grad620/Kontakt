@@ -43,6 +43,10 @@ import kotlin.math.min
  *
  * [onVisibleKeys] (необязательно) сообщает, какие элементы сейчас заметно видны на экране (не меньше половины
  * высоты). По этим данным лента измеряет время просмотра.
+ *
+ * [reverseLayout] — для переписки: первый элемент списка (самое новое сообщение) показывается внизу, подгрузка
+ * добавляет более старые элементы сверху. Свайп вниз для обновления в этом режиме отключён: у верхнего края
+ * находятся самые старые сообщения, а не новые.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +62,7 @@ fun <T> PagedColumn(
     onVisibleKeys: ((Set<Any>) -> Unit)? = null,
     skeleton: SkeletonKind? = null,
     emptyIcon: ImageVector? = null,
+    reverseLayout: Boolean = false,
     itemContent: @Composable (T) -> Unit,
 ) {
     val error = state.error
@@ -101,14 +106,11 @@ fun <T> PagedColumn(
                 }
             }
 
-            PullToRefreshBox(
-                isRefreshing = state.refreshing,
-                onRefresh = onRefresh,
-                modifier = modifier,
-            ) {
+            val list: @Composable () -> Unit = {
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
+                    reverseLayout = reverseLayout,
                     contentPadding = PaddingValues(bottom = LocalBottomBarPadding.current),
                 ) {
                     items(state.items, key = itemKey) { item ->
@@ -144,6 +146,16 @@ fun <T> PagedColumn(
                         }
                     }
                 }
+            }
+
+            if (reverseLayout) {
+                Box(modifier) { list() }
+            } else {
+                PullToRefreshBox(
+                    isRefreshing = state.refreshing,
+                    onRefresh = onRefresh,
+                    modifier = modifier,
+                ) { list() }
             }
         }
     }

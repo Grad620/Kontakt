@@ -2,11 +2,13 @@ package app.kontakt.client.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -71,6 +73,7 @@ fun MessagesHistoryScreen(container: AppContainer, peerId: Long, onBack: () -> U
             onLoadMore = vm::loadMore,
             onRetry = vm::retry,
             skeleton = SkeletonKind.Chats,
+            reverseLayout = true,
             modifier = Modifier.weight(1f),
         ) { message ->
             MessageBubble(message)
@@ -80,34 +83,38 @@ fun MessagesHistoryScreen(container: AppContainer, peerId: Long, onBack: () -> U
 
 @Composable
 private fun MessageBubble(message: MessageItem) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp),
-        horizontalArrangement = if (message.outgoing) Arrangement.End else Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Surface(
-            color = if (message.outgoing) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surfaceVariant,
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.fillMaxWidth(0.88f),
+    // Пузырёк занимает ровно столько, сколько нужно тексту, но не больше ~82% ширины экрана.
+    BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp)) {
+        val maxBubbleWidth = maxWidth * 0.82f
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = if (message.outgoing) Arrangement.End else Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+            Surface(
+                color = if (message.outgoing) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.widthIn(max = maxBubbleWidth),
             ) {
-                Text(
-                    message.text.ifBlank { "Вложение или системное сообщение" },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = if (message.outgoing) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    formatChatTime(message.date),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (message.outgoing) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.align(Alignment.End),
-                )
+                Column(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        message.text.ifBlank { "Вложение или системное сообщение" },
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (message.outgoing) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        formatChatTime(message.date),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (message.outgoing) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.align(Alignment.End),
+                    )
+                }
             }
         }
     }

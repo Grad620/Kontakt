@@ -2,6 +2,7 @@ package app.kontakt.client
 
 import app.kontakt.client.net.ConversationsResponse
 import app.kontakt.client.net.FeedResponse
+import app.kontakt.client.net.MessageHistoryResponse
 import app.kontakt.client.net.VkError
 import app.kontakt.client.net.VkResponseParser
 import org.junit.Assert.assertEquals
@@ -98,5 +99,19 @@ class VkResponseParserTest {
         val data = VkResponseParser.decode<FeedResponse>(VkResponseParser.parse(json))
         assertEquals("abc", data.nextFrom)
         assertEquals(3, data.items[0].likes?.count)
+    }
+
+    @Test
+    fun messageHistoryDecodeKeepsOrderOutgoingFlagAndSkipsUnknownFields() {
+        val json = """
+            {"response":{"count":2,"items":[
+            {"id":12,"date":200,"from_id":1,"text":"второе","out":1,"peer_id":7,"random_id":0,"attachments":[]},
+            {"id":11,"date":100,"from_id":7,"text":"","out":0,"peer_id":7,"fwd_messages":[]}]}}
+        """.trimIndent()
+        val data = VkResponseParser.decode<MessageHistoryResponse>(VkResponseParser.parse(json))
+        assertEquals(2, data.count)
+        assertEquals(listOf(12L, 11L), data.items.map { it.id })
+        assertEquals(1, data.items[0].out)
+        assertEquals("", data.items[1].text)
     }
 }

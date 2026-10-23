@@ -14,14 +14,14 @@ DEPS="$L/kotlin-stdlib-2.0.21.jar:$L/kotlinx-coroutines-core-jvm-1.6.4.jar:$L/ko
 
 MAIN_FILES=(
   "$M/net/VkError.kt" "$M/net/Dto.kt"
-  "$M/data/FeedPost.kt" "$M/data/FeedMapping.kt" "$M/data/ForYouRepository.kt" "$M/core/Paging.kt"
+  "$M/data/FeedPost.kt" "$M/data/MessagesMapping.kt" "$M/data/FeedMapping.kt" "$M/data/ForYouRepository.kt" "$M/core/Paging.kt"
   "$M/core/Diagnostics.kt" "$M/core/NavConfig.kt" "$M/core/Appearance.kt" "$M/ui/theme/ColorMath.kt"
   "$M/rec/Tokenizer.kt" "$M/rec/InterestProfile.kt" "$M/rec/Ranker.kt" "$M/rec/Signals.kt"
   "$M/rec/ContentFilter.kt" "$M/rec/Recommender.kt" "$M/rec/RecommenderStorage.kt"
 )
 TEST_FILES=(
   "$T/TestSupport.kt" "$T/ContentFilterTest.kt" "$T/TokenizerTest.kt" "$T/SignalsTest.kt"
-  "$T/NavConfigTest.kt" "$T/DiagnosticsTest.kt" "$T/RecommenderTest.kt" "$T/FeedMappingTest.kt" "$T/ForYouRepositoryTest.kt" "$T/ColorMathTest.kt" "$T/StylePaletteTest.kt"
+  "$T/NavConfigTest.kt" "$T/DiagnosticsTest.kt" "$T/RecommenderTest.kt" "$T/FeedMappingTest.kt" "$T/ForYouRepositoryTest.kt" "$T/ColorMathTest.kt" "$T/StylePaletteTest.kt" "$T/MessagesMappingTest.kt"
 )
 echo "== компиляция основного кода"
 bash "$ROOT/tools/kc.sh" -jvm-target 17 -cp "$DEPS" -d "$OUT/main" "${MAIN_FILES[@]}" 2>&1 | grep -v 'JAVA_TOOL_OPTIONS' || true
