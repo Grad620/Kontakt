@@ -52,11 +52,6 @@ jobs:
               exit 1
             fi
           fi
-          if [[ -z "$VK_STANDALONE_UNUSED_SECRET" ]]; then
-            echo "::warning title="
-          else
-            echo "VK Standalone app ID are present; values are hidden."
-          fi
 
       - name: Report debug signing certificate fingerprint
         shell: bash
