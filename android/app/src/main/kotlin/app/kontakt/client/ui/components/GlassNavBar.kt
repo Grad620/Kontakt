@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
@@ -53,7 +51,7 @@ fun GlassNavBar(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val panelShape = RoundedCornerShape(28.dp)
+    val panelShape = RoundedCornerShape(26.dp)
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -76,8 +74,8 @@ fun GlassNavBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(76.dp)
-                .padding(horizontal = 5.dp, vertical = 3.dp),
+                .height(72.dp)
+                .padding(horizontal = 7.dp, vertical = 3.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -104,8 +102,8 @@ fun GlassNavBar(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .height(70.dp)
-                        .clip(RoundedCornerShape(18.dp))
+                        .height(66.dp)
+                        .clip(RoundedCornerShape(16.dp))
                         .selectable(selected = selected, role = Role.Tab, onClick = { onSelect(item.route) })
                         .semantics { contentDescription = item.label },
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -113,9 +111,9 @@ fun GlassNavBar(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(50.dp)
-                            .clip(CircleShape)
-                            .background(circleColor),
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(13.dp))
+                            .background(if (selected) circleColor else Color.Transparent),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
@@ -123,7 +121,7 @@ fun GlassNavBar(
                             contentDescription = null,
                             tint = tint,
                             modifier = Modifier
-                                .size(23.dp)
+                                .size(22.dp)
                                 .graphicsLayer {
                                     scaleX = iconScale
                                     scaleY = iconScale
@@ -133,8 +131,8 @@ fun GlassNavBar(
                     Text(
                         text = item.label,
                         color = if (selected) Kontakt.colors.accentText else MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 10.5.sp,
-                        lineHeight = 12.sp,
+                        fontSize = 11.sp,
+                        lineHeight = 13.sp,
                         fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
