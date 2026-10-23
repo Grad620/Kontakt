@@ -125,3 +125,11 @@ data class WallResponse(
     val groups: List<VkGroup> = emptyList(),
     @SerialName("next_from") val nextFrom: String? = null,
 )
+
+
+/** Ответ messages.getHistory: список сообщений выбранного peer_id. */
+@Serializable
+data class MessageHistoryResponse(
+    val count: Int = 0,
+    val items: List<VkMessage> = emptyList(),
+)
