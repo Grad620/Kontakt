@@ -34,9 +34,9 @@ class MainActivity : ComponentActivity() {
             val authLauncher = VK.login(this) { result ->
                 when (result) {
                     is VKAuthenticationResult.Success ->
-                        container.auth.onVkIdAuthSuccess(result.token.accessToken)
+                        container.auth.onVkAuthSuccess(result.token.accessToken)
                     is VKAuthenticationResult.Failed ->
-                        container.auth.onVkIdAuthFailure(
+                        container.auth.onVkAuthFailure(
                             result.exception.message ?: result.exception.javaClass.simpleName,
                         )
                 }
