@@ -7,6 +7,7 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import com.vk.id.VKID
+import app.kontakt.client.auth.TokenStore
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -22,7 +23,8 @@ class KontaktApp : Application(), ImageLoaderFactory {
         if (BuildConfig.VK_ID_CONFIGURED) {
             runCatching { VKID.init(this) }
         }
-        container = AppContainer(this)
+        val tokenStore = TokenStore(this)
+        container = AppContainer(this, tokenStore)
     }
 
     private fun installCrashRecorder() {
