@@ -6,6 +6,7 @@ import app.kontakt.client.auth.TokenStore
 import app.kontakt.client.core.DiagnosticsLog
 import app.kontakt.client.core.NetworkMonitor
 import app.kontakt.client.core.SettingsStore
+import app.kontakt.client.data.ApiCapabilityProbe
 import app.kontakt.client.data.ChatsRepository
 import app.kontakt.client.data.FeedRepository
 import app.kontakt.client.data.FilterStats
@@ -41,6 +42,7 @@ class AppContainer(context: Context) {
     val settings = SettingsStore(appContext)
     val auth = AuthManager(tokenStore)
     val api = VkApi(auth, diagnostics)
+    val apiCapabilityProbe = ApiCapabilityProbe(api)
 
     val filterStats = FilterStats()
 
