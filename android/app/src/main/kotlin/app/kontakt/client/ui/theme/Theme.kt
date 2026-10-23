@@ -190,7 +190,7 @@ private fun colorScheme(accent: AccentId, dark: Boolean, style: KontaktStyleId):
 private fun kontaktColors(accent: AccentId, dark: Boolean, style: KontaktStyleId): KontaktColors =
     KontaktColors(
         accentText = rgb(AccentPalette.text(accent, dark, style)),
-        glass = if (dark) Color(0xCC1B1F25) else Color(0xCCFFFFFF),
+        glass = if (dark) Color(0xE61C1C1C) else Color(0xE6F2F2F2),
         glassHighlight = if (dark) Color(0x38FFFFFF) else Color(0xB3FFFFFF),
         glassEdge = if (dark) Color(0x10FFFFFF) else Color(0x14000000),
         glassShadow = if (dark) Color(0x99000000) else Color(0x40000000),
