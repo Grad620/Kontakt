@@ -37,8 +37,8 @@ android {
         applicationId = "com.kontakt.app"
         minSdk = 29
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.1.4"
+        versionCode = 6
+        versionName = "0.1.5"
 
         // Идентификатор приложения и список прав — не секреты. Секрет в BuildConfig не попадает.
         buildConfigField("String", "VK_CLIENT_ID", "\"$vkClientId\"")
@@ -80,6 +80,16 @@ android {
             if (signingKeyBase64.isNotBlank()) {
                 signingConfig = signingConfigs.getByName("release")
             }
+        }
+
+        // Phone-installable QA build: normal (non-test-only) APK, signed with the
+        // repository's stable debug key so successive test builds can update each other.
+        // This is NOT a production release and must never be published to stores.
+        create("installable") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            isDebuggable = false
+            matchingFallbacks += listOf("release")
         }
     }
 
