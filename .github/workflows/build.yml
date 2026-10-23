@@ -72,6 +72,7 @@ jobs:
           echo "Application ID: com.kontakt.app"
 
       - name: Run Android Lint and unit tests
+        id: verify_checks
         working-directory: android
         env:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
@@ -81,6 +82,17 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon lintDebug testDebugUnitTest
+
+      - name: Upload lint and test reports when checks fail
+        if: always() && steps.verify_checks.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kontakt-check-reports
+          path: |
+            android/app/build/reports/**
+            android/app/build/test-results/**
+          retention-days: 14
+          if-no-files-found: ignore
 
       - name: Build debug APK for testing only
         id: debug_apk_build
