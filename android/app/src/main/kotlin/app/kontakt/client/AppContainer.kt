@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 /** Простая ручная сборка зависимостей: без DI-фреймворка, чтобы не раздувать запуск и сборку. */
-class AppContainer(context: Context) {
+class AppContainer(context: Context, val tokenStore: TokenStore = TokenStore(context.applicationContext)) {
     private val appContext = context.applicationContext
 
     /** Живёт столько же, сколько процесс: сохранение обучения, наблюдение за настройками. */
@@ -39,7 +39,6 @@ class AppContainer(context: Context) {
     val diagnostics = DiagnosticsLog()
     val network = NetworkMonitor(appContext)
 
-    val tokenStore = TokenStore(appContext)
     val settings = SettingsStore(appContext)
     val auth = AuthManager(tokenStore)
     val api = VkApi(auth, diagnostics)
