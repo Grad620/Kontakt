@@ -54,6 +54,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.kontakt.client.AppContainer
 import app.kontakt.client.BuildConfig
 import app.kontakt.client.core.AccentId
+import app.kontakt.client.data.ApiCapabilityResult
 import app.kontakt.client.core.AppearanceState
 import app.kontakt.client.core.EffectsMode
 import app.kontakt.client.core.KontaktStyleId
@@ -96,6 +97,8 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
     var activeCategory by rememberSaveable { mutableStateOf<String?>(null) }
     var confirmReset by rememberSaveable { mutableStateOf(false) }
     var confirmSignOut by rememberSaveable { mutableStateOf(false) }
+    var capabilityResults by remember { mutableStateOf<List<ApiCapabilityResult>>(emptyList()) }
+    var checkingCapabilities by remember { mutableStateOf(false) }
 
     val style = Kontakt.style
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -371,6 +374,55 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            }
+
+            if (activeCategory == "app") {
+            SectionCard("Проверка доступа VK API") {
+                Text(
+                    "Проверить методы текущей сессии. Проверка только читает по одному объекту и ничего не отправляет. " +
+                        "Ответы показывают реальные ограничения токена, а не предположение по списку разрешений.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    enabled = !checkingCapabilities,
+                    onClick = {
+                        scope.launch {
+                            checkingCapabilities = true
+                            try {
+                                capabilityResults = container.apiCapabilityProbe.run()
+                            } finally {
+                                checkingCapabilities = false
+                            }
+                        }
+                    },
+                ) {
+                    Text(if (checkingCapabilities) "Проверяем методы…" else "Проверить доступ к VK API")
+                }
+                if (capabilityResults.isNotEmpty()) {
+                    Spacer(Modifier.height(8.dp))
+                    capabilityResults.forEach { result ->
+                        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text(
+                                "${if (result.available) "✓" else "✕"} ${result.title} · ${result.method}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (result.available) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                            )
+                            Text(
+                                result.detail,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    Text(
+                        "Результаты хранятся только пока открыт этот экран. Токен и содержимое ответов не показываются.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
             }
 
