@@ -82,7 +82,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val settings = container.settings
     val appearance by settings.appearance.collectAsStateWithLifecycle(
-        initialValue = AppearanceState(ThemeMode.System, AccentId.Sky, EffectsMode.Full, NavConfig.DEFAULT),
+        initialValue = AppearanceState(ThemeMode.System, AccentId.Green, EffectsMode.Full, NavConfig.DEFAULT),
     )
     val filter by container.filterConfig.collectAsStateWithLifecycle()
     val counts by container.filterStats.counts.collectAsStateWithLifecycle()
