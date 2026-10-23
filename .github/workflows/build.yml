@@ -71,8 +71,8 @@ jobs:
           echo "Debug signing certificate SHA-1: $SHA1"
           echo "Application ID: com.kontakt.app"
 
-      - name: Run Android Lint and unit tests
-        id: verify_checks
+      - name: Run Android Lint
+        id: lint_check
         working-directory: android
         env:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
@@ -81,10 +81,21 @@ jobs:
           VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon lintDebug testDebugUnitTest
+          ./gradlew --no-daemon lintDebug
+
+      - name: Run unit tests
+        id: unit_tests
+        if: always()
+        working-directory: android
+        env:
+          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+          VK_SCOPES: ${{ vars.VK_SCOPES }}
+          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
+        run: ./gradlew --no-daemon testDebugUnitTest
 
       - name: Upload lint and test reports when checks fail
-        if: always() && steps.verify_checks.outcome == 'failure'
+        if: always() && (steps.lint_check.outcome == 'failure' || steps.unit_tests.outcome == 'failure')
         uses: actions/upload-artifact@v4
         with:
           name: Kontakt-check-reports
@@ -103,7 +114,7 @@ jobs:
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
           VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
-        run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleDebug
+        run: ./gradlew --no-daemon assembleDebug
 
       - name: Verify APK signing certificate fingerprint
         id: verify_debug_signing
@@ -253,7 +264,7 @@ jobs:
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
           VK_SCOPES: ${{ vars.VK_SCOPES }}
           VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
-        run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleInstallable
+        run: ./gradlew --no-daemon assembleInstallable
 
       - name: Verify phone-installable QA APK
         id: verify_installable_apk
