@@ -35,7 +35,7 @@ class SettingsStore(private val context: Context) {
                 AccentId.Green.name -> AccentId.Green
                 AccentId.Sky.name, AccentId.Blue.name, AccentId.DarkGreen.name, AccentId.Birch.name,
                 AccentId.Violet.name, AccentId.Lilac.name -> AccentId.Sky
-                else -> AccentId.Sky
+                else -> AccentId.Green
             }
         }
         .distinctUntilChanged()
