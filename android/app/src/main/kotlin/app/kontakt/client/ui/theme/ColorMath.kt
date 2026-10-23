@@ -99,14 +99,14 @@ object Neutrals {
 
     // VK Classic: серый фон страницы и плоские белые блоки; в тёмной теме — графитовые.
     private val CLASSIC_LIGHT = NeutralSet(
-        background = 0xF2F2F2, surfaceLowest = 0xFFFFFF, card = 0xFFFFFF, container = 0xFFFFFF,
-        field = 0xE8E8E8, fieldStrong = 0xDEDEDE,
-        onSurface = 0x1C1C1C, onSurfaceVariant = 0x626262, outline = 0xBDBDBD, outlineVariant = 0xE3E3E3,
+        background = 0xEDEEF0, surfaceLowest = 0xFFFFFF, card = 0xFFFFFF, container = 0xFFFFFF,
+        field = 0xE7E8EA, fieldStrong = 0xDDE0E4,
+        onSurface = 0x1C1C1C, onSurfaceVariant = 0x626262, outline = 0xB8BCC2, outlineVariant = 0xE1E3E6,
     )
     private val CLASSIC_DARK = NeutralSet(
-        background = 0x1C1C1C, surfaceLowest = 0x171717, card = 0x242424, container = 0x292929,
-        field = 0x303030, fieldStrong = 0x383838,
-        onSurface = 0xF2F2F2, onSurfaceVariant = 0xB8B8B8, outline = 0x5A5A5A, outlineVariant = 0x393939,
+        background = 0x191A1C, surfaceLowest = 0x171717, card = 0x242424, container = 0x292929,
+        field = 0x2E3034, fieldStrong = 0x36383D,
+        onSurface = 0xF2F2F2, onSurfaceVariant = 0xB8B8B8, outline = 0x5A5D63, outlineVariant = 0x393B40,
     )
 
     fun of(style: KontaktStyleId, dark: Boolean): NeutralSet = when (style) {
@@ -119,7 +119,7 @@ object Neutrals {
 
 /** Три спокойных акцента Kontakt. Белый в светлой теме использует графитовую заливку для читаемых кнопок. */
 object AccentPalette {
-    private const val GRAPHITE = 0x323232
+    private const val GRAPHITE = 0x3A3A3A
     private const val CLASSIC_BLUE = 0x4A76A8
 
     fun nominal(id: AccentId): Int = when (id) {
