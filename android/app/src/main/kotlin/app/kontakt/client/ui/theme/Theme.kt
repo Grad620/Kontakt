@@ -222,7 +222,6 @@ private val KontaktTypography = Typography(
 
 /** VK Classic: плотнее и мельче, как мобильная версия VK. */
 private val ClassicTypography = Typography(
-    defaultFontFamily = FontFamily.SansSerif,
     headlineLarge = TextStyle(fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.SemiBold),
     headlineMedium = TextStyle(fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.Medium),
     headlineSmall = TextStyle(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Medium),
