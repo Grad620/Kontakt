@@ -3,8 +3,8 @@ package app.kontakt.client.auth
 import androidx.activity.ComponentActivity
 import app.kontakt.client.BuildConfig
 import com.vk.api.sdk.VK
-import com.vk.api.sdk.VKAuthenticationResult
-import com.vk.api.sdk.VKScope
+import com.vk.api.sdk.auth.VKAuthenticationResult
+import com.vk.api.sdk.auth.VKScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
