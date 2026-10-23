@@ -23,7 +23,7 @@ class KontaktApp : Application(), ImageLoaderFactory {
         if (BuildConfig.VK_STANDALONE_CONFIGURED) {
             runCatching {
                 com.vk.api.sdk.VK.setConfig(
-                    com.vk.api.sdk.VKApiConfig.builder(this)
+                    com.vk.api.sdk.VKApiConfig(this).builder(this)
                         .setAppId(BuildConfig.VK_STANDALONE_APP_ID.toInt())
                         .setValidationHandler(com.vk.api.sdk.VKDefaultValidationHandler(this))
                         .setCustomValueStorage(tokenStore)
