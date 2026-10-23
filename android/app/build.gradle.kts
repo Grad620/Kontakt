@@ -5,17 +5,16 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("vkid.manifest.placeholders")
 }
 
-// ID классического приложения VK (тип Standalone) берётся из VK_STANDALONE_APP_ID.
-// Не используем VK ID client_secret в Android APK: для входа применяется официальный VK Android SDK.
 fun config(name: String): String =
     providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orElse("").get().trim()
 
-val vkStandaloneAppId = config("VK_STANDALONE_APP_ID")
+val vkClientId = config("VK_CLIENT_ID")
+val vkClientSecret = config("VK_CLIENT_SECRET")
+val vkScopes = config("VK_SCOPES").ifBlank { "friends,wall,messages,photos,docs,status,groups,video,audio,stories,pages,notes,notifications" }
 
-// Release signing credentials are supplied only by CI secrets or local environment.
-// Never commit the signing keystore or passwords.
 val signingKeyBase64 = config("ANDROID_SIGNING_KEY_BASE64")
 val signingStorePassword = config("ANDROID_SIGNING_STORE_PASSWORD")
 val signingKeyAlias = config("ANDROID_SIGNING_KEY_ALIAS")
@@ -37,15 +36,12 @@ android {
         versionCode = 6
         versionName = "0.1.5"
 
-        buildConfigField("String", "VK_STANDALONE_APP_ID", "\"$vkStandaloneAppId\"")
-        buildConfigField("boolean", "VK_ID_CONFIGURED", (vkStandaloneAppId.toIntOrNull()?.let { it > 0 } == true).toString())
-        // The classic VK Android SDK reads this resource; no client secret is embedded in the APK.
-        resValue("integer", "com_vk_sdk_AppId", vkStandaloneAppId.ifBlank { "0" })
+        buildConfigField("String", "VK_CLIENT_ID", "\"$vkClientId\"")
+        buildConfigField("String", "VK_SCOPES", "\"$vkScopes\"")
+        buildConfigField("boolean", "VK_ID_CONFIGURED", (vkClientId.isNotBlank() && vkClientSecret.isNotBlank()).toString())
+        // VK ID manifest placeholders are supplied by the official vkid.manifest.placeholders plugin.
     }
 
-    // Keep the existing debug signing identity temporarily so test APKs can update the
-    // already-installed app. Migrate this key to a GitHub Actions secret before removing it
-    // from version control; changing it now would force an uninstall/reinstall on the phone.
     signingConfigs {
         getByName("debug") {
             storeFile = file("debug.keystore")
@@ -69,16 +65,6 @@ android {
             if (signingKeyBase64.isNotBlank()) {
                 signingConfig = signingConfigs.getByName("release")
             }
-        }
-
-        // Phone-installable QA build: normal (non-test-only) APK, signed with the
-        // repository's stable debug key so successive test builds can update each other.
-        // This is NOT a production release and must never be published to stores.
-        create("installable") {
-            initWith(getByName("release"))
-            signingConfig = signingConfigs.getByName("debug")
-            isDebuggable = false
-            matchingFallbacks += listOf("release")
         }
     }
 
@@ -127,8 +113,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
 
-    // Официальный классический VK Android SDK (Standalone app login).
-    // Required by TokenStore for the VK SDK key-value storage contract.
+    implementation("com.vk.id:vkid:2.7.3")
     implementation("com.vk:android-sdk-core:4.1.0")
 
     testImplementation("junit:junit:4.13.2")
