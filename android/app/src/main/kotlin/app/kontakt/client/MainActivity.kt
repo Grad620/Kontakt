@@ -4,11 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.vk.id.AccessToken
-import com.vk.id.VKID
-import com.vk.id.VKIDAuthFail
-import com.vk.id.auth.VKIDAuthCallback
-import com.vk.id.auth.VKIDAuthParams
+import com.vk.api.sdk.VK
+import com.vk.api.sdk.auth.VKAuthenticationResult
+import com.vk.api.sdk.auth.VKScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,29 +31,25 @@ class MainActivity : ComponentActivity() {
         val app = application as KontaktApp
         val container = app.container
         if (BuildConfig.VK_ID_CONFIGURED) {
+            val authLauncher = VK.login(this) { result ->
+                when (result) {
+                    is VKAuthenticationResult.Success ->
+                        container.auth.onVkIdAuthSuccess(result.token.accessToken)
+                    is VKAuthenticationResult.Failed ->
+                        container.auth.onVkIdAuthFailure(
+                            result.exception.message ?: result.exception.javaClass.simpleName,
+                        )
+                }
+            }
             container.auth.attachLauncher {
-                val requestedScopes = BuildConfig.VK_SCOPES
-                    .split(',')
-                    .map(String::trim)
-                    .filter(String::isNotEmpty)
-                    .toSet()
-                VKID.instance.authorize(
-                    lifecycleOwner = this,
-                    callback = object : VKIDAuthCallback {
-                        override fun onAuth(accessToken: AccessToken) {
-                            container.auth.onVkIdAuthSuccess(accessToken.token)
-                        }
-
-                        override fun onFail(fail: VKIDAuthFail) {
-                            when (fail) {
-                                is VKIDAuthFail.Canceled -> container.auth.onVkIdAuthCanceled()
-                                else -> container.auth.onVkIdAuthFailure(fail.toString())
-                            }
-                        }
-                    },
-                    params = VKIDAuthParams {
-                        scopes = requestedScopes
-                    },
+                authLauncher.launch(
+                    arrayListOf(
+                        VKScope.MESSAGES,
+                        VKScope.FRIENDS,
+                        VKScope.WALL,
+                        VKScope.PHOTOS,
+                        VKScope.AUDIO,
+                    ),
                 )
             }
         }
