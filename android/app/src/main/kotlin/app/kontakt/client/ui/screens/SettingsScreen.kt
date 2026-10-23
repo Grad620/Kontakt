@@ -2,6 +2,7 @@ package app.kontakt.client.ui.screens
 
 import android.os.Build
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
@@ -91,6 +93,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
     val online by container.network.online.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    var activeCategory by rememberSaveable { mutableStateOf<String?>(null) }
     var confirmReset by rememberSaveable { mutableStateOf(false) }
     var confirmSignOut by rememberSaveable { mutableStateOf(false) }
 
@@ -98,7 +101,9 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Column(Modifier.fillMaxSize()) {
-        SubScreenHeader("Настройки", onBack)
+        SubScreenHeader(activeCategory?.let(::settingsCategoryTitle) ?: "Настройки") {
+            if (activeCategory != null) activeCategory = null else onBack()
+        }
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -108,6 +113,57 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(style.postGap),
         ) {
             Spacer(Modifier.height(style.postGap / 2))
+
+            if (activeCategory == null) {
+                Text(
+                    "Всё нужное — по разделам",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    "Выбери категорию, чтобы открыть её настройки.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                SettingsCategoryRow(
+                    title = "Аккаунт и вход",
+                    subtitle = "VK ID, выход и данные сеанса",
+                    icon = KontaktIcons.Person,
+                    onClick = { activeCategory = "account" },
+                )
+                SettingsCategoryRow(
+                    title = "Внешний вид и меню",
+                    subtitle = "Тема, цвета, стиль и порядок вкладок",
+                    icon = KontaktIcons.Settings,
+                    onClick = { activeCategory = "appearance" },
+                )
+                SettingsCategoryRow(
+                    title = "Лента и рекомендации",
+                    subtitle = "Фильтры рекламы, спама и интересов",
+                    icon = KontaktIcons.Feed,
+                    onClick = { activeCategory = "feed" },
+                )
+                SettingsCategoryRow(
+                    title = "Музыка",
+                    subtitle = "Доступные возможности и ограничения VK",
+                    icon = KontaktIcons.Music,
+                    onClick = { activeCategory = "music" },
+                )
+                SettingsCategoryRow(
+                    title = "Приложение и диагностика",
+                    subtitle = "Сеть, ошибки, версия и информация",
+                    icon = KontaktIcons.Info,
+                    onClick = { activeCategory = "app" },
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Новые параметры появятся здесь по мере реализации. Неработающие переключатели не показываем.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            if (activeCategory == "appearance") {
             SectionCard("Внешний вид") {
                 Text("Тема", style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(6.dp))
@@ -169,7 +225,9 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            }
 
+            if (activeCategory == "appearance") {
             SectionCard("Навигация") {
                 Text(
                     "Какие разделы показывать (внизу в Kontakt, в боковом меню в VK Classic) и в каком порядке. Должен остаться хотя бы один.",
@@ -188,7 +246,9 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                 }
                 TextButton(onClick = { scope.launch { settings.resetTabs() } }) { Text("Вернуть стандартный порядок") }
             }
+            }
 
+            if (activeCategory == "feed") {
             SectionCard("Лента и рекомендации") {
                 SwitchRow(
                     title = "Скрывать рекламу VK",
@@ -251,7 +311,9 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            }
 
+            if (activeCategory == "music") {
             SectionCard("Музыка") {
                 Text(
                     "Настроек плеера и пункта «Показывать музыку в профиле» пока нет: VK не даёт сторонним приложениям " +
@@ -260,7 +322,9 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
+            }
 
+            if (activeCategory == "account") {
             SectionCard("Аккаунт") {
                 Text(
                     "Вход выполнен через VK ID: пароль Kontakt не видит и не хранит. Несколько аккаунтов пока не " +
@@ -273,7 +337,9 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                 ) { Text("Выйти из аккаунта") }
             }
+            }
 
+            if (activeCategory == "app") {
             SectionCard("Сеть и диагностика") {
                 Text(
                     if (online) "Сеть: подключение есть." else "Сеть: подключения нет.",
@@ -306,7 +372,9 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            }
 
+            if (activeCategory == "app") {
             SectionCard("О приложении") {
                 Text(
                     "Kontakt ${BuildConfig.VERSION_NAME}\n" +
@@ -314,6 +382,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                         "Иконки: Material Icons (лицензия Apache 2.0).",
                     style = MaterialTheme.typography.bodyMedium,
                 )
+            }
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -607,4 +676,56 @@ private fun StylePreview(id: KontaktStyleId, accent: AccentId, dark: Boolean) {
 private fun KontaktStyleId.styleHint(): String = when (this) {
     KontaktStyleId.Kontakt -> "Как в современных мессенджерах: нижняя панель, мягкие карточки"
     KontaktStyleId.VkClassic -> "Цветная шапка, меню слева, плоские блоки на сером"
+}
+
+
+@Composable
+private fun SettingsCategoryRow(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 15.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
+        }
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text(title, style = MaterialTheme.typography.titleSmall)
+            Text(
+                subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Icon(
+            KontaktIcons.ChevronRight,
+            contentDescription = "Открыть раздел",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private fun settingsCategoryTitle(category: String): String = when (category) {
+    "account" -> "Аккаунт и вход"
+    "appearance" -> "Внешний вид и меню"
+    "feed" -> "Лента и рекомендации"
+    "music" -> "Музыка"
+    "app" -> "Приложение и диагностика"
+    else -> "Настройки"
 }
