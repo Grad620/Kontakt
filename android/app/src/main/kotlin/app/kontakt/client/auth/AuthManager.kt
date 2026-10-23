@@ -10,7 +10,7 @@ sealed interface AuthState {
     data class SignedOut(val message: String? = null) : AuthState
 }
 
-/** VK ID auth state. The SDK owns the sign-in UI; Kontakt only receives the resulting token. */
+/** VK authentication state. The official SDK owns the sign-in UI; Kontakt only receives the resulting token. */
 class AuthManager(private val store: TokenStore) {
     val isConfigured: Boolean = BuildConfig.VK_ID_CONFIGURED
     @Volatile private var cached: String? = store.load()
@@ -36,11 +36,11 @@ class AuthManager(private val store: TokenStore) {
             startAuth()
         } catch (e: Exception) {
             _busy.value = false
-            _state.value = AuthState.SignedOut("Не удалось открыть VK ID (${e.javaClass.simpleName}). Проверьте настройки приложения и подпись.")
+            _state.value = AuthState.SignedOut("Не удалось открыть окно авторизации VK (${e.javaClass.simpleName}). Проверьте настройки приложения и подпись.")
         }
     }
 
-    fun onVkIdAuthSuccess(token: String) {
+    fun onVkAuthSuccess(token: String) {
         _busy.value = false
         try {
             require(token.isNotBlank()) { "VK ID returned an empty access token" }
@@ -54,14 +54,14 @@ class AuthManager(private val store: TokenStore) {
     }
 
     /** User-initiated cancellation is not an authentication error; return to the signed-out state quietly. */
-    fun onVkIdAuthCanceled() {
+    fun onVkAuthCanceled() {
         _busy.value = false
         _state.value = AuthState.SignedOut()
     }
 
-    fun onVkIdAuthFailure(details: String) {
+    fun onVkAuthFailure(details: String) {
         _busy.value = false
-        _state.value = AuthState.SignedOut("VK ID не завершил авторизацию: $details")
+        _state.value = AuthState.SignedOut("VK не завершил авторизацию: $details")
     }
 
     fun onSessionExpired() {
