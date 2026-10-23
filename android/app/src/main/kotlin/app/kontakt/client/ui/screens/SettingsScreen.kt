@@ -101,9 +101,9 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Column(Modifier.fillMaxSize()) {
-        SubScreenHeader(activeCategory?.let(::settingsCategoryTitle) ?: "Настройки") {
+        SubScreenHeader(activeCategory?.let(::settingsCategoryTitle) ?: "Настройки", onBack = {
             if (activeCategory != null) activeCategory = null else onBack()
-        }
+        })
         Column(
             modifier = Modifier
                 .weight(1f)
