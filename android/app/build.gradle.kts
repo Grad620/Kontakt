@@ -5,17 +5,14 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("vkid.manifest.placeholders")
 }
 
-// Значения VK берутся из свойств Gradle (-PVK_CLIENT_ID=...) или переменных окружения.
-// В репозитории их нет. Без них проект всё равно собирается, но вход через VK ID будет недоступен.
+// ID классического приложения VK (тип Standalone) берётся из VK_STANDALONE_APP_ID.
+// Не используем VK ID client_secret в Android APK: для входа применяется официальный VK Android SDK.
 fun config(name: String): String =
     providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orElse("").get().trim()
 
-val vkClientId = config("VK_CLIENT_ID")
-val vkClientSecret = config("VK_CLIENT_SECRET")
-val vkScopes = config("VK_SCOPES") // например: friends,wall,messages — только после одобрения VK
+val vkStandaloneAppId = config("VK_STANDALONE_APP_ID")
 
 // Release signing credentials are supplied only by CI secrets or local environment.
 // Never commit the signing keystore or passwords.
@@ -40,18 +37,10 @@ android {
         versionCode = 6
         versionName = "0.1.5"
 
-        // Идентификатор приложения и список прав — не секреты. Секрет в BuildConfig не попадает.
-        buildConfigField("String", "VK_CLIENT_ID", "\"$vkClientId\"")
-        buildConfigField("String", "VK_SCOPES", "\"$vkScopes\"")
-        // VK ID requires the app ID and protected key in its documented SDK configuration.
-        // Do not add the protected key to BuildConfig or print it in CI logs.
-        buildConfigField("boolean", "VK_ID_CONFIGURED", (vkClientId.isNotBlank() && vkClientSecret.isNotBlank()).toString())
-
-        // Требование VK ID SDK: значения подставляются в манифест.
-        manifestPlaceholders["VKIDClientID"] = vkClientId.ifBlank { "0" }
-        manifestPlaceholders["VKIDClientSecret"] = vkClientSecret.ifBlank { "unset" }
-        manifestPlaceholders["VKIDRedirectHost"] = "vk.ru"
-        manifestPlaceholders["VKIDRedirectScheme"] = "vk${vkClientId.ifBlank { "0" }}"
+        buildConfigField("String", "VK_STANDALONE_APP_ID", "\"$vkStandaloneAppId\"")
+        buildConfigField("boolean", "VK_ID_CONFIGURED", (vkStandaloneAppId.toIntOrNull()?.let { it > 0 } == true).toString())
+        // The classic VK Android SDK reads this resource; no client secret is embedded in the APK.
+        resValue("integer", "com_vk_sdk_AppId", vkStandaloneAppId.ifBlank { "0" })
     }
 
     // Keep the existing debug signing identity temporarily so test APKs can update the
@@ -138,8 +127,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
 
-    // Официальная авторизация VK ID (лицензия MIT)
-    implementation("com.vk.id:vkid:2.7.3")
+    // Официальный классический VK Android SDK (Standalone app login).
     // Required by TokenStore for the VK SDK key-value storage contract.
     implementation("com.vk:android-sdk-core:4.1.0")
 
