@@ -34,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -90,14 +89,10 @@ fun LoginScreen(container: AppContainer) {
             Box(
                 modifier = Modifier
                     .size(84.dp)
-                    .shadow(18.dp, RoundedCornerShape(26.dp), ambientColor = Color(0x554C7DFF), spotColor = Color(0x554C7DFF))
+                    .shadow(14.dp, RoundedCornerShape(26.dp), ambientColor = Kontakt.colors.glassShadow, spotColor = Kontakt.colors.glassShadow)
                     .clip(RoundedCornerShape(26.dp))
-                    .background(
-                        Brush.linearGradient(
-                            listOf(Color(0xFF4778F5), Color(0xFF7557D9), Color(0xFF4C9BCB)),
-                        ),
-                    )
-                    .border(1.dp, Color.White.copy(alpha = 0.22f), RoundedCornerShape(26.dp)),
+                    .background(MaterialTheme.colorScheme.primary)
+                    .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.18f), RoundedCornerShape(26.dp)),
                 contentAlignment = Alignment.Center,
             ) {
                 Image(
@@ -122,14 +117,14 @@ fun LoginScreen(container: AppContainer) {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "Твой ВКонтакте. Без лишнего.",
+                text = "ВКонтакте. Только нужное.",
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(14.dp))
             Text(
-                text = "Удобная лента, понятная навигация и настройки под тебя. Начнём с безопасного входа в твой аккаунт.",
+                text = "Чистая лента, удобные сообщения и спокойный интерфейс. Войди через официальный VK ID, чтобы начать.",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -158,14 +153,14 @@ fun LoginScreen(container: AppContainer) {
                     ),
                 ) {
                     Text(
-                        text = if (busy) "Подключаемся к VK ID…" else "Продолжить через VK",
+                        text = if (busy) "Подключаемся к VK ID…" else "Войти через VK ID",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    text = "Kontakt запросит права для сообщений, друзей, ленты, фото, видео и других разделов. Пароль вводится только в официальном окне VK.",
+                    text = "Откроется официальное окно VK ID. Пароль вводится на стороне VK — Kontakt его не видит и не сохраняет.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
