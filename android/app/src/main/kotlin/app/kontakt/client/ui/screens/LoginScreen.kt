@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -112,6 +113,7 @@ fun LoginScreen(container: AppContainer) {
                 text = "Kontakt",
                 style = MaterialTheme.typography.headlineLarge,
                 textAlign = TextAlign.Center,
+                fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = (-1.1).sp,
             )
@@ -186,7 +188,7 @@ fun LoginScreen(container: AppContainer) {
 
             Spacer(Modifier.height(24.dp))
             Text(
-                text = "Пароль вводится на стороне VK. Kontakt не получает и не хранит его.",
+                text = "Kontakt — независимый клиент, не связанный с VK.",
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
