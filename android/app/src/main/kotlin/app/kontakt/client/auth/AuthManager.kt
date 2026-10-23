@@ -20,7 +20,7 @@ class AuthManager(private val store: TokenStore) {
     val isConfigured: Boolean = BuildConfig.VK_STANDALONE_CONFIGURED
     @Volatile private var cached: String? = store.load()
     @Volatile private var activity: ComponentActivity? = null
-    private var loginLauncher: ActivityResultLauncher<ArrayList<VKScope>>? = null
+    private var loginLauncher: ActivityResultLauncher<Collection<VKScope>>? = null
     private val _state = MutableStateFlow<AuthState>(
         if (cached != null) AuthState.SignedIn else AuthState.SignedOut()
     )
