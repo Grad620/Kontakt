@@ -7,7 +7,7 @@
     <!-- Kontakt's snowflake, retained as the brand mark; rounded strokes read cleanly at launcher sizes. -->
     <path
         android:fillColor="@android:color/transparent"
-        android:strokeColor="#FFFFFFFF"
+        android:strokeColor="#FFF2F2F2"
         android:strokeWidth="5.2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
