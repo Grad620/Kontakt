@@ -16,6 +16,10 @@ class KontaktApp : Application(), ImageLoaderFactory {
     lateinit var container: AppContainer
         private set
 
+    /** Safe diagnostic only: never stores the app ID, tokens, or server response bodies. */
+    var vkSdkInitError: String? = null
+        private set
+
     override fun onCreate() {
         super.onCreate()
         installCrashRecorder()
@@ -29,9 +33,12 @@ class KontaktApp : Application(), ImageLoaderFactory {
                         .setCustomValueStorage(tokenStore)
                         .build(),
                 )
+            }.onFailure { error ->
+                // Do not swallow SDK initialization failures; keep diagnostics free of credentials.
+                vkSdkInitError = "VK SDK init failed: ${error.javaClass.simpleName}"
             }
         }
-        container = AppContainer(this, tokenStore)
+        container = AppContainer(this, tokenStore, vkSdkInitError)
     }
 
     private fun installCrashRecorder() {
