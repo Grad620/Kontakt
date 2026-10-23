@@ -126,7 +126,7 @@ fun LoginScreen(container: AppContainer) {
             )
             Spacer(Modifier.height(14.dp))
             Text(
-                text = "Чистая лента, удобные сообщения и спокойный интерфейс. Войди через официальный VK ID, чтобы начать.",
+                text = "Чистая лента, удобные сообщения и спокойный интерфейс. Войди через официальную авторизацию VK, чтобы начать.",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -134,9 +134,9 @@ fun LoginScreen(container: AppContainer) {
             Spacer(Modifier.height(30.dp))
 
             if (!auth.isConfigured) {
-                SectionCard("Нужно подключить приложение VK", titleTextAlign = TextAlign.Center) {
+                SectionCard("Нужно подключить приложение VK Standalone", titleTextAlign = TextAlign.Center) {
                     Text(
-                        "Для входа нужен проект VK ID. Добавьте VK_CLIENT_ID и VK_CLIENT_SECRET в настройки сборки GitHub Actions и проверьте Android-пакет com.kontakt.app и SHA-1 сертификата в кабинете VK ID.",
+                        "Для входа нужно приложение типа Standalone в кабинете VK. Добавьте его числовой ID в GitHub Actions → Settings → Secrets and variables → Actions → Variables под именем VK_STANDALONE_APP_ID. В кабинете укажите Android-пакет com.kontakt.app и SHA-1 подписи APK.",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                     )
@@ -162,7 +162,7 @@ fun LoginScreen(container: AppContainer) {
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    text = "Откроется официальное окно VK ID. Пароль вводится на стороне VK — Kontakt его не видит и не сохраняет.",
+                    text = "Откроется официальное окно авторизации VK. Пароль вводится на стороне VK — Kontakt его не видит и не сохраняет.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
