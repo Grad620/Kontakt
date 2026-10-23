@@ -38,7 +38,21 @@ jobs:
 
       # The debug APK is signed with android/app/debug.keystore in build.gradle.kts.
       # Report only its public SHA-1 fingerprint so it can be compared with VK ID settings.
+      - name: Validate VK Standalone app ID
+        env:
           VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$VK_STANDALONE_APP_ID" ]]; then
+            echo "::warning title=VK Standalone app is not configured::Debug APK will build, but login stays disabled until VK_STANDALONE_APP_ID is configured."
+          elif [[ ! "$VK_STANDALONE_APP_ID" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error title=Invalid VK Standalone app ID::Set VK_STANDALONE_APP_ID to the numeric ID of your Standalone application. The value is not printed."
+            exit 1
+          else
+            echo "VK Standalone app ID is configured; its value is hidden."
+          fi
+
       - name: Report debug signing certificate fingerprint
         shell: bash
         run: |
