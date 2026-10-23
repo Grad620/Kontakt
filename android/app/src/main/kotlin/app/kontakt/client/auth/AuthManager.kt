@@ -16,7 +16,10 @@ sealed interface AuthState {
 }
 
 /** Classic VK Standalone SDK authentication; tokens are stored encrypted by TokenStore. */
-class AuthManager(private val store: TokenStore) {
+class AuthManager(
+    private val store: TokenStore,
+    private val sdkInitError: String? = null,
+) {
     val isConfigured: Boolean = BuildConfig.VK_STANDALONE_CONFIGURED
     @Volatile private var cached: String? = store.load()
     @Volatile private var activity: ComponentActivity? = null
@@ -37,9 +40,8 @@ class AuthManager(private val store: TokenStore) {
      */
     fun attachLifecycleOwner(owner: ComponentActivity) {
         activity = owner
-        // VK SDK 4.1.0 requires its app ID resource to be configured before VK.login().
-        // When building an unconfigured UI/test APK, do not initialize the SDK launcher.
-        if (!isConfigured) {
+        // SDK initialization must have succeeded before registering its login launcher.
+        if (!isConfigured || sdkInitError != null) {
             loginLauncher = null
             return
         }
@@ -60,9 +62,9 @@ class AuthManager(private val store: TokenStore) {
                     }
                 }
                 is VKAuthenticationResult.Failed -> {
+                    // SDK exception messages can contain provider-specific details; keep UI concise.
                     _state.value = AuthState.SignedOut(
-                        "VK не завершил авторизацию: ${result.exception.message ?: result.exception.javaClass.simpleName}"
-                            .take(200)
+                        "VK не завершил авторизацию: ${result.exception.javaClass.simpleName}".take(200)
                     )
                 }
             }
@@ -77,10 +79,14 @@ class AuthManager(private val store: TokenStore) {
     }
 
     fun signIn() {
-        if (!isConfigured || _busy.value) {
+        if (!isConfigured || sdkInitError != null || _busy.value) {
             if (!isConfigured) {
                 _state.value = AuthState.SignedOut(
                     "Приложение VK Standalone не настроено. Добавьте числовой VK_STANDALONE_APP_ID в GitHub Actions."
+                )
+            } else if (sdkInitError != null) {
+                _state.value = AuthState.SignedOut(
+                    "Не удалось инициализировать VK SDK ($sdkInitError). Эта сборка не может начать вход; проверьте диагностику сборки."
                 )
             }
             return
@@ -116,7 +122,7 @@ class AuthManager(private val store: TokenStore) {
         } catch (e: Exception) {
             _busy.value = false
             _state.value = AuthState.SignedOut(
-                "Не удалось запустить авторизацию VK (${e.javaClass.simpleName}). Проверьте ID приложения, пакет и SHA-1."
+                "Не удалось запустить авторизацию VK (${e.javaClass.simpleName}). Проверьте конфигурацию приложения."
             )
         }
     }
