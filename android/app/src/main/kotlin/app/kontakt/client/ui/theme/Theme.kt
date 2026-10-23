@@ -201,7 +201,6 @@ private fun kontaktColors(accent: AccentId, dark: Boolean, style: KontaktStyleId
 
 /** Kontakt: чистая гротескная типографика; подписи разделов — моноширинные, как на техничных экранах. */
 private val KontaktTypography = Typography(
-    defaultFontFamily = FontFamily.SansSerif,
     headlineLarge = TextStyle(fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.8).sp),
     headlineMedium = TextStyle(fontSize = 26.sp, lineHeight = 32.sp, fontWeight = FontWeight.SemiBold, letterSpacing = (-0.4).sp),
     headlineSmall = TextStyle(fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold),
