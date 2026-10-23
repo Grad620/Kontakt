@@ -28,7 +28,7 @@ import app.kontakt.client.data.MessagesRepository
 import app.kontakt.client.ui.common.formatChatTime
 import app.kontakt.client.ui.common.vmFactory
 import app.kontakt.client.ui.components.PagedColumn
-import app.kontakt.client.ui.components.ScreenHeader
+import app.kontakt.client.ui.components.SubScreenHeader
 import app.kontakt.client.ui.components.SkeletonKind
 import kotlinx.coroutines.flow.StateFlow
 
@@ -61,7 +61,7 @@ fun MessagesHistoryScreen(container: AppContainer, peerId: Long, onBack: () -> U
     val state by vm.state.collectAsStateWithLifecycle()
 
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
-        ScreenHeader("Диалог", onBack = onBack)
+        SubScreenHeader("Диалог", onBack = onBack)
         PagedColumn(
             state = state,
             itemKey = { it.id },
