@@ -10,6 +10,7 @@ import app.kontakt.client.data.ApiCapabilityProbe
 import app.kontakt.client.data.ChatsRepository
 import app.kontakt.client.data.FeedRepository
 import app.kontakt.client.data.FilterStats
+import app.kontakt.client.data.MessagesRepository
 import app.kontakt.client.data.ForYouRepository
 import app.kontakt.client.data.ProfileRepository
 import app.kontakt.client.data.VkChunkLoader
@@ -57,6 +58,7 @@ class AppContainer(context: Context) {
 
     val profileRepo = ProfileRepository(api)
     val chatsRepo = ChatsRepository(api)
+    val messagesRepo = MessagesRepository(api)
     val feedRepo = FeedRepository(chunkLoader, recommender, filterStats)
     val forYouRepo = ForYouRepository(chunkLoader, recommender, filterStats)
 
