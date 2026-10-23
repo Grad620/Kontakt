@@ -4,9 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.vk.api.sdk.VK
-import com.vk.api.sdk.auth.VKAuthenticationResult
-import com.vk.api.sdk.auth.VKScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,29 +27,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val app = application as KontaktApp
         val container = app.container
-        if (BuildConfig.VK_ID_CONFIGURED) {
-            val authLauncher = VK.login(this) { result ->
-                when (result) {
-                    is VKAuthenticationResult.Success ->
-                        container.auth.onVkAuthSuccess(result.token.accessToken)
-                    is VKAuthenticationResult.Failed ->
-                        container.auth.onVkAuthFailure(
-                            result.exception.message ?: result.exception.javaClass.simpleName,
-                        )
-                }
-            }
-            container.auth.attachLauncher {
-                authLauncher.launch(
-                    arrayListOf(
-                        VKScope.MESSAGES,
-                        VKScope.FRIENDS,
-                        VKScope.WALL,
-                        VKScope.PHOTOS,
-                        VKScope.AUDIO,
-                    ),
-                )
-            }
-        }
+        container.auth.attachLifecycleOwner(this)
+
         val reportFile = File(filesDir, KontaktApp.CRASH_REPORT)
         val report = runCatching { reportFile.takeIf { it.isFile }?.readText() }.getOrNull()
 
@@ -90,7 +66,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        (application as? KontaktApp)?.container?.auth?.detachLauncher()
+        (application as? KontaktApp)?.container?.auth?.detachLifecycleOwner(this)
         super.onDestroy()
     }
 }
