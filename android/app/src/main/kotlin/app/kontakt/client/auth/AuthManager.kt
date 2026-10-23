@@ -43,13 +43,13 @@ class AuthManager(private val store: TokenStore) {
     fun onVkAuthSuccess(token: String) {
         _busy.value = false
         try {
-            require(token.isNotBlank()) { "VK ID returned an empty access token" }
+            require(token.isNotBlank()) { "VK SDK returned an empty access token" }
             store.save(token)
             cached = token
             _state.value = AuthState.SignedIn
         } catch (_: Exception) {
             cached = null
-            _state.value = AuthState.SignedOut("VK ID выполнил вход, но Kontakt не смог безопасно сохранить сессию. Повторите попытку.")
+            _state.value = AuthState.SignedOut("VK выполнил вход, но Kontakt не смог безопасно сохранить сессию. Повторите попытку.")
         }
     }
 
