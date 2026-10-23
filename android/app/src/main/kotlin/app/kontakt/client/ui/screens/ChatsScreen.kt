@@ -1,6 +1,7 @@
 package app.kontakt.client.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -65,7 +66,7 @@ class ChatsViewModel(repo: ChatsRepository) : ViewModel() {
 }
 
 @Composable
-fun ChatsScreen(container: AppContainer) {
+fun ChatsScreen(container: AppContainer, onOpenChat: (ChatItem) -> Unit = {}) {
     val vm: ChatsViewModel = viewModel(factory = vmFactory { ChatsViewModel(container.chatsRepo) })
     val state by vm.state.collectAsStateWithLifecycle()
     var query by rememberSaveable { mutableStateOf("") }
@@ -100,16 +101,16 @@ fun ChatsScreen(container: AppContainer) {
             skeleton = SkeletonKind.Chats,
             emptyIcon = if (query.isBlank()) KontaktIcons.Chat else KontaktIcons.Search,
             modifier = Modifier.weight(1f),
-        ) { chat -> ChatRow(chat) }
+        ) { chat -> ChatRow(chat, onClick = { onOpenChat(chat) }) }
     }
 }
 
 @Composable
-private fun ChatRow(chat: ChatItem) {
+private fun ChatRow(chat: ChatItem, onClick: () -> Unit) {
     val style = Kontakt.style
     val unread = chat.unread > 0
     val tint = if (style.unreadTint && unread) Kontakt.colors.accentSoft else Color.Transparent
-    Column(Modifier.background(tint)) {
+    Column(Modifier.background(tint).clickable(onClick = onClick)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
