@@ -1,6 +1,7 @@
 package app.kontakt.client.auth
 
 import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
 import app.kontakt.client.BuildConfig
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.auth.VKAuthenticationResult
@@ -19,6 +20,7 @@ class AuthManager(private val store: TokenStore) {
     val isConfigured: Boolean = BuildConfig.VK_STANDALONE_CONFIGURED
     @Volatile private var cached: String? = store.load()
     @Volatile private var activity: ComponentActivity? = null
+    private var loginLauncher: ActivityResultLauncher<ArrayList<VKScope>>? = null
     private val _state = MutableStateFlow<AuthState>(
         if (cached != null) AuthState.SignedIn else AuthState.SignedOut()
     )
@@ -27,9 +29,45 @@ class AuthManager(private val store: TokenStore) {
     val busy: StateFlow<Boolean> = _busy.asStateFlow()
 
     fun token(): String? = cached
-    fun attachLifecycleOwner(owner: ComponentActivity) { activity = owner }
+
+    /**
+     * Register the Activity Result launcher while the Activity is being created.
+     * Do not call VK.login() from signIn(): it registers a launcher and must run
+     * before the Activity reaches STARTED.
+     */
+    fun attachLifecycleOwner(owner: ComponentActivity) {
+        activity = owner
+        loginLauncher = VK.login(owner) { result ->
+            _busy.value = false
+            when (result) {
+                is VKAuthenticationResult.Success -> {
+                    val token = result.token.accessToken
+                    runCatching {
+                        store.save(token)
+                        cached = token
+                        _state.value = AuthState.SignedIn
+                    }.onFailure {
+                        cached = null
+                        _state.value = AuthState.SignedOut(
+                            "Вход выполнен, но Kontakt не смог безопасно сохранить сессию. Повторите попытку."
+                        )
+                    }
+                }
+                is VKAuthenticationResult.Failed -> {
+                    _state.value = AuthState.SignedOut(
+                        "VK не завершил авторизацию: ${result.exception.message ?: result.exception.javaClass.simpleName}"
+                            .take(200)
+                    )
+                }
+            }
+        }
+    }
+
     fun detachLifecycleOwner(owner: ComponentActivity) {
-        if (activity === owner) activity = null
+        if (activity === owner) {
+            activity = null
+            loginLauncher = null
+        }
     }
 
     fun signIn() {
@@ -42,55 +80,32 @@ class AuthManager(private val store: TokenStore) {
             return
         }
         val owner = activity
-        if (owner == null) {
+        val launcher = loginLauncher
+        if (owner == null || launcher == null) {
             _state.value = AuthState.SignedOut("Экран входа ещё запускается. Попробуйте ещё раз.")
             return
         }
+        val scopes = BuildConfig.VK_SCOPES.split(',').map(String::trim).filter(String::isNotEmpty)
+        val requestedScopes = scopes.mapNotNull { scope ->
+            when (scope.lowercase()) {
+                "friends" -> VKScope.FRIENDS
+                "wall" -> VKScope.WALL
+                "photos" -> VKScope.PHOTOS
+                "audio" -> VKScope.AUDIO
+                "messages" -> VKScope.MESSAGES
+                "groups" -> VKScope.GROUPS
+                "docs" -> VKScope.DOCS
+                "video" -> VKScope.VIDEO
+                "status" -> VKScope.STATUS
+                "stories" -> VKScope.STORIES
+                "pages" -> VKScope.PAGES
+                "notes" -> VKScope.NOTES
+                "notifications" -> VKScope.NOTIFICATIONS
+                else -> null
+            }
+        }
         _busy.value = true
         try {
-            val launcher = VK.login(owner) { result ->
-                _busy.value = false
-                when (result) {
-                    is VKAuthenticationResult.Success -> {
-                        val token = result.token.accessToken
-                        runCatching {
-                            store.save(token)
-                            cached = token
-                            _state.value = AuthState.SignedIn
-                        }.onFailure {
-                            cached = null
-                            _state.value = AuthState.SignedOut(
-                                "Вход выполнен, но Kontakt не смог безопасно сохранить сессию. Повторите попытку."
-                            )
-                        }
-                    }
-                    is VKAuthenticationResult.Failed -> {
-                        _state.value = AuthState.SignedOut(
-                            "VK не завершил авторизацию: ${result}"
-                                .take(200)
-                        )
-                    }
-                }
-            }
-            val scopes = BuildConfig.VK_SCOPES.split(',').map(String::trim).filter(String::isNotEmpty)
-            val requestedScopes = scopes.mapNotNull { scope ->
-                when (scope.lowercase()) {
-                    "friends" -> VKScope.FRIENDS
-                    "wall" -> VKScope.WALL
-                    "photos" -> VKScope.PHOTOS
-                    "audio" -> VKScope.AUDIO
-                    "messages" -> VKScope.MESSAGES
-                    "groups" -> VKScope.GROUPS
-                    "docs" -> VKScope.DOCS
-                    "video" -> VKScope.VIDEO
-                    "status" -> VKScope.STATUS
-                    "stories" -> VKScope.STORIES
-                    "pages" -> VKScope.PAGES
-                    "notes" -> VKScope.NOTES
-                    "notifications" -> VKScope.NOTIFICATIONS
-                    else -> null
-                }
-            }
             launcher.launch(ArrayList(requestedScopes))
         } catch (e: Exception) {
             _busy.value = false
