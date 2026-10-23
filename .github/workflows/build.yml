@@ -15,7 +15,7 @@ permissions:
 # separate from PR checks so a PR cannot cancel the APK-producing push run.
 concurrency:
   group: kontakt-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   verify:
