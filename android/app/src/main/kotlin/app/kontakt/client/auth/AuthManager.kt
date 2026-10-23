@@ -37,6 +37,12 @@ class AuthManager(private val store: TokenStore) {
      */
     fun attachLifecycleOwner(owner: ComponentActivity) {
         activity = owner
+        // VK SDK 4.1.0 requires its app ID resource to be configured before VK.login().
+        // When building an unconfigured UI/test APK, do not initialize the SDK launcher.
+        if (!isConfigured) {
+            loginLauncher = null
+            return
+        }
         loginLauncher = VK.login(owner) { result ->
             _busy.value = false
             when (result) {
