@@ -48,21 +48,19 @@
 
 По данным, опубликованным в 2026 году: в приватных репозиториях на плане Free — 2000 минут Actions в месяц и 500 МБ хранилища артефактов; в публичных стандартные раннеры бесплатны без лимита минут. Сборка Android обычно занимает несколько минут, workflow хранит APK 7 дней, чтобы не забивать квоту. Условия могут меняться: смотрите Settings → Billing у себя.
 
-## Подключить авторизацию VK (классическое приложение Standalone)
+## Подключить авторизацию VK ID
 
-Kontakt использует официальный **VK Android SDK** и вход через приложение типа **Standalone** — это другой тип регистрации, не VK ID. Это стандартный поток SDK, а не форма логина/пароля внутри Kontakt.
+Kontakt использует **официальный VK ID Android SDK**, а не классический Standalone SDK. Используй уже созданное приложение в кабинете VK ID — новое Standalone-приложение создавать не нужно.
 
-1. В кабинете разработчика VK создай приложение типа **Standalone** (если кабинет больше не предлагает этот тип, не подменяй его приложением VK ID — тогда потребуется отдельная проверка доступных VK способов авторизации).
-2. В настройках приложения укажи Android-пакет **`com.kontakt.app`** и SHA-1 подписи из шага GitHub Actions **Report debug signing certificate fingerprint**. Для тестовой сборки используется `android/app/debug.keystore`; fingerprint можно посмотреть в успешном запуске Actions.
-3. В GitHub открой **Settings → Secrets and variables → Actions → Variables → New repository variable**:
-   - Name: `VK_STANDALONE_APP_ID`
-   - Value: числовой ID созданного Standalone-приложения.
-   
-   ID не является паролем и не требует `VK_CLIENT_SECRET`. В коде больше не используется конфигурация VK ID, а защищённый ключ VK ID не встраивается в APK.
-4. Запусти workflow заново (**Actions**). Без ID сборка всё равно соберётся для проверки интерфейса, но вход будет отключён; с ID будет включён официальный экран авторизации SDK.
-5. После установки APK проверь по очереди `users.get`, `messages.getConversations`, `newsfeed.get` и `friends.get` в разделе диагностики. Успешный вход не гарантирует разрешения на каждый метод API: если VK вернёт ошибку доступа, это отдельное ограничение VK, а не ошибка сохранения токена.
+1. В настройках VK ID проверь Android-платформу: пакет **`com.kontakt.app`** и SHA-1 именно той подписи, которой подписан тестовый APK. Workflow печатает SHA-1 debug-сертификата.
+2. В GitHub открой **Settings → Secrets and variables → Actions**:
+   - Repository variable `VK_CLIENT_ID` — числовой Client ID из кабинета VK ID.
+   - Repository secret `VK_CLIENT_SECRET` — защищённый ключ из кабинета VK ID. Не публикуй его в чате, репозитории или исходниках.
+   - `VK_SCOPES` (необязательно) — запрашиваемые разрешения через запятую.
+3. Запусти **Actions → Kontakt Android CI → Run workflow**. В workflow проверяется конфигурация и собирается APK. Успешная сборка сама по себе ещё не доказывает, что VK примет авторизацию.
+4. Установи APK и проверь вход. Если не работает, нужен точный текст ошибки VK ID; отдельно проверь совпадение package name и SHA-1 в кабинете.
 
-**Важно:** у APK должен совпадать package name и SHA-1 с теми, что зарегистрированы в кабинете VK. В проекте `namespace = app.kontakt.client`, но фактический Android application ID — **`com.kontakt.app`**. Использовать в кабинете значение `app.kontakt.client` неправильно.
+**Важно:** `namespace = app.kontakt.client` — это namespace Kotlin/Android, а фактический Android application ID — **`com.kontakt.app`**. Для регистрации Android-платформы используй `com.kontakt.app`.
 
 ## Что секрет, а что нет
 - Не в репозитории: `VK_CLIENT_SECRET`, токены, пароли. Они передаются только через GitHub Secrets.
