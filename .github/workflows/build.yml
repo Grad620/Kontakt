@@ -38,23 +38,7 @@ jobs:
 
       # The debug APK is signed with android/app/debug.keystore in build.gradle.kts.
       # Report only its public SHA-1 fingerprint so it can be compared with VK ID settings.
-      - name: Validate VK ID credentials
-        env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ ! "$VK_CLIENT_ID" =~ ^[1-9][0-9]*$ ]]; then
-            echo "::error title=VK ID is not configured::Set VK_CLIENT_ID to the numeric Client ID from the VK ID cabinet (not a legacy Standalone ID)."
-            exit 1
-          fi
-          if [[ -z "$VK_CLIENT_SECRET" ]]; then
-            echo "::error title=VK ID is not configured::Set VK_CLIENT_SECRET in GitHub Actions secrets. The value will not be printed."
-            exit 1
-          fi
-          echo "VK ID configuration values are present; values are hidden."
-
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
       - name: Report debug signing certificate fingerprint
         shell: bash
         run: |
@@ -76,10 +60,7 @@ jobs:
         id: lint_check
         working-directory: android
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
-          VK_SCOPES: ${{ vars.VK_SCOPES }}
-          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon lintDebug
@@ -89,10 +70,7 @@ jobs:
         if: always()
         working-directory: android
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
-          VK_SCOPES: ${{ vars.VK_SCOPES }}
-          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
         run: ./gradlew --no-daemon testDebugUnitTest
 
       - name: Upload lint and test reports when checks fail
@@ -111,10 +89,7 @@ jobs:
         if: always()
         working-directory: android
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
-          VK_SCOPES: ${{ vars.VK_SCOPES }}
-          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
         run: ./gradlew --no-daemon assembleDebug
 
       - name: Verify APK signing certificate fingerprint
@@ -190,63 +165,28 @@ jobs:
           sha256sum "$APK"
           echo "APK archive, package name, and Android signature checks passed."
 
-      - name: Verify resolved VK ID manifest values
+      - name: Verify configured VK Standalone ID
         if: always() && steps.debug_apk_build.outcome == 'success'
         working-directory: android
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
         shell: bash
         run: |
           set -euo pipefail
-          MANIFEST=$(find app/build/intermediates -path '*merged_manifests/debug*AndroidManifest.xml' -print -quit)
-          if [ -z "$MANIFEST" ] || [ ! -f "$MANIFEST" ]; then
-            echo "::error::Merged debug manifest was not generated."
-            exit 1
-          fi
-          if grep -Fq '${VKIDClientID}' "$MANIFEST" || grep -Fq '${VKIDClientSecret}' "$MANIFEST"; then
-            echo "::error::Unresolved VK ID manifest placeholder."
-            exit 1
-          fi
-          if [ -n "$VK_CLIENT_ID" ]; then
-            if [[ ! "$VK_CLIENT_ID" =~ ^[0-9]+$ ]]; then
-              echo "::error::VK_CLIENT_ID must contain only digits. Its value is not printed."
-              exit 1
-            fi
-            if ! grep -Fq "$VK_CLIENT_ID" "$MANIFEST"; then
-              echo "::error::Configured VK_CLIENT_ID is absent from merged manifest. Do not distribute this APK."
-              exit 1
-            fi
-            echo "Merged manifest contains the configured VK ID."
-          else
-            echo "::warning title=VK ID is not configured::APK is suitable for UI testing only; VK ID sign-in is disabled."
-          fi
-          if [ -z "$VK_CLIENT_SECRET" ]; then
-            echo "::warning title=VK ID secret is missing::VK ID sign-in is disabled until VK_CLIENT_SECRET is configured."
-          else
-            echo "VK_CLIENT_SECRET is present; its value is not printed."
-          fi
-
-      - name: Verify protected key is not embedded in BuildConfig source
-        if: always() && steps.debug_apk_build.outcome == 'success'
-        working-directory: android
-        env:
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -z "$VK_CLIENT_SECRET" ]; then
-            echo "VK_CLIENT_SECRET is not configured; skipping BuildConfig exposure check."
+          if [ -z "$VK_STANDALONE_APP_ID" ]; then
+            echo "::warning title=VK Standalone app is not configured::This APK is for UI/build testing; sign-in is disabled."
             exit 0
           fi
-          if [ -d app/build/generated/source/buildConfig ]; then
-            if grep -R -F -q -- "$VK_CLIENT_SECRET" app/build/generated/source/buildConfig; then
-              echo "::error title=Potential credential exposure::VK_CLIENT_SECRET was found in generated BuildConfig source."
-              exit 1
-            fi
+          if [[ ! "$VK_STANDALONE_APP_ID" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::VK_STANDALONE_APP_ID must contain only digits. Its value is not printed."
+            exit 1
           fi
-          echo "Protected key was not found in generated BuildConfig source."
- 
+          if ! grep -R -F -q -- "$VK_STANDALONE_APP_ID" app/build/generated/source/buildConfig; then
+            echo "::error::Configured VK Standalone ID is absent from generated BuildConfig."
+            exit 1
+          fi
+          echo "Configured VK Standalone ID is present in BuildConfig; no client secret is embedded."
+      
       - name: Upload debug APK (testing artifact, not a release)
         if: always() && steps.debug_apk_build.outcome == 'success' && steps.verify_debug_signing.outcome == 'success' && steps.verify_debug_apk.outcome == 'success'
         uses: actions/upload-artifact@v4
@@ -261,10 +201,7 @@ jobs:
         if: always()
         working-directory: android
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
-          VK_SCOPES: ${{ vars.VK_SCOPES }}
-          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
         run: ./gradlew --no-daemon assembleInstallable
 
       - name: Verify phone-installable QA APK
@@ -333,30 +270,22 @@ jobs:
             fi
           done
 
-      - name: Require valid VK ID configuration for release
+      - name: Require valid VK Standalone configuration for release
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -z "$VK_CLIENT_ID" || ! "$VK_CLIENT_ID" =~ ^[0-9]+$ ]]; then
-            echo "::error title=Release blocked::Set VK_CLIENT_ID to the numeric ID from the VK ID cabinet. The value is not printed."
+          if [[ -z "$VK_STANDALONE_APP_ID" || ! "$VK_STANDALONE_APP_ID" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error title=Release blocked::Set VK_STANDALONE_APP_ID to the numeric ID of the registered Standalone application. The value is not printed."
             exit 1
           fi
-          if [[ -z "$VK_CLIENT_SECRET" || "$VK_CLIENT_SECRET" == "unset" ]]; then
-            echo "::error title=Release blocked::VK_CLIENT_SECRET is missing. Configure it as a GitHub Actions secret; its value is never printed."
-            exit 1
-          fi
-          echo "VK ID release configuration is present. This check does not prove that VK cabinet settings or device sign-in work."
-
+          echo "VK Standalone app ID is configured. This check does not prove that login or API methods work on a real device."
+      
       - name: Build signed release APK
         working-directory: android
         env:
-          VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
-          VK_SCOPES: ${{ vars.VK_SCOPES }}
-          VK_STANDALONE_APP_ID: ${{ secrets.VK_STANDALONE_APP_ID }}
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
           ANDROID_SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
           ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}
           ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
