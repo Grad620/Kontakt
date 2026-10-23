@@ -64,6 +64,7 @@ import app.kontakt.client.ui.components.NavItem
 import app.kontakt.client.ui.screens.ChatsScreen
 import app.kontakt.client.ui.screens.FeedScreen
 import app.kontakt.client.ui.screens.MusicScreen
+import app.kontakt.client.ui.screens.MessagesHistoryScreen
 import app.kontakt.client.ui.screens.ProfileScreen
 import app.kontakt.client.ui.screens.SettingsScreen
 import app.kontakt.client.ui.theme.Kontakt
@@ -71,6 +72,7 @@ import app.kontakt.client.ui.theme.KontaktIcons
 import kotlinx.coroutines.launch
 
 private const val SETTINGS_ROUTE = "settings"
+private const val CHAT_ROUTE = "chat/{peerId}"
 
 /**
  * Оболочка приложения. Состав и порядок вкладок задаёт пользователь (Настройки → Навигация).
@@ -92,11 +94,11 @@ fun MainShell(container: AppContainer, tabs: List<TabId>, effects: EffectsMode) 
     // Стартовая вкладка выбирается один раз, при создании графа навигации.
     val startRoute = remember { tabs.first().id }
     val tabRoutes = tabs.map { it.id }
-    val showBar = currentRoute != SETTINGS_ROUTE && !classic
+    val showBar = currentRoute != SETTINGS_ROUTE && currentRoute != CHAT_ROUTE && !classic
 
     // Если открытую вкладку убрали из панели, переходим на первую из оставшихся.
     LaunchedEffect(tabs, currentRoute) {
-        if (currentRoute != null && currentRoute != SETTINGS_ROUTE && currentRoute !in tabRoutes) {
+        if (currentRoute != null && currentRoute != SETTINGS_ROUTE && currentRoute != CHAT_ROUTE && currentRoute !in tabRoutes) {
             navController.navigate(tabs.first().id) {
                 popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                 launchSingleTop = true
@@ -153,7 +155,17 @@ fun MainShell(container: AppContainer, tabs: List<TabId>, effects: EffectsMode) 
                         else slideOutHorizontally(tween(180)) { it / 18 } + fadeOut(tween(150))
                     },
                 ) {
-                    composable(TabId.Chats.id) { ChatsScreen(container) }
+                    composable(TabId.Chats.id) {
+                        ChatsScreen(container) { chat ->
+                            navController.navigate("chat/${chat.peerId}")
+                        }
+                    }
+                    composable(CHAT_ROUTE) { entry ->
+                        val peerId = entry.arguments?.getString("peerId")?.toLongOrNull()
+                        if (peerId != null) {
+                            MessagesHistoryScreen(container, peerId, onBack = { navController.popBackStack() })
+                        }
+                    }
                     composable(TabId.Feed.id) { FeedScreen(container) }
                     composable(TabId.Music.id) { MusicScreen() }
                     composable(TabId.Profile.id) { ProfileScreen(container) }
