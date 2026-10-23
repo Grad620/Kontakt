@@ -87,26 +87,26 @@ data class NeutralSet(
 object Neutrals {
     // Kontakt (в духе Telegram): светлые списки на светлом сером, тёмная тема — глубокий сине-графитовый.
     private val KONTAKT_LIGHT = NeutralSet(
-        background = 0xF0F2F5, surfaceLowest = 0xFFFFFF, card = 0xFFFFFF, container = 0xFFFFFF,
-        field = 0xE7ECF1, fieldStrong = 0xDDE4EB,
-        onSurface = 0x17212B, onSurfaceVariant = 0x5F6B79, outline = 0xB8C2CC, outlineVariant = 0xE1E4E8,
+        background = 0xF2F2F2, surfaceLowest = 0xFFFFFF, card = 0xFFFFFF, container = 0xFFFFFF,
+        field = 0xE8E8E8, fieldStrong = 0xDEDEDE,
+        onSurface = 0x1C1C1C, onSurfaceVariant = 0x626262, outline = 0xBDBDBD, outlineVariant = 0xE3E3E3,
     )
     private val KONTAKT_DARK = NeutralSet(
-        background = 0x0E1621, surfaceLowest = 0x0A111A, card = 0x17212B, container = 0x1C2733,
-        field = 0x202B36, fieldStrong = 0x2B3946,
-        onSurface = 0xE6EDF3, onSurfaceVariant = 0x9EABB8, outline = 0x536170, outlineVariant = 0x293744,
+        background = 0x1C1C1C, surfaceLowest = 0x171717, card = 0x242424, container = 0x292929,
+        field = 0x303030, fieldStrong = 0x383838,
+        onSurface = 0xF2F2F2, onSurfaceVariant = 0xB8B8B8, outline = 0x5A5A5A, outlineVariant = 0x393939,
     )
 
     // VK Classic: серый фон страницы и плоские белые блоки; в тёмной теме — графитовые.
     private val CLASSIC_LIGHT = NeutralSet(
-        background = 0xEDEEF0, surfaceLowest = 0xFFFFFF, card = 0xFFFFFF, container = 0xFFFFFF,
-        field = 0xE7E9ED, fieldStrong = 0xDADDE2,
-        onSurface = 0x0A0A0B, onSurfaceVariant = 0x5F6A77, outline = 0xC2C7CE, outlineVariant = 0xE3E5E8,
+        background = 0xF2F2F2, surfaceLowest = 0xFFFFFF, card = 0xFFFFFF, container = 0xFFFFFF,
+        field = 0xE8E8E8, fieldStrong = 0xDEDEDE,
+        onSurface = 0x1C1C1C, onSurfaceVariant = 0x626262, outline = 0xBDBDBD, outlineVariant = 0xE3E3E3,
     )
     private val CLASSIC_DARK = NeutralSet(
-        background = 0x19191A, surfaceLowest = 0x111112, card = 0x222223, container = 0x2A2A2C,
-        field = 0x303133, fieldStrong = 0x3B3C3F,
-        onSurface = 0xE1E3E6, onSurfaceVariant = 0x9A9DA3, outline = 0x4A4B4E, outlineVariant = 0x363739,
+        background = 0x1C1C1C, surfaceLowest = 0x171717, card = 0x242424, container = 0x292929,
+        field = 0x303030, fieldStrong = 0x383838,
+        onSurface = 0xF2F2F2, onSurfaceVariant = 0xB8B8B8, outline = 0x5A5A5A, outlineVariant = 0x393939,
     )
 
     fun of(style: KontaktStyleId, dark: Boolean): NeutralSet = when (style) {
@@ -119,14 +119,14 @@ object Neutrals {
 
 /** Три спокойных акцента Kontakt. Белый в светлой теме использует графитовую заливку для читаемых кнопок. */
 object AccentPalette {
-    private const val GRAPHITE = 0x2B2D33
+    private const val GRAPHITE = 0x323232
     private const val CLASSIC_BLUE = 0x4A76A8
 
     fun nominal(id: AccentId): Int = when (id) {
         AccentId.White -> 0xF3F5F6
         AccentId.Sky -> 0x4A9FE3
         AccentId.Blue -> 0x356AE6
-        AccentId.Green -> 0x399B70
+        AccentId.Green -> 0x00AB55
         AccentId.DarkGreen -> 0x16845B
         AccentId.Birch -> 0x83CFC0
         AccentId.Violet -> 0x7F55E3 // чуть темнее значения из ТЗ (#865CE8): белый текст на кнопке должен читаться (контраст 4,9)
@@ -149,6 +149,7 @@ object AccentPalette {
      * В VK Classic голубой и синий акценты — классический синий цвет шапки VK (#4A76A8): белый текст на нём читается.
      */
     fun fill(id: AccentId, dark: Boolean, style: KontaktStyleId = KontaktStyleId.Kontakt): Int = when {
+        dark && id == AccentId.Green -> GRAPHITE
         style == KontaktStyleId.VkClassic && !dark && (id == AccentId.Sky || id == AccentId.Blue) -> CLASSIC_BLUE
         id == AccentId.White && !dark -> GRAPHITE
         else -> nominal(id)
