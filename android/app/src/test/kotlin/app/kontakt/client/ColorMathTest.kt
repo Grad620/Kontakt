@@ -58,6 +58,14 @@ class ColorMathTest {
     }
 
     @Test
+    fun greenAccentRemainsGreenInDarkTheme() {
+        val green = AccentPalette.fill(AccentId.Green, dark = true)
+        assertEquals(AccentPalette.nominal(AccentId.Green), green)
+        assertTrue("тёмная тема должна сохранять зелёный оттенок", ((green shr 8) and 0xFF) > ((green shr 16) and 0xFF))
+        assertTrue("зелёный акцент должен отличаться от тёмного фона", ColorMath.contrast(green, Neutrals.background(dark = true)) >= 1.5)
+    }
+
+    @Test
     fun whiteAccentTurnsGraphiteInLightThemeOnly() {
         assertNotEquals(AccentPalette.nominal(AccentId.White), AccentPalette.fill(AccentId.White, dark = false))
         assertEquals(AccentPalette.nominal(AccentId.White), AccentPalette.fill(AccentId.White, dark = true))
