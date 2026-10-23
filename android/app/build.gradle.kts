@@ -38,6 +38,9 @@ android {
         buildConfigField("String", "VK_SCOPES", "\"$vkScopes\"")
         buildConfigField("boolean", "VK_STANDALONE_CONFIGURED", vkStandaloneAppId.matches(Regex("[1-9][0-9]*")).toString())
         resValue("integer", "com_vk_sdk_AppId", vkStandaloneAppId.ifBlank { "0" })
+        // Короткий хэш коммита, из которого собран APK (в GitHub Actions это GITHUB_SHA). Не секрет.
+        // Показывается в «О приложении», чтобы на телефоне можно было сверить версию с последним коммитом.
+        buildConfigField("String", "BUILD_COMMIT", "\"${config("GITHUB_SHA").take(7).ifBlank { "local" }}\"")
     }
 
     signingConfigs {

@@ -349,7 +349,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    "Kontakt ${BuildConfig.VERSION_NAME}, Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}).",
+                    "Kontakt ${BuildConfig.VERSION_NAME} (сборка ${BuildConfig.BUILD_COMMIT}), Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}).",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(Modifier.height(8.dp))
@@ -429,7 +429,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
             if (activeCategory == "app") {
             SectionCard("О приложении") {
                 Text(
-                    "Kontakt ${BuildConfig.VERSION_NAME}\n" +
+                    "Kontakt ${BuildConfig.VERSION_NAME} (сборка ${BuildConfig.BUILD_COMMIT})\n" +
                         "Неофициальный клиент ВКонтакте. Не связан с VK и Telegram. Без рекламы и аналитики.\n" +
                         "Иконки: Material Icons (лицензия Apache 2.0).",
                     style = MaterialTheme.typography.bodyMedium,
