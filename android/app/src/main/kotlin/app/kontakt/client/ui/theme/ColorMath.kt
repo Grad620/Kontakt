@@ -119,7 +119,7 @@ object Neutrals {
 
 /** Три спокойных акцента Kontakt. Белый в светлой теме использует графитовую заливку для читаемых кнопок. */
 object AccentPalette {
-    private const val GRAPHITE = 0x3A3A3A
+    private const val GRAPHITE = 0x383838
     private const val CLASSIC_BLUE = 0x4A76A8
 
     fun nominal(id: AccentId): Int = when (id) {
