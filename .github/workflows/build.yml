@@ -2,6 +2,7 @@ name: Kontakt Android CI
 
 on:
   push:
+    branches: ['**']
     tags: ['v*']
   pull_request:
     types: [opened, synchronize, reopened]
