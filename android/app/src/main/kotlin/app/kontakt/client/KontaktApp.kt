@@ -1,0 +1,81 @@
+package app.kontakt.client
+
+import android.app.Application
+import android.os.Process
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.disk.DiskCache
+import coil.memory.MemoryCache
+import app.kontakt.client.auth.TokenStore
+import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
+import kotlin.system.exitProcess
+
+class KontaktApp : Application(), ImageLoaderFactory {
+    lateinit var container: AppContainer
+        private set
+
+    /** Safe diagnostic only: never stores the app ID, tokens, or server response bodies. */
+    var vkSdkInitError: String? = null
+        private set
+
+    override fun onCreate() {
+        super.onCreate()
+        installCrashRecorder()
+        val tokenStore = TokenStore(this)
+        if (BuildConfig.VK_STANDALONE_CONFIGURED) {
+            runCatching {
+                com.vk.api.sdk.VK.setConfig(
+                    com.vk.api.sdk.VKApiConfig(this).builder(this)
+                        .setAppId(BuildConfig.VK_STANDALONE_APP_ID.toInt())
+                        .setValidationHandler(com.vk.api.sdk.VKDefaultValidationHandler(this))
+                        .setCustomValueStorage(tokenStore)
+                        .build(),
+                )
+            }.onFailure { error ->
+                // Do not swallow SDK initialization failures; keep diagnostics free of credentials.
+                vkSdkInitError = "VK SDK init failed: ${error.javaClass.simpleName}"
+            }
+        }
+        container = AppContainer(this, tokenStore, vkSdkInitError)
+    }
+
+    private fun installCrashRecorder() {
+        val previous = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, error ->
+            runCatching {
+                val writer = StringWriter()
+                error.printStackTrace(PrintWriter(writer))
+                File(filesDir, CRASH_REPORT).writeText(
+                    "UNCAUGHT_EXCEPTION on thread ${thread.name}\n" +
+                        writer.toString().take(MAX_REPORT_CHARS),
+                )
+            }
+            if (previous != null) {
+                previous.uncaughtException(thread, error)
+            } else {
+                Process.killProcess(Process.myPid())
+                exitProcess(10)
+            }
+        }
+    }
+
+    /** Кеш картинок с ограничениями: 20% памяти приложения и 64 МБ на диске. */
+    override fun newImageLoader(): ImageLoader =
+        ImageLoader.Builder(this)
+            .memoryCache { MemoryCache.Builder(this).maxSizePercent(0.2).build() }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(cacheDir.resolve("images"))
+                    .maxSizeBytes(64L * 1024 * 1024)
+                    .build()
+            }
+            .crossfade(true)
+            .build()
+
+    companion object {
+        const val CRASH_REPORT = "last_crash_report.txt"
+        const val MAX_REPORT_CHARS = 6000
+    }
+}

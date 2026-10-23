@@ -1,78 +1,305 @@
-name: Build Kontakt APK
+name: Kontakt Android CI
 
 on:
   push:
-    branches: [main, master]
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
   contents: read
 
+# Cancel superseded runs for the same branch and event, while keeping push builds
+# separate from PR checks so a PR cannot cancel the APK-producing push run.
+concurrency:
+  group: kontakt-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: false
+  queue: max
+
 jobs:
-  build:
+  verify:
+    name: Lint, unit tests and debug build
     runs-on: ubuntu-latest
     timeout-minutes: 45
-
     steps:
-      - name: Скачать проект
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Распаковать проект
-        id: project
-        run: |
-          set -e
-          mkdir -p _src
-          unzip -q -o kontakt-project-fixed-repository.zip -d _src
-          SETTINGS=$(find _src -name settings.gradle.kts -o -name settings.gradle | head -1)
-          if [ -z "$SETTINGS" ]; then
-            echo "Не найден файл настроек Gradle"
-            exit 1
-          fi
-          DIR=$(dirname "$SETTINGS")
-          if [ ! -f "$DIR/gradlew" ]; then
-            echo "Не найден gradlew"
-            exit 1
-          fi
-          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
-
-      - name: Включить desugaring для VK ID
-        working-directory: ${{ steps.project.outputs.dir }}
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          p = Path("app/build.gradle.kts")
-          s = p.read_text()
-          if "isCoreLibraryDesugaringEnabled = true" not in s:
-              s = re.sub(r'compileOptions\s*\{',
-                  lambda m: m.group(0) + '\n        isCoreLibraryDesugaringEnabled = true',
-                  s, count=1)
-          if "desugar_jdk_libs" not in s:
-              s = re.sub(r'dependencies\s*\{',
-                  lambda m: m.group(0) + '\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")',
-                  s, count=1)
-          p.write_text(s)
-          print("Desugaring enabled")
-          PY
-      - name: Установить Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Настроить Gradle
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Собрать APK
-        working-directory: ${{ steps.project.outputs.dir }}
+      # The debug APK is signed with android/app/debug.keystore in build.gradle.kts.
+      # Report only its public SHA-1 fingerprint so it can be compared with VK Standalone settings.
+      - name: Validate VK Standalone configuration
+        env:
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$VK_STANDALONE_APP_ID" =~ ^[1-9][0-9]*$ ]]; then
+            if [[ -z "$VK_STANDALONE_APP_ID" ]]; then
+              echo "::warning title=VK Standalone is not configured::Debug APK can build, but sign-in stays disabled until VK_STANDALONE_APP_ID is set."
+            else
+              echo "::error title=Invalid VK Standalone::VK_STANDALONE_APP_ID must be the numeric Client ID from the VK Standalone dashboard."
+              exit 1
+            fi
+          fi
+
+      - name: Report debug signing certificate fingerprint
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEYSTORE="android/app/debug.keystore"
+          if [ ! -f "$KEYSTORE" ]; then
+            echo "::error::Configured debug keystore is missing: $KEYSTORE"
+            exit 1
+          fi
+          SHA1=$(keytool -list -v -keystore "$KEYSTORE" -storepass android -alias androiddebugkey 2>/dev/null | awk -F': ' '/SHA1:/{print $2; found=1} END{if (!found) exit 1}')
+          if [ -z "$SHA1" ]; then
+            echo "::error::Could not read SHA-1 fingerprint from the configured debug keystore."
+            exit 1
+          fi
+          echo "Debug signing certificate SHA-1: $SHA1"
+          echo "Application ID: com.kontakt.app"
+
+      - name: Run Android Lint
+        id: lint_check
+        working-directory: android
+        env:
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug
+          ./gradlew --no-daemon lintDebug
 
-      - name: Сохранить APK
+      - name: Run unit tests
+        id: unit_tests
+        if: always()
+        working-directory: android
+        env:
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
+        run: ./gradlew --no-daemon testDebugUnitTest
+
+      - name: Upload lint and test reports when checks fail
+        if: always() && (steps.lint_check.outcome == 'failure' || steps.unit_tests.outcome == 'failure')
         uses: actions/upload-artifact@v4
         with:
-          name: Kontakt-debug-apk
-          path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
-          retention-days: 7
+          name: Kontakt-check-reports
+          path: |
+            android/app/build/reports/**
+            android/app/build/test-results/**
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Build debug APK for testing only
+        id: debug_apk_build
+        if: always()
+        working-directory: android
+        env:
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Verify APK signing certificate fingerprint
+        id: verify_debug_signing
+        if: always() && steps.debug_apk_build.outcome == 'success'
+        working-directory: android
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEYSTORE="app/debug.keystore"
+          APK=$(find app/build/outputs/apk/debug -name '*.apk' -print -quit)
+          APKSIGNER="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner"
+          if [ ! -f "$KEYSTORE" ] || [ -z "$APK" ]; then
+            echo "::error::Debug keystore or debug APK is missing."
+            exit 1
+          fi
+          KEY_INFO=$(keytool -list -v -keystore "$KEYSTORE" -storepass android -alias androiddebugkey 2>&1) || {
+            echo "::error::Could not read configured debug signing certificate."
+            exit 1
+          }
+          KEY_SHA1=$(printf '%s\n' "$KEY_INFO" | awk -F': ' '/SHA1:|SHA-1:/{print $2; exit}')
+          if [ -z "$KEY_SHA1" ]; then
+            echo "::error::Could not extract SHA-1 from configured debug keystore."
+            exit 1
+          fi
+          echo "Configured debug keystore SHA-1: $KEY_SHA1"
+          if ! APK_INFO=$("$APKSIGNER" verify --print-certs "$APK" 2>&1); then
+            echo "::error::apksigner could not verify the generated APK. Diagnostic output:"
+            echo "$APK_INFO"
+            exit 1
+          fi
+          printf '%s\n' "$APK_INFO"
+          APK_SHA1=$(printf '%s\n' "$APK_INFO" | awk 'BEGIN{IGNORECASE=1} /certificate SHA-1 digest:/{print $NF; exit}')
+          if [ -z "$APK_SHA1" ]; then
+            echo "::error::APK signature verified, but apksigner did not report a SHA-1 certificate digest."
+            exit 1
+          fi
+          echo "APK signer SHA-1: $APK_SHA1"
+          NORMAL_KEY_SHA1=$(printf '%s' "$KEY_SHA1" | tr '[:lower:]' '[:upper:]' | tr -d ':')
+          NORMAL_APK_SHA1=$(printf '%s' "$APK_SHA1" | tr '[:lower:]' '[:upper:]' | tr -d ':')
+          if [ "$NORMAL_KEY_SHA1" != "$NORMAL_APK_SHA1" ]; then
+            echo "::error::APK signer does not match the configured debug keystore."
+            exit 1
+          fi
+          echo "APK signer matches the configured debug keystore. Compare this SHA-1 with the Android platform entry in the VK Standalone dashboard; this does not prove OAuth succeeds."
+
+      - name: Verify debug APK package, archive, and signature
+        id: verify_debug_apk
+        if: always() && steps.debug_apk_build.outcome == 'success'
+        working-directory: android
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=$(find app/build/outputs/apk/debug -name '*.apk' -print -quit)
+          BUILD_TOOLS="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          if [ -z "$APK" ] || [ ! -s "$APK" ]; then
+            echo "::error::Debug APK is missing or empty."
+            exit 1
+          fi
+          if ! unzip -tq "$APK" >/dev/null; then
+            echo "::error::Debug APK archive is corrupt."
+            exit 1
+          fi
+          if ! "$BUILD_TOOLS/aapt" dump badging "$APK" | grep -Fq "package: name='com.kontakt.app'"; then
+            echo "::error::APK package metadata is missing or applicationId is not com.kontakt.app."
+            exit 1
+          fi
+          if ! "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK"; then
+            echo "::error::Android apksigner rejected the debug APK."
+            exit 1
+          fi
+          echo "APK SHA-256:"
+          sha256sum "$APK"
+          echo "APK archive, package name, and Android signature checks passed."
+
+      - name: Verify configured VK Standalone ID
+        working-directory: android
+        env:
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$VK_STANDALONE_APP_ID" ]]; then
+            echo "VK Standalone is not configured; this APK is for UI/build testing."
+            exit 0
+          fi
+          if [[ ! "$VK_STANDALONE_APP_ID" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::VK_STANDALONE_APP_ID must contain only digits."
+            exit 1
+          fi
+          if ! grep -R -F -q -- "$VK_STANDALONE_APP_ID" app/build/generated/source/buildConfig; then
+            echo "::error::Configured Standalone ID is absent from generated BuildConfig."
+            exit 1
+          fi
+          echo "Configured VK Standalone ID is present in BuildConfig."
+      - name: Upload debug APK (testing artifact, not a release)
+        if: always() && steps.debug_apk_build.outcome == 'success' && steps.verify_debug_signing.outcome == 'success' && steps.verify_debug_apk.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kontakt-debug-test-only
+          path: android/app/build/outputs/apk/debug/*.apk
+          retention-days: 90
           if-no-files-found: error
+
+  release:
+    name: Build signed release APK
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Require release signing credentials
+        env:
+          ANDROID_SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
+          ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}
+          ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
+          ANDROID_SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in ANDROID_SIGNING_KEY_BASE64 ANDROID_SIGNING_STORE_PASSWORD ANDROID_SIGNING_KEY_ALIAS ANDROID_SIGNING_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error title=Release signing is not configured::Missing GitHub Actions secret: $name"
+              exit 1
+            fi
+          done
+
+      - name: Require valid VK Standalone configuration for release
+        env:
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$VK_STANDALONE_APP_ID" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error title=VK Standalone configuration missing::Set numeric VK_STANDALONE_APP_ID before building a release."
+            exit 1
+          fi
+          echo "VK Standalone configuration is present; values are hidden."
+
+      - name: Build signed release APK
+        working-directory: android
+        env:
+          VK_STANDALONE_APP_ID: ${{ vars.VK_STANDALONE_APP_ID || secrets.VK_STANDALONE_APP_ID }}
+          ANDROID_SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
+          ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}
+          ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
+          ANDROID_SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon --no-build-cache assembleRelease
+
+      - name: Verify APK is signed
+        working-directory: android
+        run: |
+          set -euo pipefail
+          APK=$(find app/build/outputs/apk/release -name '*.apk' -print -quit)
+          test -n "$APK"
+          "$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner" verify --verbose "$APK"
+
+      - name: Upload signed release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kontakt-signed-release
+          path: android/app/build/outputs/apk/release/*.apk
+          retention-days: 30
+          if-no-files-found: error
+
+  publish:
+    name: Publish signed release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download signed release APK
+        uses: actions/download-artifact@v4
+        with:
+          name: Kontakt-signed-release
+          path: dist/
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Kontakt ${{ github.ref_name }}
+          generate_release_notes: true
+          files: dist/*.apk
+          fail_on_unmatched_files: true
