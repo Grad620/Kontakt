@@ -5,15 +5,13 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("vkid.manifest.placeholders")
 }
 
 fun config(name: String): String =
     providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orElse("").get().trim()
 
-val vkClientId = config("VK_CLIENT_ID")
-val vkClientSecret = config("VK_CLIENT_SECRET")
-val vkScopes = config("VK_SCOPES").ifBlank { "friends,wall,messages,photos,docs,status,groups,video,audio,stories,pages,notes,notifications" }
+val vkStandaloneAppId = config("VK_STANDALONE_APP_ID")
+val vkScopes = config("VK_SCOPES").ifBlank { "friends,wall,photos,audio,messages" }
 
 val signingKeyBase64 = config("ANDROID_SIGNING_KEY_BASE64")
 val signingStorePassword = config("ANDROID_SIGNING_STORE_PASSWORD")
@@ -36,10 +34,10 @@ android {
         versionCode = 6
         versionName = "0.1.5"
 
-        buildConfigField("String", "VK_CLIENT_ID", "\"$vkClientId\"")
+        buildConfigField("String", "VK_STANDALONE_APP_ID", "\"$vkStandaloneAppId\"")
         buildConfigField("String", "VK_SCOPES", "\"$vkScopes\"")
-        buildConfigField("boolean", "VK_ID_CONFIGURED", (vkClientId.isNotBlank() && vkClientSecret.isNotBlank()).toString())
-        // VK ID manifest placeholders are supplied by the official vkid.manifest.placeholders plugin.
+        buildConfigField("boolean", "VK_STANDALONE_CONFIGURED", vkStandaloneAppId.matches(Regex("[1-9][0-9]*")).toString())
+        resValue("integer", "com_vk_sdk_AppId", vkStandaloneAppId.ifBlank { "0" })
     }
 
     signingConfigs {
@@ -113,7 +111,6 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
 
-    implementation("com.vk.id:vkid:2.7.3")
     implementation("com.vk:android-sdk-core:4.1.0")
 
     testImplementation("junit:junit:4.13.2")
