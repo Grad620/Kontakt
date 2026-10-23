@@ -2,10 +2,9 @@ name: Kontakt Android CI
 
 on:
   push:
-    branches: [main, master, fix/security-ci-release, work/visible-kontakt-ui, design/style-system]
     tags: ['v*']
   pull_request:
-    branches: [main, master, work/visible-kontakt-ui, fix/security-ci-release, design/style-system]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
@@ -83,6 +82,8 @@ jobs:
           ./gradlew --no-daemon lintDebug testDebugUnitTest
 
       - name: Build debug APK for testing only
+        id: debug_apk_build
+        if: always()
         working-directory: android
         env:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
@@ -92,6 +93,8 @@ jobs:
         run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleDebug
 
       - name: Verify APK signing certificate fingerprint
+        id: verify_debug_signing
+        if: always() && steps.debug_apk_build.outcome == 'success'
         working-directory: android
         shell: bash
         run: |
@@ -134,6 +137,8 @@ jobs:
           echo "APK signer matches the configured debug keystore. Compare this SHA-1 with the Android platform entry in the VK ID dashboard; this does not prove OAuth succeeds."
 
       - name: Verify debug APK package, archive, and signature
+        id: verify_debug_apk
+        if: always() && steps.debug_apk_build.outcome == 'success'
         working-directory: android
         shell: bash
         run: |
@@ -161,6 +166,7 @@ jobs:
           echo "APK archive, package name, and Android signature checks passed."
 
       - name: Verify resolved VK ID manifest values
+        if: always() && steps.debug_apk_build.outcome == 'success'
         working-directory: android
         env:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
@@ -197,6 +203,7 @@ jobs:
           fi
 
       - name: Verify protected key is not embedded in BuildConfig source
+        if: always() && steps.debug_apk_build.outcome == 'success'
         working-directory: android
         env:
           VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
@@ -216,6 +223,7 @@ jobs:
           echo "Protected key was not found in generated BuildConfig source."
  
       - name: Upload debug APK (testing artifact, not a release)
+        if: always() && steps.debug_apk_build.outcome == 'success' && steps.verify_debug_signing.outcome == 'success' && steps.verify_debug_apk.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: Kontakt-debug-test-only
@@ -224,6 +232,8 @@ jobs:
           if-no-files-found: error
 
       - name: Build phone-installable QA APK
+        id: installable_apk_build
+        if: always()
         working-directory: android
         env:
           VK_CLIENT_ID: ${{ vars.VK_CLIENT_ID || secrets.VK_CLIENT_ID }}
@@ -233,6 +243,8 @@ jobs:
         run: ./gradlew --no-daemon --no-build-cache --rerun-tasks assembleInstallable
 
       - name: Verify phone-installable QA APK
+        id: verify_installable_apk
+        if: always() && steps.installable_apk_build.outcome == 'success'
         working-directory: android
         shell: bash
         run: |
@@ -252,6 +264,7 @@ jobs:
           sha256sum "$APK"
 
       - name: Upload phone-installable QA APK
+        if: always() && steps.installable_apk_build.outcome == 'success' && steps.verify_installable_apk.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: Kontakt-installable-qa-apk
