@@ -134,9 +134,9 @@ fun LoginScreen(container: AppContainer) {
             Spacer(Modifier.height(30.dp))
 
             if (!auth.isConfigured) {
-                SectionCard("Нужно настроить VK ID", titleTextAlign = TextAlign.Center) {
+                SectionCard("Нужно зарегистрировать приложение VK", titleTextAlign = TextAlign.Center) {
                     Text(
-                        "Для входа нужен Client ID и защищённый ключ из кабинета VK ID. Добавьте VK_CLIENT_ID в GitHub Actions → Settings → Secrets and variables → Actions → Variables, а VK_CLIENT_SECRET — в Secrets. В VK ID проверьте Android-пакет com.kontakt.app и SHA-1 подписи APK.",
+                        "Для классического входа нужно приложение типа Standalone в кабинете разработчика VK. Укажи пакет com.kontakt.app, главный Activity app.kontakt.client.MainActivity и SHA-1 сертификата APK. Числовой ID приложения добавь в GitHub Actions → Settings → Secrets and variables → Actions → Variables под именем VK_STANDALONE_APP_ID.",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                     )
@@ -155,7 +155,7 @@ fun LoginScreen(container: AppContainer) {
                     ),
                 ) {
                     Text(
-                        text = if (busy) "Подключаемся к VK ID…" else "Войти через VK ID",
+                        text = if (busy) "Подключаемся к VK…" else "Войти через VK",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
