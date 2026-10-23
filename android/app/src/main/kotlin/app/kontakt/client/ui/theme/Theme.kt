@@ -201,6 +201,9 @@ private fun kontaktColors(accent: AccentId, dark: Boolean, style: KontaktStyleId
 
 /** Kontakt: чистая гротескная типографика; подписи разделов — моноширинные, как на техничных экранах. */
 private val KontaktTypography = Typography(
+    defaultFontFamily = FontFamily.SansSerif,
+    headlineLarge = TextStyle(fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.8).sp),
+    headlineMedium = TextStyle(fontSize = 26.sp, lineHeight = 32.sp, fontWeight = FontWeight.SemiBold, letterSpacing = (-0.4).sp),
     headlineSmall = TextStyle(fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold),
     titleLarge = TextStyle(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.SemiBold),
     titleMedium = TextStyle(fontSize = 16.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold),
@@ -220,6 +223,9 @@ private val KontaktTypography = Typography(
 
 /** VK Classic: плотнее и мельче, как мобильная версия VK. */
 private val ClassicTypography = Typography(
+    defaultFontFamily = FontFamily.SansSerif,
+    headlineLarge = TextStyle(fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.SemiBold),
+    headlineMedium = TextStyle(fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.Medium),
     headlineSmall = TextStyle(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Medium),
     titleLarge = TextStyle(fontSize = 20.sp, lineHeight = 26.sp, fontWeight = FontWeight.Medium),
     titleMedium = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium),
