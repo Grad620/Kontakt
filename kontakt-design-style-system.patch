@@ -1,0 +1,1723 @@
+From 3dccd990c47fba2ac4751f0745285144a2e35ea9 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 23 Oct 2026 09:41:09 +0300
+Subject: [PATCH 1/5] design: launcher icon dots on a hexagonal grid, nothing
+ cut by adaptive masks
+
+The previous snowflake had diagonal arms (about 37 dp) longer than the vertical
+ones (32 dp): 4 dots fell outside the 72 dp circle mask and 10 outside the 66 dp
+safe zone, and the pattern turned into noise at launcher size.
+
+New foreground: six equal arms, centre dot, two side-dot pairs per arm, 61 dots
+of radius 1.85 on a 5-unit hexagonal grid. The farthest dot edge is 31.85 from
+the centre (safe zone is 33). Black background and white dots are unchanged.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01JzUdZYkoiPDqL5pBjLSwYm
+---
+ .../res/drawable/ic_launcher_foreground.xml   | 23 +++++++++++++++++--
+ 1 file changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/android/app/src/main/res/drawable/ic_launcher_foreground.xml b/android/app/src/main/res/drawable/ic_launcher_foreground.xml
+index 1ed85f1..4157be3 100644
+--- a/android/app/src/main/res/drawable/ic_launcher_foreground.xml
++++ b/android/app/src/main/res/drawable/ic_launcher_foreground.xml
+@@ -4,9 +4,28 @@
+     android:height="108dp"
+     android:viewportWidth="108"
+     android:viewportHeight="108">
+-    <!-- Nothing-inspired dotted snowflake: crisp monochrome dot-matrix brand mark. -->
++    <!--
++        Nothing-inspired dotted snowflake on a hexagonal dot grid: six equal arms, centre dot, two pairs of
++        side dots per arm. Every dot lies inside the 66dp safe zone (radius 33), so circle, squircle and
++        rounded-square adaptive-icon masks never cut it. Dot radius 1.85, grid step 5.
++    -->
+     <path
+         android:fillColor="#FFFFFFFF"
+         android:pathData="
+-            M52.9,22.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,26.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,30.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,34.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,38.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,42.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,46.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,50.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,54.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,58.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,62.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,66.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,70.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,74.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,78.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,82.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,86.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,54.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M48.9,51.7 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M44.9,49.4 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M40.9,47.1 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M36.9,44.8 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M32.9,42.5 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M28.9,40.2 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M24.9,37.9 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M20.9,35.6 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,54.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M56.9,51.7 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M60.9,49.4 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M64.8,47.1 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M68.8,44.8 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M72.8,42.5 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M76.8,40.2 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M80.8,37.9 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M84.8,35.6 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,54.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M48.9,56.3 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M44.9,58.6 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M40.9,60.9 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M36.9,63.2 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M32.9,65.5 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M28.9,67.8 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M24.9,70.1 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M20.9,72.4 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,54.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M56.9,56.3 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M60.9,58.6 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M64.8,60.9 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M68.8,63.2 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M72.8,65.5 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M76.8,67.8 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M80.8,70.1 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M84.8,72.4 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,30.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M48.9,26.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M56.9,26.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M52.9,78.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M48.9,82.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M56.9,82.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M36.9,45.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M32.9,41.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M32.9,49.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M68.8,45.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M72.8,41.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M72.8,49.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M36.9,63.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M32.9,59.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M32.9,67.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M68.8,63.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M72.8,59.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M72.8,67.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M44.9,49.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M48.9,51.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M56.9,51.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M60.9,49.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M44.9,59.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M48.9,57.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M56.9,57.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0 M60.9,59.0 a1.15,1.15 0,1 0,2.3 0 a1.15,1.15 0,1 0,-2.3 0" />
++            M52.15,24 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M52.15,29 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M47.82,31.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M56.48,31.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M52.15,34 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M26.17,39 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M34.83,39 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M52.15,39 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M69.47,39 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M78.13,39 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M30.5,41.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M47.82,41.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M56.48,41.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M73.8,41.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M34.83,44 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M43.49,44 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M52.15,44 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M60.81,44 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M69.47,44 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M30.5,46.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M39.16,46.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M65.14,46.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M73.8,46.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M43.49,49 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M52.15,49 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M60.81,49 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M39.16,51.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M47.82,51.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M56.48,51.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M65.14,51.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M52.15,54 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M39.16,56.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M47.82,56.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M56.48,56.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M65.14,56.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M43.49,59 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M52.15,59 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M60.81,59 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M30.5,61.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M39.16,61.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M65.14,61.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M73.8,61.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M34.83,64 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M43.49,64 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M52.15,64 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M60.81,64 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M69.47,64 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M30.5,66.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M47.82,66.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M56.48,66.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M73.8,66.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M26.17,69 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M34.83,69 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M52.15,69 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M69.47,69 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M78.13,69 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M52.15,74 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M47.82,76.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M56.48,76.5 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0 M52.15,79 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0
++            M52.15,84 a1.85,1.85 0,1 0,3.7 0 a1.85,1.85 0,1 0,-3.7 0" />
+ </vector>
+-- 
+2.43.0
+
+
+From 0116828b4771b8c2443e5edb919f8774fd2970f1 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 23 Oct 2026 09:43:36 +0300
+Subject: [PATCH 2/5] fix(messages): open a conversation at its newest message
+ and size bubbles to the text
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+messages.getHistory was requested with rev=1, which returns the OLDEST messages
+first, so opening a long chat showed its beginning and paging walked forward
+from there. Now rev=0 (newest first) and the list uses reverseLayout, so the
+latest message sits at the bottom and loading more adds older ones above.
+
+- MessagesMapping.kt: MessageItem and the page mapping moved out of the
+  network repository so the paging rules are unit-testable without Android.
+- PagedColumn: new reverseLayout parameter (pull-to-refresh is off in that mode).
+- Bubbles wrap their text (max 82% of the width) instead of always being 88% wide.
+- Tests: MessagesMappingTest (6) and a DTO decode test in VkResponseParserTest;
+  MessagesMapping is part of tools/verify-core.sh (84 pure-Kotlin tests pass).
+
+Whether VK allows messages.getHistory for the VK ID token is NOT verified here;
+the in-app "Проверить доступ к VK API" screen reports the real answer.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01JzUdZYkoiPDqL5pBjLSwYm
+---
+ .../kontakt/client/data/MessagesMapping.kt    | 37 ++++++++++
+ .../kontakt/client/data/MessagesRepository.kt | 27 ++-----
+ .../client/ui/components/PagedColumn.kt       | 22 ++++--
+ .../ui/screens/MessagesHistoryScreen.kt       | 59 +++++++++-------
+ .../app/kontakt/client/MessagesMappingTest.kt | 70 +++++++++++++++++++
+ .../kontakt/client/VkResponseParserTest.kt    | 15 ++++
+ android/tools/verify-core.sh                  |  4 +-
+ 7 files changed, 178 insertions(+), 56 deletions(-)
+ create mode 100644 android/app/src/main/kotlin/app/kontakt/client/data/MessagesMapping.kt
+ create mode 100644 android/app/src/test/kotlin/app/kontakt/client/MessagesMappingTest.kt
+
+diff --git a/android/app/src/main/kotlin/app/kontakt/client/data/MessagesMapping.kt b/android/app/src/main/kotlin/app/kontakt/client/data/MessagesMapping.kt
+new file mode 100644
+index 0000000..c2d8fd7
+--- /dev/null
++++ b/android/app/src/main/kotlin/app/kontakt/client/data/MessagesMapping.kt
+@@ -0,0 +1,37 @@
++package app.kontakt.client.data
++
++import app.kontakt.client.core.Page
++import app.kontakt.client.net.MessageHistoryResponse
++
++data class MessageItem(
++    val id: Long,
++    val fromId: Long,
++    val text: String,
++    val date: Long,
++    val outgoing: Boolean,
++)
++
++/**
++ * Превращает страницу `messages.getHistory` в страницу для UI.
++ *
++ * Запрос идёт с `rev=0`, поэтому VK отдаёт сообщения от новых к старым, и `offset` считается от самого
++ * свежего сообщения. Порядок сохраняется как есть: экран переписки показывает список с `reverseLayout`,
++ * поэтому первое (самое новое) сообщение оказывается внизу, а подгрузка добавляет более старые сверху.
++ *
++ * Следующий сдвиг не выдаётся, если страница пустая (защита от бесконечной подгрузки при неверном `count`)
++ * или уже получены все [MessageHistoryResponse.count] сообщений.
++ */
++fun MessageHistoryResponse.toMessagePage(offset: Int): Page<Int, MessageItem> {
++    val mapped = items.map { message ->
++        MessageItem(
++            id = message.id,
++            fromId = message.fromId,
++            text = message.text,
++            date = message.date,
++            outgoing = message.out == 1,
++        )
++    }
++    val nextOffset = offset + mapped.size
++    val next = nextOffset.takeIf { mapped.isNotEmpty() && it < count }
++    return Page(mapped, next)
++}
+diff --git a/android/app/src/main/kotlin/app/kontakt/client/data/MessagesRepository.kt b/android/app/src/main/kotlin/app/kontakt/client/data/MessagesRepository.kt
+index 9ce3ef3..8a0cbec 100644
+--- a/android/app/src/main/kotlin/app/kontakt/client/data/MessagesRepository.kt
++++ b/android/app/src/main/kotlin/app/kontakt/client/data/MessagesRepository.kt
+@@ -5,15 +5,7 @@ import app.kontakt.client.net.MessageHistoryResponse
+ import app.kontakt.client.net.VkApi
+ import app.kontakt.client.net.VkResponseParser
+ 
+-data class MessageItem(
+-    val id: Long,
+-    val fromId: Long,
+-    val text: String,
+-    val date: Long,
+-    val outgoing: Boolean,
+-)
+-
+-/** Репозиторий истории: сетевой DTO отделён от модели, которую использует UI. */
++/** Репозиторий истории: сетевой DTO отделён от модели, которую использует UI (см. [toMessagePage]). */
+ class MessagesRepository(private val api: VkApi) {
+     suspend fun history(peerId: Long, offset: Int): Page<Int, MessageItem> {
+         val response = api.call(
+@@ -22,22 +14,11 @@ class MessagesRepository(private val api: VkApi) {
+                 "peer_id" to peerId.toString(),
+                 "offset" to offset.toString(),
+                 "count" to PAGE_SIZE.toString(),
+-                "rev" to "1",
++                // 0 — от новых к старым (так открывается чат с последнего сообщения); 1 — от самых старых.
++                "rev" to "0",
+             ),
+         )
+-        val data = VkResponseParser.decode<MessageHistoryResponse>(response)
+-        val items = data.items.map { message ->
+-            MessageItem(
+-                id = message.id,
+-                fromId = message.fromId,
+-                text = message.text,
+-                date = message.date,
+-                outgoing = message.out == 1,
+-            )
+-        }
+-        val nextOffset = offset + items.size
+-        val next = nextOffset.takeIf { items.isNotEmpty() && it < data.count }
+-        return Page(items, next)
++        return VkResponseParser.decode<MessageHistoryResponse>(response).toMessagePage(offset)
+     }
+ 
+     private companion object {
+diff --git a/android/app/src/main/kotlin/app/kontakt/client/ui/components/PagedColumn.kt b/android/app/src/main/kotlin/app/kontakt/client/ui/components/PagedColumn.kt
+index 1faab69..5facf5d 100644
+--- a/android/app/src/main/kotlin/app/kontakt/client/ui/components/PagedColumn.kt
++++ b/android/app/src/main/kotlin/app/kontakt/client/ui/components/PagedColumn.kt
+@@ -43,6 +43,10 @@ import kotlin.math.min
+  *
+  * [onVisibleKeys] (необязательно) сообщает, какие элементы сейчас заметно видны на экране (не меньше половины
+  * высоты). По этим данным лента измеряет время просмотра.
++ *
++ * [reverseLayout] — для переписки: первый элемент списка (самое новое сообщение) показывается внизу, подгрузка
++ * добавляет более старые элементы сверху. Свайп вниз для обновления в этом режиме отключён: у верхнего края
++ * находятся самые старые сообщения, а не новые.
+  */
+ @OptIn(ExperimentalMaterial3Api::class)
+ @Composable
+@@ -58,6 +62,7 @@ fun <T> PagedColumn(
+     onVisibleKeys: ((Set<Any>) -> Unit)? = null,
+     skeleton: SkeletonKind? = null,
+     emptyIcon: ImageVector? = null,
++    reverseLayout: Boolean = false,
+     itemContent: @Composable (T) -> Unit,
+ ) {
+     val error = state.error
+@@ -101,14 +106,11 @@ fun <T> PagedColumn(
+                 }
+             }
+ 
+-            PullToRefreshBox(
+-                isRefreshing = state.refreshing,
+-                onRefresh = onRefresh,
+-                modifier = modifier,
+-            ) {
++            val list: @Composable () -> Unit = {
+                 LazyColumn(
+                     state = listState,
+                     modifier = Modifier.fillMaxSize(),
++                    reverseLayout = reverseLayout,
+                     contentPadding = PaddingValues(bottom = LocalBottomBarPadding.current),
+                 ) {
+                     items(state.items, key = itemKey) { item ->
+@@ -145,6 +147,16 @@ fun <T> PagedColumn(
+                     }
+                 }
+             }
++
++            if (reverseLayout) {
++                Box(modifier) { list() }
++            } else {
++                PullToRefreshBox(
++                    isRefreshing = state.refreshing,
++                    onRefresh = onRefresh,
++                    modifier = modifier,
++                ) { list() }
++            }
+         }
+     }
+ }
+diff --git a/android/app/src/main/kotlin/app/kontakt/client/ui/screens/MessagesHistoryScreen.kt b/android/app/src/main/kotlin/app/kontakt/client/ui/screens/MessagesHistoryScreen.kt
+index 293ec92..2fe3008 100644
+--- a/android/app/src/main/kotlin/app/kontakt/client/ui/screens/MessagesHistoryScreen.kt
++++ b/android/app/src/main/kotlin/app/kontakt/client/ui/screens/MessagesHistoryScreen.kt
+@@ -2,11 +2,13 @@ package app.kontakt.client.ui.screens
+ 
+ import androidx.compose.foundation.background
+ import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.BoxWithConstraints
+ import androidx.compose.foundation.layout.Column
+ import androidx.compose.foundation.layout.Row
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.widthIn
+ import androidx.compose.foundation.shape.RoundedCornerShape
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.Surface
+@@ -71,6 +73,7 @@ fun MessagesHistoryScreen(container: AppContainer, peerId: Long, onBack: () -> U
+             onLoadMore = vm::loadMore,
+             onRetry = vm::retry,
+             skeleton = SkeletonKind.Chats,
++            reverseLayout = true,
+             modifier = Modifier.weight(1f),
+         ) { message ->
+             MessageBubble(message)
+@@ -80,34 +83,38 @@ fun MessagesHistoryScreen(container: AppContainer, peerId: Long, onBack: () -> U
+ 
+ @Composable
+ private fun MessageBubble(message: MessageItem) {
+-    Row(
+-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp),
+-        horizontalArrangement = if (message.outgoing) Arrangement.End else Arrangement.Start,
+-        verticalAlignment = Alignment.CenterVertically,
+-    ) {
+-        Surface(
+-            color = if (message.outgoing) MaterialTheme.colorScheme.primaryContainer
+-                else MaterialTheme.colorScheme.surfaceVariant,
+-            shape = RoundedCornerShape(16.dp),
+-            modifier = Modifier.fillMaxWidth(0.88f),
++    // Пузырёк занимает ровно столько, сколько нужно тексту, но не больше ~82% ширины экрана.
++    BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp)) {
++        val maxBubbleWidth = maxWidth * 0.82f
++        Row(
++            modifier = Modifier.fillMaxWidth(),
++            horizontalArrangement = if (message.outgoing) Arrangement.End else Arrangement.Start,
++            verticalAlignment = Alignment.CenterVertically,
+         ) {
+-            Column(
+-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+-                verticalArrangement = Arrangement.spacedBy(4.dp),
++            Surface(
++                color = if (message.outgoing) MaterialTheme.colorScheme.primaryContainer
++                    else MaterialTheme.colorScheme.surfaceVariant,
++                shape = RoundedCornerShape(16.dp),
++                modifier = Modifier.widthIn(max = maxBubbleWidth),
+             ) {
+-                Text(
+-                    message.text.ifBlank { "Вложение или системное сообщение" },
+-                    style = MaterialTheme.typography.bodyLarge,
+-                    color = if (message.outgoing) MaterialTheme.colorScheme.onPrimaryContainer
+-                        else MaterialTheme.colorScheme.onSurfaceVariant,
+-                )
+-                Text(
+-                    formatChatTime(message.date),
+-                    style = MaterialTheme.typography.labelSmall,
+-                    color = if (message.outgoing) MaterialTheme.colorScheme.onPrimaryContainer
+-                        else MaterialTheme.colorScheme.onSurfaceVariant,
+-                    modifier = Modifier.align(Alignment.End),
+-                )
++                Column(
++                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
++                    verticalArrangement = Arrangement.spacedBy(4.dp),
++                ) {
++                    Text(
++                        message.text.ifBlank { "Вложение или системное сообщение" },
++                        style = MaterialTheme.typography.bodyLarge,
++                        color = if (message.outgoing) MaterialTheme.colorScheme.onPrimaryContainer
++                            else MaterialTheme.colorScheme.onSurfaceVariant,
++                    )
++                    Text(
++                        formatChatTime(message.date),
++                        style = MaterialTheme.typography.labelSmall,
++                        color = if (message.outgoing) MaterialTheme.colorScheme.onPrimaryContainer
++                            else MaterialTheme.colorScheme.onSurfaceVariant,
++                        modifier = Modifier.align(Alignment.End),
++                    )
++                }
+             }
+         }
+     }
+diff --git a/android/app/src/test/kotlin/app/kontakt/client/MessagesMappingTest.kt b/android/app/src/test/kotlin/app/kontakt/client/MessagesMappingTest.kt
+new file mode 100644
+index 0000000..cfa299e
+--- /dev/null
++++ b/android/app/src/test/kotlin/app/kontakt/client/MessagesMappingTest.kt
+@@ -0,0 +1,70 @@
++package app.kontakt.client
++
++import app.kontakt.client.data.toMessagePage
++import app.kontakt.client.net.MessageHistoryResponse
++import app.kontakt.client.net.VkMessage
++import org.junit.Assert.assertEquals
++import org.junit.Assert.assertFalse
++import org.junit.Assert.assertNull
++import org.junit.Assert.assertTrue
++import org.junit.Test
++
++class MessagesMappingTest {
++
++    private fun message(id: Long, out: Int = 0, text: String = "m$id", from: Long = 7) =
++        VkMessage(id = id, date = 1_000 + id, fromId = from, text = text, out = out)
++
++    @Test
++    fun keepsVkOrderNewestFirstAndMapsFields() {
++        val response = MessageHistoryResponse(
++            count = 3,
++            items = listOf(message(30, out = 1, from = 1), message(20, text = "привет"), message(10)),
++        )
++        val page = response.toMessagePage(offset = 0)
++
++        assertEquals(listOf(30L, 20L, 10L), page.items.map { it.id })
++        assertTrue(page.items[0].outgoing)
++        assertFalse(page.items[1].outgoing)
++        assertEquals("привет", page.items[1].text)
++        assertEquals(1_020L, page.items[1].date)
++        assertEquals(1L, page.items[0].fromId)
++    }
++
++    @Test
++    fun nextOffsetAdvancesByReceivedItemsWhileMoreMessagesExist() {
++        val response = MessageHistoryResponse(count = 100, items = (1L..40L).map { message(it) })
++
++        assertEquals(40, response.toMessagePage(offset = 0).next)
++        assertEquals(80, response.toMessagePage(offset = 40).next)
++    }
++
++    @Test
++    fun lastPageHasNoNextOffset() {
++        val response = MessageHistoryResponse(count = 85, items = (1L..5L).map { message(it) })
++
++        assertNull(response.toMessagePage(offset = 80).next)
++    }
++
++    @Test
++    fun exactlyFullHistoryHasNoNextOffset() {
++        val response = MessageHistoryResponse(count = 40, items = (1L..40L).map { message(it) })
++
++        assertNull(response.toMessagePage(offset = 0).next)
++    }
++
++    @Test
++    fun emptyPageStopsPagingEvenWhenCountClaimsMore() {
++        val response = MessageHistoryResponse(count = 500, items = emptyList())
++        val page = response.toMessagePage(offset = 120)
++
++        assertTrue(page.items.isEmpty())
++        assertNull(page.next)
++    }
++
++    @Test
++    fun blankTextIsKeptSoTheScreenCanLabelAttachments() {
++        val page = MessageHistoryResponse(count = 1, items = listOf(message(1, text = ""))).toMessagePage(0)
++
++        assertEquals("", page.items.single().text)
++    }
++}
+diff --git a/android/app/src/test/kotlin/app/kontakt/client/VkResponseParserTest.kt b/android/app/src/test/kotlin/app/kontakt/client/VkResponseParserTest.kt
+index efd075b..b62ac18 100644
+--- a/android/app/src/test/kotlin/app/kontakt/client/VkResponseParserTest.kt
++++ b/android/app/src/test/kotlin/app/kontakt/client/VkResponseParserTest.kt
+@@ -2,6 +2,7 @@ package app.kontakt.client
+ 
+ import app.kontakt.client.net.ConversationsResponse
+ import app.kontakt.client.net.FeedResponse
++import app.kontakt.client.net.MessageHistoryResponse
+ import app.kontakt.client.net.VkError
+ import app.kontakt.client.net.VkResponseParser
+ import org.junit.Assert.assertEquals
+@@ -99,4 +100,18 @@ class VkResponseParserTest {
+         assertEquals("abc", data.nextFrom)
+         assertEquals(3, data.items[0].likes?.count)
+     }
++
++    @Test
++    fun messageHistoryDecodeKeepsOrderOutgoingFlagAndSkipsUnknownFields() {
++        val json = """
++            {"response":{"count":2,"items":[
++            {"id":12,"date":200,"from_id":1,"text":"второе","out":1,"peer_id":7,"random_id":0,"attachments":[]},
++            {"id":11,"date":100,"from_id":7,"text":"","out":0,"peer_id":7,"fwd_messages":[]}]}}
++        """.trimIndent()
++        val data = VkResponseParser.decode<MessageHistoryResponse>(VkResponseParser.parse(json))
++        assertEquals(2, data.count)
++        assertEquals(listOf(12L, 11L), data.items.map { it.id })
++        assertEquals(1, data.items[0].out)
++        assertEquals("", data.items[1].text)
++    }
+ }
+diff --git a/android/tools/verify-core.sh b/android/tools/verify-core.sh
+index 3c53006..e06bc3f 100755
+--- a/android/tools/verify-core.sh
++++ b/android/tools/verify-core.sh
+@@ -14,14 +14,14 @@ DEPS="$L/kotlin-stdlib-2.0.21.jar:$L/kotlinx-coroutines-core-jvm-1.6.4.jar:$L/ko
+ 
+ MAIN_FILES=(
+   "$M/net/VkError.kt" "$M/net/Dto.kt"
+-  "$M/data/FeedPost.kt" "$M/data/FeedMapping.kt" "$M/data/ForYouRepository.kt" "$M/core/Paging.kt"
++  "$M/data/FeedPost.kt" "$M/data/MessagesMapping.kt" "$M/data/FeedMapping.kt" "$M/data/ForYouRepository.kt" "$M/core/Paging.kt"
+   "$M/core/Diagnostics.kt" "$M/core/NavConfig.kt" "$M/core/Appearance.kt" "$M/ui/theme/ColorMath.kt"
+   "$M/rec/Tokenizer.kt" "$M/rec/InterestProfile.kt" "$M/rec/Ranker.kt" "$M/rec/Signals.kt"
+   "$M/rec/ContentFilter.kt" "$M/rec/Recommender.kt" "$M/rec/RecommenderStorage.kt"
+ )
+ TEST_FILES=(
+   "$T/TestSupport.kt" "$T/ContentFilterTest.kt" "$T/TokenizerTest.kt" "$T/SignalsTest.kt"
+-  "$T/NavConfigTest.kt" "$T/DiagnosticsTest.kt" "$T/RecommenderTest.kt" "$T/FeedMappingTest.kt" "$T/ForYouRepositoryTest.kt" "$T/ColorMathTest.kt" "$T/StylePaletteTest.kt"
++  "$T/NavConfigTest.kt" "$T/DiagnosticsTest.kt" "$T/RecommenderTest.kt" "$T/FeedMappingTest.kt" "$T/ForYouRepositoryTest.kt" "$T/ColorMathTest.kt" "$T/StylePaletteTest.kt" "$T/MessagesMappingTest.kt"
+ )
+ echo "== компиляция основного кода"
+ bash "$ROOT/tools/kc.sh" -jvm-target 17 -cp "$DEPS" -d "$OUT/main" "${MAIN_FILES[@]}" 2>&1 | grep -v 'JAVA_TOOL_OPTIONS' || true
+-- 
+2.43.0
+
+
+From 6baa894e3bc5812a8ac97db49bf7e0bb63eb1530 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 23 Oct 2026 09:43:36 +0300
+Subject: [PATCH 3/5] build: show the source commit in settings so an installed
+ APK can be matched to CI
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+BuildConfig.BUILD_COMMIT is the first 7 characters of GITHUB_SHA ("local" outside
+CI). It is shown in Settings > App > "Kontakt 0.1.5 (сборка a3b26ee)" and in "О приложении".
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01JzUdZYkoiPDqL5pBjLSwYm
+---
+ android/app/build.gradle.kts                                  | 3 +++
+ .../kotlin/app/kontakt/client/ui/screens/SettingsScreen.kt    | 4 ++--
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/android/app/build.gradle.kts b/android/app/build.gradle.kts
+index 9e7f9f9..de17e8c 100644
+--- a/android/app/build.gradle.kts
++++ b/android/app/build.gradle.kts
+@@ -38,6 +38,9 @@ android {
+         buildConfigField("String", "VK_SCOPES", "\"$vkScopes\"")
+         buildConfigField("boolean", "VK_STANDALONE_CONFIGURED", vkStandaloneAppId.matches(Regex("[1-9][0-9]*")).toString())
+         resValue("integer", "com_vk_sdk_AppId", vkStandaloneAppId.ifBlank { "0" })
++        // Короткий хэш коммита, из которого собран APK (в GitHub Actions это GITHUB_SHA). Не секрет.
++        // Показывается в «О приложении», чтобы на телефоне можно было сверить версию с последним коммитом.
++        buildConfigField("String", "BUILD_COMMIT", "\"${config("GITHUB_SHA").take(7).ifBlank { "local" }}\"")
+     }
+ 
+     signingConfigs {
+diff --git a/android/app/src/main/kotlin/app/kontakt/client/ui/screens/SettingsScreen.kt b/android/app/src/main/kotlin/app/kontakt/client/ui/screens/SettingsScreen.kt
+index eda0d61..2174366 100644
+--- a/android/app/src/main/kotlin/app/kontakt/client/ui/screens/SettingsScreen.kt
++++ b/android/app/src/main/kotlin/app/kontakt/client/ui/screens/SettingsScreen.kt
+@@ -349,7 +349,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
+                     style = MaterialTheme.typography.bodyMedium,
+                 )
+                 Text(
+-                    "Kontakt ${BuildConfig.VERSION_NAME}, Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}).",
++                    "Kontakt ${BuildConfig.VERSION_NAME} (сборка ${BuildConfig.BUILD_COMMIT}), Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}).",
+                     style = MaterialTheme.typography.bodyMedium,
+                 )
+                 Spacer(Modifier.height(8.dp))
+@@ -429,7 +429,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
+             if (activeCategory == "app") {
+             SectionCard("О приложении") {
+                 Text(
+-                    "Kontakt ${BuildConfig.VERSION_NAME}\n" +
++                    "Kontakt ${BuildConfig.VERSION_NAME} (сборка ${BuildConfig.BUILD_COMMIT})\n" +
+                         "Неофициальный клиент ВКонтакте. Не связан с VK и Telegram. Без рекламы и аналитики.\n" +
+                         "Иконки: Material Icons (лицензия Apache 2.0).",
+                     style = MaterialTheme.typography.bodyMedium,
+-- 
+2.43.0
+
+
+From 2f74ebf8d82472b83dc36064c77dea93a4ddb4ba Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sun, 25 Oct 2026 07:29:27 +0300
+Subject: [PATCH 4/5] fix(auth): sign in through the official VK ID SDK instead
+ of legacy VK.login()
+
+The "invalid_request / Security Error" text is not produced by Kontakt or by
+com.vk:android-sdk-core 4.1.0 (the string exists in neither source tree), so it is
+VK's server answering the request the legacy SDK builds: the implicit flow
+(response_type=token) on api.vk.com/oauth/authorize. The official, maintained path
+is VK ID SDK 2.7.3 (OAuth 2.1 + PKCE on id.vk.ru), which is what an app registered
+in the VK ID cabinet is meant to use.
+
+- Replace com.vk:android-sdk-core with com.vk.id:vkid:2.7.3; add the VK ID
+  repositories (the same set that built green in CI before the Standalone detour).
+- Remove the classic SDK entirely: VK.setConfig/VK.login, VKKeyValueStorage on
+  TokenStore (legacy vk_sdk_ keys are still wiped on clear).
+- Do not put client_secret into the APK. VK ID SDK 2.7.3 does not use it for the
+  PKCE code exchange; the manifest placeholder only gets a neutral non-secret value.
+- Start sign-in from a process-level scope instead of the Activity, so recreating
+  the Activity while the VK window is open cannot lose the result.
+- AuthFlow (pure Kotlin): one attempt at a time, every outcome clears busy, token
+  accepted only after it is saved, 5-minute watchdog for a lost result.
+- AuthFailure: map VKIDAuthFail types to clear messages and strip codes, state,
+  device_id, tokens and token-like strings from SDK descriptions.
+- Request only the base scope by default; scopes that are not enabled for the app
+  in the VK ID cabinet invalidate the request.
+- Tests: AuthFlowTest (17), AuthFailureTest (11).
+
+Not proven: that this removes the error for the owner's app ID. That can only be
+confirmed by signing in on a device.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01JzUdZYkoiPDqL5pBjLSwYm
+---
+ android/app/build.gradle.kts                  |  27 ++-
+ .../kotlin/app/kontakt/client/KontaktApp.kt   |  17 +-
+ .../kotlin/app/kontakt/client/MainActivity.kt |   6 -
+ .../app/kontakt/client/auth/AuthFailure.kt    |  93 ++++++++
+ .../app/kontakt/client/auth/AuthFlow.kt       | 101 ++++++++
+ .../app/kontakt/client/auth/AuthManager.kt    | 221 +++++++++--------
+ .../app/kontakt/client/auth/TokenStore.kt     |  21 +-
+ .../kontakt/client/ui/screens/LoginScreen.kt  |   2 +-
+ .../app/kontakt/client/AuthFailureTest.kt     |  95 ++++++++
+ .../kotlin/app/kontakt/client/AuthFlowTest.kt | 223 ++++++++++++++++++
+ android/settings.gradle.kts                   |   6 +
+ android/tools/verify-core.sh                  |   4 +-
+ 12 files changed, 659 insertions(+), 157 deletions(-)
+ create mode 100644 android/app/src/main/kotlin/app/kontakt/client/auth/AuthFailure.kt
+ create mode 100644 android/app/src/main/kotlin/app/kontakt/client/auth/AuthFlow.kt
+ create mode 100644 android/app/src/test/kotlin/app/kontakt/client/AuthFailureTest.kt
+ create mode 100644 android/app/src/test/kotlin/app/kontakt/client/AuthFlowTest.kt
+
+diff --git a/android/app/build.gradle.kts b/android/app/build.gradle.kts
+index de17e8c..130105a 100644
+--- a/android/app/build.gradle.kts
++++ b/android/app/build.gradle.kts
+@@ -10,8 +10,12 @@ plugins {
+ fun config(name: String): String =
+     providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orElse("").get().trim()
+ 
+-val vkStandaloneAppId = config("VK_STANDALONE_APP_ID")
+-val vkScopes = config("VK_SCOPES").ifBlank { "friends,wall,photos,audio,messages" }
++// ID приложения VK (client_id из кабинета VK ID) — не секрет. Имя VK_STANDALONE_APP_ID оставлено, потому что
++// именно оно уже задано в GitHub Actions и проверяется в CI; VK_ID_CLIENT_ID и VK_CLIENT_ID — равноправные псевдонимы.
++val vkClientId = config("VK_ID_CLIENT_ID").ifBlank { config("VK_CLIENT_ID") }.ifBlank { config("VK_STANDALONE_APP_ID") }
++// Права доступа должны быть подмножеством прав, включённых для приложения в кабинете VK ID, иначе VK отклонит
++// запрос на вход. Поэтому по умолчанию просим только базовое право (пустой список).
++val vkScopes = config("VK_SCOPES")
+ 
+ val signingKeyBase64 = config("ANDROID_SIGNING_KEY_BASE64")
+ val signingStorePassword = config("ANDROID_SIGNING_STORE_PASSWORD")
+@@ -34,10 +38,20 @@ android {
+         versionCode = 6
+         versionName = "0.1.5"
+ 
+-        buildConfigField("String", "VK_STANDALONE_APP_ID", "\"$vkStandaloneAppId\"")
++        val vkConfigured = vkClientId.matches(Regex("[1-9][0-9]*"))
++        buildConfigField("String", "VK_CLIENT_ID", "\"$vkClientId\"")
+         buildConfigField("String", "VK_SCOPES", "\"$vkScopes\"")
+-        buildConfigField("boolean", "VK_STANDALONE_CONFIGURED", vkStandaloneAppId.matches(Regex("[1-9][0-9]*")).toString())
+-        resValue("integer", "com_vk_sdk_AppId", vkStandaloneAppId.ifBlank { "0" })
++        buildConfigField("boolean", "VK_ID_CONFIGURED", vkConfigured.toString())
++
++        // Обязательные подстановки VK ID SDK: ID приложения и схема возврата vk{ID}://vk.ru/blank.html.
++        // Защищённый ключ (client_secret) в APK НЕ кладётся: обмен кода на токен идёт по PKCE и ключа не требует
++        // (проверено по исходникам VK ID SDK 2.7.3), а ключ внутри публично скачиваемого APK перестал бы быть секретом.
++        // SDK требует непустую строку; ключ нужен ему только для статистики и необязательного поиска провайдеров
++        // тихого входа, при отказе сервера SDK подставляет встроенный список провайдеров.
++        manifestPlaceholders["VKIDClientID"] = if (vkConfigured) vkClientId else "0"
++        manifestPlaceholders["VKIDClientSecret"] = "not-embedded"
++        manifestPlaceholders["VKIDRedirectHost"] = "vk.ru"
++        manifestPlaceholders["VKIDRedirectScheme"] = "vk${if (vkConfigured) vkClientId else "0"}"
+         // Короткий хэш коммита, из которого собран APK (в GitHub Actions это GITHUB_SHA). Не секрет.
+         // Показывается в «О приложении», чтобы на телефоне можно было сверить версию с последним коммитом.
+         buildConfigField("String", "BUILD_COMMIT", "\"${config("GITHUB_SHA").take(7).ifBlank { "local" }}\"")
+@@ -114,7 +128,8 @@ dependencies {
+     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+     implementation("io.coil-kt:coil-compose:2.7.0")
+ 
+-    implementation("com.vk:android-sdk-core:4.1.0")
++    // Официальный VK ID SDK (OAuth 2.1 + PKCE). Репозиторий: nexus-external.vkteam.ru, см. settings.gradle.kts.
++    implementation("com.vk.id:vkid:2.7.3")
+ 
+     testImplementation("junit:junit:4.13.2")
+     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+diff --git a/android/app/src/main/kotlin/app/kontakt/client/KontaktApp.kt b/android/app/src/main/kotlin/app/kontakt/client/KontaktApp.kt
+index 67d52f3..69228a5 100644
+--- a/android/app/src/main/kotlin/app/kontakt/client/KontaktApp.kt
++++ b/android/app/src/main/kotlin/app/kontakt/client/KontaktApp.kt
+@@ -7,6 +7,7 @@ import coil.ImageLoaderFactory
+ import coil.disk.DiskCache
+ import coil.memory.MemoryCache
+ import app.kontakt.client.auth.TokenStore
++import com.vk.id.VKID
+ import java.io.File
+ import java.io.PrintWriter
+ import java.io.StringWriter
+@@ -24,18 +25,10 @@ class KontaktApp : Application(), ImageLoaderFactory {
+         super.onCreate()
+         installCrashRecorder()
+         val tokenStore = TokenStore(this)
+-        if (BuildConfig.VK_STANDALONE_CONFIGURED) {
+-            runCatching {
+-                com.vk.api.sdk.VK.setConfig(
+-                    com.vk.api.sdk.VKApiConfig(this).builder(this)
+-                        .setAppId(BuildConfig.VK_STANDALONE_APP_ID.toInt())
+-                        .setValidationHandler(com.vk.api.sdk.VKDefaultValidationHandler(this))
+-                        .setCustomValueStorage(tokenStore)
+-                        .build(),
+-                )
+-            }.onFailure { error ->
+-                // Do not swallow SDK initialization failures; keep diagnostics free of credentials.
+-                vkSdkInitError = "VK SDK init failed: ${error.javaClass.simpleName}"
++        if (BuildConfig.VK_ID_CONFIGURED) {
++            runCatching { VKID.init(this) }.onFailure { error ->
++                // Не глотаем сбой инициализации; диагностика не содержит ID приложения, токенов и ответов сервера.
++                vkSdkInitError = "VK ID init failed: ${error.javaClass.simpleName}"
+             }
+         }
+         container = AppContainer(this, tokenStore, vkSdkInitError)
+diff --git a/android/app/src/main/kotlin/app/kontakt/client/MainActivity.kt b/android/app/src/main/kotlin/app/kontakt/client/MainActivity.kt
+index 0c3e1db..3d3ec50 100644
+--- a/android/app/src/main/kotlin/app/kontakt/client/MainActivity.kt
++++ b/android/app/src/main/kotlin/app/kontakt/client/MainActivity.kt
+@@ -27,7 +27,6 @@ class MainActivity : ComponentActivity() {
+         super.onCreate(savedInstanceState)
+         val app = application as KontaktApp
+         val container = app.container
+-        container.auth.attachLifecycleOwner(this)
+ 
+         val reportFile = File(filesDir, KontaktApp.CRASH_REPORT)
+         val report = runCatching { reportFile.takeIf { it.isFile }?.readText() }.getOrNull()
+@@ -64,9 +63,4 @@ class MainActivity : ComponentActivity() {
+             }
+         }
+     }
+-
+-    override fun onDestroy() {
+-        (application as? KontaktApp)?.container?.auth?.detachLifecycleOwner(this)
+-        super.onDestroy()
+-    }
+ }
+diff --git a/android/app/src/main/kotlin/app/kontakt/client/auth/AuthFailure.kt b/android/app/src/main/kotlin/app/kontakt/client/auth/AuthFailure.kt
+new file mode 100644
+index 0000000..bedcda1
+--- /dev/null
++++ b/android/app/src/main/kotlin/app/kontakt/client/auth/AuthFailure.kt
+@@ -0,0 +1,93 @@
++package app.kontakt.client.auth
++
++/** Тип неудачи входа через VK ID SDK. Не зависит от самого SDK, чтобы логику можно было проверить юнит-тестами. */
++enum class AuthFailureKind {
++    /** Пользователь закрыл окно входа или вернулся в приложение без результата. */
++    CANCELED,
++
++    /** Запрос к серверу VK ID (обмен кода на токен) завершился ошибкой. */
++    API_CALL,
++
++    /** VK вернул ошибку авторизации. */
++    OAUTH,
++
++    /** Значение `state` в ответе не совпало с отправленным. */
++    OAUTH_STATE,
++
++    /** Не удалось вернуться из VK в приложение (redirect). */
++    REDIRECT,
++
++    /** На телефоне нет подходящего браузера для окна входа. */
++    NO_BROWSER,
++
++    OTHER,
++}
++
++/** Разобранный неудачный результат входа. */
++data class AuthFailureInfo(
++    val kind: AuthFailureKind,
++    /** Текст для экрана входа. Не содержит токенов, кодов и секретов. */
++    val message: String,
++) {
++    /** Окно закрыто без результата. Это не доказанная ошибка настроек. */
++    val cancelled: Boolean get() = kind == AuthFailureKind.CANCELED
++}
++
++/**
++ * Превращает результат `VKIDAuthFail` в понятный текст. Описание от SDK проходит через [sanitizeDiagnostic]:
++ * оно может содержать адрес со значениями `code`, `state`, `device_id` или токен, а они не должны попасть
++ * ни на экран, ни в логи.
++ */
++fun describeAuthFailure(kind: AuthFailureKind, description: String?): AuthFailureInfo {
++    val detail = sanitizeDiagnostic(description)
++    val suffix = if (detail.isEmpty()) "" else ": $detail"
++    val message = when (kind) {
++        AuthFailureKind.CANCELED ->
++            "Вход не завершён: окно VK закрыто без результата. Если VK показал ошибку, перепишите её текст."
++        AuthFailureKind.API_CALL ->
++            "VK не принял запрос на вход (обмен кода на токен)$suffix"
++        AuthFailureKind.OAUTH ->
++            "VK вернул ошибку авторизации$suffix"
++        AuthFailureKind.OAUTH_STATE ->
++            "Ответ VK не прошёл проверку безопасности. Повторите вход."
++        AuthFailureKind.REDIRECT ->
++            "Не удалось вернуться из VK в Kontakt$suffix. Проверьте, что в сборке указан верный ID приложения."
++        AuthFailureKind.NO_BROWSER ->
++            "На телефоне не найден браузер для окна входа VK. Включите или установите Chrome и повторите."
++        AuthFailureKind.OTHER ->
++            "VK не завершил вход$suffix"
++    }
++    return AuthFailureInfo(kind, message)
++}
++
++/**
++ * Подготавливает техническую строку к показу: убирает значения чувствительных параметров
++ * (`access_token`, `code`, `code_verifier`, `state`, `device_id` и т. п.), прячет длинные токеноподобные
++ * последовательности, схлопывает пробелы и обрезает до [maxLength].
++ */
++fun sanitizeDiagnostic(raw: String?, maxLength: Int = DEFAULT_DIAGNOSTIC_LENGTH): String {
++    if (raw.isNullOrBlank()) return ""
++    var text = raw
++    text = SENSITIVE_PAIR.replace(text) { match -> "${match.groupValues[1]}=<скрыто>" }
++    text = JSON_SENSITIVE_PAIR.replace(text) { match -> "\"${match.groupValues[1]}\":\"<скрыто>\"" }
++    text = LONG_TOKEN.replace(text, "<скрыто>")
++    text = WHITESPACE.replace(text, " ").trim()
++    return if (text.length <= maxLength) text else text.take(maxLength) + "…"
++}
++
++private const val DEFAULT_DIAGNOSTIC_LENGTH = 160
++
++private const val SENSITIVE_KEYS =
++    "access_token|refresh_token|id_token|token|code|code_verifier|code_challenge|state|device_id|" +
++        "client_secret|secret|password|silent_token|uuid"
++
++/** `key=value` и `key: value` в адресах и текстах; значение до `&`, пробела, кавычки или конца строки. */
++private val SENSITIVE_PAIR = Regex("(?i)\\b($SENSITIVE_KEYS)\\s*[=:]\\s*[^&\\s\"',;]+")
++
++/** `"key":"value"` в тексте ответа сервера. */
++private val JSON_SENSITIVE_PAIR = Regex("(?i)\"($SENSITIVE_KEYS)\"\\s*:\\s*\"[^\"]*\"")
++
++/** Последовательность из 24 и более «токеновых» символов подряд. */
++private val LONG_TOKEN = Regex("[A-Za-z0-9_\\-.~+/]{24,}={0,2}")
++
++private val WHITESPACE = Regex("\\s+")
+diff --git a/android/app/src/main/kotlin/app/kontakt/client/auth/AuthFlow.kt b/android/app/src/main/kotlin/app/kontakt/client/auth/AuthFlow.kt
+new file mode 100644
+index 0000000..6a1167a
+--- /dev/null
++++ b/android/app/src/main/kotlin/app/kontakt/client/auth/AuthFlow.kt
+@@ -0,0 +1,101 @@
++package app.kontakt.client.auth
++
++import kotlinx.coroutines.flow.MutableStateFlow
++import kotlinx.coroutines.flow.StateFlow
++import kotlinx.coroutines.flow.asStateFlow
++
++sealed interface AuthState {
++    data object SignedIn : AuthState
++    data class SignedOut(val message: String? = null) : AuthState
++}
++
++/** Куда [AuthFlow] сохраняет сессию. В приложении это зашифрованное хранилище `TokenStore`. */
++interface SessionSink {
++    fun save(token: String)
++    fun clear()
++}
++
++/**
++ * Состояние входа без зависимостей от Android и VK SDK.
++ *
++ * Правила, которые проверяются юнит-тестами:
++ * - одновременно идёт не больше одной попытки входа ([begin] возвращает false, пока предыдущая не закончилась);
++ * - каждая попытка заканчивается одним из [succeeded], [failed], [reject] или [abandoned], и после любого из них
++ *   `busy` снова false — экран не остаётся в вечной загрузке;
++ * - токен считается принятым только после успешного сохранения; при ошибке сохранения сессии нет;
++ * - токен и его значение не попадают ни в состояние, ни в сообщения.
++ */
++class AuthFlow(
++    private val sink: SessionSink,
++    initialToken: String?,
++) {
++    @Volatile private var cached: String? = initialToken
++    private val _state = MutableStateFlow<AuthState>(
++        if (initialToken != null) AuthState.SignedIn else AuthState.SignedOut()
++    )
++    val state: StateFlow<AuthState> = _state.asStateFlow()
++    private val _busy = MutableStateFlow(false)
++    val busy: StateFlow<Boolean> = _busy.asStateFlow()
++
++    fun token(): String? = cached
++
++    /** Начинает попытку. Возвращает false, если предыдущая ещё не закончилась. */
++    fun begin(): Boolean {
++        if (!_busy.compareAndSet(expect = false, update = true)) return false
++        // Сообщение прошлой ошибки больше не актуально.
++        if (_state.value is AuthState.SignedOut) _state.value = AuthState.SignedOut()
++        return true
++    }
++
++    /** Попытка не дошла до VK (не настроено, SDK не запустился и т. п.). */
++    fun reject(message: String) {
++        _busy.value = false
++        _state.value = AuthState.SignedOut(message)
++    }
++
++    fun succeeded(token: String) {
++        _busy.value = false
++        try {
++            require(token.isNotBlank()) { "Пустой токен" }
++            sink.save(token)
++            cached = token
++            _state.value = AuthState.SignedIn
++        } catch (_: Exception) {
++            cached = null
++            _state.value = AuthState.SignedOut(SAVE_FAILED_MESSAGE)
++        }
++    }
++
++    fun failed(info: AuthFailureInfo) {
++        _busy.value = false
++        _state.value = AuthState.SignedOut(info.message)
++    }
++
++    /** Результат не пришёл за отведённое время: снимаем загрузку, чтобы можно было повторить. */
++    fun abandoned() {
++        if (!_busy.value) return
++        _busy.value = false
++        _state.value = AuthState.SignedOut(ABANDONED_MESSAGE)
++    }
++
++    fun expired() {
++        if (_state.value is AuthState.SignedOut) return
++        wipe("Сессия истекла. Войдите снова.")
++    }
++
++    fun signOut() = wipe(null)
++
++    private fun wipe(message: String?) {
++        runCatching { sink.clear() }
++        cached = null
++        _busy.value = false
++        _state.value = AuthState.SignedOut(message)
++    }
++
++    companion object {
++        const val SAVE_FAILED_MESSAGE =
++            "VK выполнил вход, но Kontakt не смог безопасно сохранить сессию. Повторите попытку."
++        const val ABANDONED_MESSAGE =
++            "VK не вернул результат входа. Нажмите «Войти через VK», чтобы повторить."
++    }
++}
+diff --git a/android/app/src/main/kotlin/app/kontakt/client/auth/AuthManager.kt b/android/app/src/main/kotlin/app/kontakt/client/auth/AuthManager.kt
+index ff41129..f2ccba3 100644
+--- a/android/app/src/main/kotlin/app/kontakt/client/auth/AuthManager.kt
++++ b/android/app/src/main/kotlin/app/kontakt/client/auth/AuthManager.kt
+@@ -1,143 +1,138 @@
+ package app.kontakt.client.auth
+ 
+-import androidx.activity.ComponentActivity
+-import androidx.activity.result.ActivityResultLauncher
+ import app.kontakt.client.BuildConfig
+-import com.vk.api.sdk.VK
+-import com.vk.api.sdk.auth.VKAuthenticationResult
+-import com.vk.api.sdk.auth.VKScope
+-import kotlinx.coroutines.flow.MutableStateFlow
++import com.vk.id.AccessToken
++import com.vk.id.VKID
++import com.vk.id.VKIDAuthFail
++import com.vk.id.auth.VKIDAuthCallback
++import com.vk.id.auth.VKIDAuthParams
++import com.vk.id.logout.VKIDLogoutCallback
++import com.vk.id.logout.VKIDLogoutFail
++import kotlinx.coroutines.CancellationException
++import kotlinx.coroutines.CoroutineScope
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.Job
++import kotlinx.coroutines.SupervisorJob
++import kotlinx.coroutines.delay
+ import kotlinx.coroutines.flow.StateFlow
+-import kotlinx.coroutines.flow.asStateFlow
++import kotlinx.coroutines.launch
+ 
+-sealed interface AuthState {
+-    data object SignedIn : AuthState
+-    data class SignedOut(val message: String? = null) : AuthState
+-}
+-
+-/** Classic VK Standalone SDK authentication; tokens are stored encrypted by TokenStore. */
++/**
++ * Вход через официальный VK ID SDK (OAuth 2.1 + PKCE). Токен хранится зашифрованным в [TokenStore].
++ *
++ * Вход запускается не от Activity, а от области процесса: SDK сам открывает окно VK из контекста приложения,
++ * а результат возвращается в статический слушатель SDK. Поэтому поворот экрана или пересоздание Activity,
++ * пока открыто окно VK, не теряют результат. Состояние (`state`, `busy`) ведёт [AuthFlow].
++ */
+ class AuthManager(
+     private val store: TokenStore,
+     private val sdkInitError: String? = null,
++    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+ ) {
+-    val isConfigured: Boolean = BuildConfig.VK_STANDALONE_CONFIGURED
+-    @Volatile private var cached: String? = store.load()
+-    @Volatile private var activity: ComponentActivity? = null
+-    private var loginLauncher: ActivityResultLauncher<Collection<VKScope>>? = null
+-    private val _state = MutableStateFlow<AuthState>(
+-        if (cached != null) AuthState.SignedIn else AuthState.SignedOut()
++    val isConfigured: Boolean = BuildConfig.VK_ID_CONFIGURED
++
++    private val flow = AuthFlow(
++        sink = object : SessionSink {
++            override fun save(token: String) = store.save(token)
++            override fun clear() = store.clear()
++        },
++        initialToken = store.load(),
+     )
+-    val state: StateFlow<AuthState> = _state.asStateFlow()
+-    private val _busy = MutableStateFlow(false)
+-    val busy: StateFlow<Boolean> = _busy.asStateFlow()
++    private var watchdog: Job? = null
++
++    val state: StateFlow<AuthState> get() = flow.state
++    val busy: StateFlow<Boolean> get() = flow.busy
+ 
+-    fun token(): String? = cached
++    fun token(): String? = flow.token()
+ 
+-    /**
+-     * Register the Activity Result launcher while the Activity is being created.
+-     * Do not call VK.login() from signIn(): it registers a launcher and must run
+-     * before the Activity reaches STARTED.
+-     */
+-    fun attachLifecycleOwner(owner: ComponentActivity) {
+-        activity = owner
+-        // SDK initialization must have succeeded before registering its login launcher.
+-        if (!isConfigured || sdkInitError != null) {
+-            loginLauncher = null
++    fun signIn() {
++        if (flow.busy.value) return
++        if (!isConfigured) {
++            flow.reject(
++                "Приложение VK не настроено в этой сборке: не задан числовой ID приложения " +
++                    "(переменная VK_STANDALONE_APP_ID в GitHub Actions).",
++            )
+             return
+         }
+-        loginLauncher = VK.login(owner) { result ->
+-            _busy.value = false
+-            when (result) {
+-                is VKAuthenticationResult.Success -> {
+-                    val token = result.token.accessToken
+-                    runCatching {
+-                        store.save(token)
+-                        cached = token
+-                        _state.value = AuthState.SignedIn
+-                    }.onFailure {
+-                        cached = null
+-                        _state.value = AuthState.SignedOut(
+-                            "Вход выполнен, но Kontakt не смог безопасно сохранить сессию. Повторите попытку."
+-                        )
+-                    }
+-                }
+-                is VKAuthenticationResult.Failed -> {
+-                    // SDK exception messages can contain provider-specific details; keep UI concise.
+-                    _state.value = AuthState.SignedOut(
+-                        "VK не завершил авторизацию: ${result.exception.javaClass.simpleName}".take(200)
+-                    )
+-                }
+-            }
++        if (sdkInitError != null) {
++            flow.reject("Не удалось запустить VK ID ($sdkInitError). Эта сборка не может начать вход.")
++            return
+         }
+-    }
++        if (!flow.begin()) return
+ 
+-    fun detachLifecycleOwner(owner: ComponentActivity) {
+-        if (activity === owner) {
+-            activity = null
+-            loginLauncher = null
++        val requestedScopes = BuildConfig.VK_SCOPES
++            .split(',', ' ')
++            .map(String::trim)
++            .filter(String::isNotEmpty)
++            .toSet()
++        val params = VKIDAuthParams {
++            // Пустой набор: SDK запрашивает только базовое право. Права, которые не включены для приложения
++            // в кабинете VK ID, делают запрос недействительным, поэтому по умолчанию их не просим.
++            if (requestedScopes.isNotEmpty()) scopes = requestedScopes
+         }
+-    }
++        val callback = object : VKIDAuthCallback {
++            override fun onAuth(accessToken: AccessToken) {
++                watchdog?.cancel()
++                flow.succeeded(accessToken.token)
++            }
+ 
+-    fun signIn() {
+-        if (!isConfigured || sdkInitError != null || _busy.value) {
+-            if (!isConfigured) {
+-                _state.value = AuthState.SignedOut(
+-                    "Приложение VK Standalone не настроено. Добавьте числовой VK_STANDALONE_APP_ID в GitHub Actions."
+-                )
+-            } else if (sdkInitError != null) {
+-                _state.value = AuthState.SignedOut(
+-                    "Не удалось инициализировать VK SDK ($sdkInitError). Эта сборка не может начать вход; проверьте диагностику сборки."
+-                )
++            override fun onFail(fail: VKIDAuthFail) {
++                watchdog?.cancel()
++                flow.failed(describeAuthFailure(fail.toKind(), fail.description))
+             }
+-            return
+         }
+-        val owner = activity
+-        val launcher = loginLauncher
+-        if (owner == null || launcher == null) {
+-            _state.value = AuthState.SignedOut("Экран входа ещё запускается. Попробуйте ещё раз.")
+-            return
++
++        watchdog?.cancel()
++        watchdog = scope.launch {
++            delay(AUTH_TIMEOUT_MS)
++            flow.abandoned()
+         }
+-        val scopes = BuildConfig.VK_SCOPES.split(',').map(String::trim).filter(String::isNotEmpty)
+-        val requestedScopes = scopes.mapNotNull { scope ->
+-            when (scope.lowercase()) {
+-                "friends" -> VKScope.FRIENDS
+-                "wall" -> VKScope.WALL
+-                "photos" -> VKScope.PHOTOS
+-                "audio" -> VKScope.AUDIO
+-                "messages" -> VKScope.MESSAGES
+-                "groups" -> VKScope.GROUPS
+-                "docs" -> VKScope.DOCS
+-                "video" -> VKScope.VIDEO
+-                "status" -> VKScope.STATUS
+-                "stories" -> VKScope.STORIES
+-                "pages" -> VKScope.PAGES
+-                "notes" -> VKScope.NOTES
+-                "notifications" -> VKScope.NOTIFICATIONS
+-                else -> null
++        scope.launch {
++            try {
++                VKID.instance.authorize(callback, params)
++            } catch (e: CancellationException) {
++                throw e
++            } catch (e: Exception) {
++                watchdog?.cancel()
++                flow.reject(
++                    "Не удалось запустить вход VK (${e.javaClass.simpleName}" +
++                        sanitizeDiagnostic(e.message, MAX_EXCEPTION_DETAIL).let { if (it.isEmpty()) "" else ": $it" } +
++                        "). Проверьте настройки приложения.",
++                )
+             }
+         }
+-        _busy.value = true
+-        try {
+-            launcher.launch(ArrayList(requestedScopes))
+-        } catch (e: Exception) {
+-            _busy.value = false
+-            _state.value = AuthState.SignedOut(
+-                "Не удалось запустить авторизацию VK (${e.javaClass.simpleName}). Проверьте конфигурацию приложения."
+-            )
+-        }
+     }
+ 
+-    fun onSessionExpired() {
+-        if (_state.value is AuthState.SignedOut) return
+-        wipe("Сессия истекла. Войдите снова.")
++    fun onSessionExpired() = flow.expired()
++
++    fun signOut() {
++        flow.signOut()
++        if (isConfigured && sdkInitError == null) {
++            // Best-effort: отзывает токен на стороне VK и стирает копию, которую хранит сам SDK.
++            scope.launch {
++                runCatching {
++                    VKID.instance.logout(object : VKIDLogoutCallback {
++                        override fun onSuccess() = Unit
++                        override fun onFail(fail: VKIDLogoutFail) = Unit
++                    })
++                }
++            }
++        }
+     }
+ 
+-    fun signOut() = wipe(null)
++    private fun VKIDAuthFail.toKind(): AuthFailureKind = when (this) {
++        is VKIDAuthFail.Canceled -> AuthFailureKind.CANCELED
++        is VKIDAuthFail.FailedApiCall -> AuthFailureKind.API_CALL
++        is VKIDAuthFail.FailedOAuth -> AuthFailureKind.OAUTH
++        is VKIDAuthFail.FailedOAuthState -> AuthFailureKind.OAUTH_STATE
++        is VKIDAuthFail.FailedRedirectActivity -> AuthFailureKind.REDIRECT
++        is VKIDAuthFail.NoBrowserAvailable -> AuthFailureKind.NO_BROWSER
++        else -> AuthFailureKind.OTHER
++    }
+ 
+-    private fun wipe(message: String?) {
+-        store.clear()
+-        cached = null
+-        _busy.value = false
+-        _state.value = AuthState.SignedOut(message)
++    private companion object {
++        /** Окно VK может быть открыто долго (SMS, подтверждение), но не бесконечно. */
++        const val AUTH_TIMEOUT_MS = 5L * 60 * 1000
++        const val MAX_EXCEPTION_DETAIL = 120
+     }
+ }
+diff --git a/android/app/src/main/kotlin/app/kontakt/client/auth/TokenStore.kt b/android/app/src/main/kotlin/app/kontakt/client/auth/TokenStore.kt
+index 771d91a..0515d7d 100644
+--- a/android/app/src/main/kotlin/app/kontakt/client/auth/TokenStore.kt
++++ b/android/app/src/main/kotlin/app/kontakt/client/auth/TokenStore.kt
+@@ -10,14 +10,13 @@ import javax.crypto.Cipher
+ import javax.crypto.KeyGenerator
+ import javax.crypto.SecretKey
+ import javax.crypto.spec.GCMParameterSpec
+-import com.vk.api.sdk.VKKeyValueStorage
+ 
+ /**
+  * Stores the access token encrypted with AES-256-GCM. The key remains in Android Keystore.
+  * If encrypted data or the Keystore key becomes unusable, the session is discarded safely:
+  * tokens are never written to plaintext storage.
+  */
+-class TokenStore(context: Context) : VKKeyValueStorage {
++class TokenStore(context: Context) {
+     private val appContext = context.applicationContext
+     private val prefs by lazy {
+         appContext.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
+@@ -51,23 +50,11 @@ class TokenStore(context: Context) : VKKeyValueStorage {
+     @Synchronized
+     fun clear() {
+         val editor = prefs.edit().remove(KEY_TOKEN)
+-        prefs.all.keys.filter { it.startsWith(VK_PREFIX) }.forEach(editor::remove)
++        // Записи прежнего классического VK SDK (сборки до перехода на VK ID) больше не используются: стираем.
++        prefs.all.keys.filter { it.startsWith(LEGACY_VK_SDK_PREFIX) }.forEach(editor::remove)
+         editor.apply()
+     }
+ 
+-    @Synchronized override fun put(key: String, value: String) {
+-        prefs.edit().putString(VK_PREFIX + key, encrypt(value)).apply()
+-    }
+-    @Synchronized override fun get(key: String): String? {
+-        val stored = prefs.getString(VK_PREFIX + key, null) ?: return null
+-        return try { decrypt(stored) } catch (_: Exception) {
+-            prefs.edit().remove(VK_PREFIX + key).apply()
+-            null
+-        }
+-    }
+-    @Synchronized override fun remove(key: String) {
+-        prefs.edit().remove(VK_PREFIX + key).apply()
+-    }
+     private fun encrypt(value: String): String {
+         val cipher = Cipher.getInstance(TRANSFORMATION).apply { init(Cipher.ENCRYPT_MODE, key()) }
+         return Base64.encodeToString(cipher.iv + cipher.doFinal(value.toByteArray(Charsets.UTF_8)), Base64.NO_WRAP)
+@@ -114,7 +101,7 @@ class TokenStore(context: Context) : VKKeyValueStorage {
+         const val ANDROID_KEYSTORE = "AndroidKeyStore"
+         const val KEY_ALIAS = "vg_token_key"
+         const val KEY_TOKEN = "token"
+-        const val VK_PREFIX = "vk_sdk_"
++        const val LEGACY_VK_SDK_PREFIX = "vk_sdk_"
+         const val PREF_FILE = "vg_secure"
+         const val TRANSFORMATION = "AES/GCM/NoPadding"
+         const val IV_SIZE = 12
+diff --git a/android/app/src/main/kotlin/app/kontakt/client/ui/screens/LoginScreen.kt b/android/app/src/main/kotlin/app/kontakt/client/ui/screens/LoginScreen.kt
+index 05be972..75226f3 100644
+--- a/android/app/src/main/kotlin/app/kontakt/client/ui/screens/LoginScreen.kt
++++ b/android/app/src/main/kotlin/app/kontakt/client/ui/screens/LoginScreen.kt
+@@ -136,7 +136,7 @@ fun LoginScreen(container: AppContainer) {
+             if (!auth.isConfigured) {
+                 SectionCard("Нужно зарегистрировать приложение VK", titleTextAlign = TextAlign.Center) {
+                     Text(
+-                        "Для классического входа нужно приложение типа Standalone в кабинете разработчика VK. Укажи пакет com.kontakt.app, главный Activity app.kontakt.client.MainActivity и SHA-1 сертификата APK. Числовой ID приложения добавь в GitHub Actions → Settings → Secrets and variables → Actions → Variables под именем VK_STANDALONE_APP_ID.",
++                        "Для входа нужен ID приложения из кабинета VK ID (id.vk.com → Бизнес). Добавь платформу Android: пакет com.kontakt.app и SHA-1 подписи APK. Числовой ID добавь в GitHub Actions → Settings → Secrets and variables → Actions → Variables под именем VK_STANDALONE_APP_ID.",
+                         style = MaterialTheme.typography.bodyMedium,
+                         textAlign = TextAlign.Center,
+                     )
+diff --git a/android/app/src/test/kotlin/app/kontakt/client/AuthFailureTest.kt b/android/app/src/test/kotlin/app/kontakt/client/AuthFailureTest.kt
+new file mode 100644
+index 0000000..23ed2ab
+--- /dev/null
++++ b/android/app/src/test/kotlin/app/kontakt/client/AuthFailureTest.kt
+@@ -0,0 +1,95 @@
++package app.kontakt.client
++
++import app.kontakt.client.auth.AuthFailureKind
++import app.kontakt.client.auth.describeAuthFailure
++import app.kontakt.client.auth.sanitizeDiagnostic
++import org.junit.Assert.assertEquals
++import org.junit.Assert.assertFalse
++import org.junit.Assert.assertTrue
++import org.junit.Test
++
++class AuthFailureTest {
++
++    @Test
++    fun cancelIsNeutralAndNotAnError() {
++        val info = describeAuthFailure(AuthFailureKind.CANCELED, "User returns to auth activity without auth")
++
++        assertTrue(info.cancelled)
++        assertTrue(info.message.startsWith("Вход не завершён"))
++        // Для отмены техническое описание не показываем.
++        assertFalse("User returns" in info.message)
++    }
++
++    @Test
++    fun everyNonCancelKindIsNotCancelled() {
++        AuthFailureKind.entries.filter { it != AuthFailureKind.CANCELED }.forEach { kind ->
++            assertFalse(kind.name, describeAuthFailure(kind, "x").cancelled)
++        }
++    }
++
++    @Test
++    fun apiCallFailureKeepsSafeDescription() {
++        val info = describeAuthFailure(AuthFailureKind.API_CALL, "invalid_client")
++
++        assertEquals("VK не принял запрос на вход (обмен кода на токен): invalid_client", info.message)
++    }
++
++    @Test
++    fun emptyDescriptionDoesNotLeaveDanglingColon() {
++        assertEquals("VK вернул ошибку авторизации", describeAuthFailure(AuthFailureKind.OAUTH, null).message)
++        assertEquals("VK вернул ошибку авторизации", describeAuthFailure(AuthFailureKind.OAUTH, "  ").message)
++    }
++
++    @Test
++    fun noBrowserMessageNamesTheRealProblem() {
++        assertTrue("браузер" in describeAuthFailure(AuthFailureKind.NO_BROWSER, null).message)
++    }
++
++    @Test
++    fun urlParametersWithSecretsAreHidden() {
++        val raw = "redirect failed vk54842124://vk.ru/blank.html?code=SECRETCODE123&state=abc&device_id=DEV999&x=1"
++        val clean = sanitizeDiagnostic(raw)
++
++        assertFalse(clean, "SECRETCODE123" in clean)
++        assertFalse(clean, "DEV999" in clean)
++        assertFalse(clean, "state=abc" in clean)
++        assertTrue(clean, "code=<скрыто>" in clean)
++    }
++
++    @Test
++    fun jsonSecretsAreHidden() {
++        val clean = sanitizeDiagnostic("""{"access_token":"abcdef","error":"invalid_request","refresh_token":"zzz"}""")
++
++        assertFalse(clean, "abcdef" in clean)
++        assertFalse(clean, "zzz" in clean)
++        assertTrue(clean, "invalid_request" in clean)
++    }
++
++    @Test
++    fun longTokenLikeValuesAreHidden() {
++        val token = "vk1.a.AbCdEfGhIjKlMnOpQrStUvWxYz0123456789"
++        val clean = sanitizeDiagnostic("bad response for $token end")
++
++        assertFalse(clean, token in clean)
++        assertTrue(clean, "end" in clean)
++    }
++
++    @Test
++    fun ordinaryShortTextIsKept() {
++        assertEquals("Security Error", sanitizeDiagnostic("Security Error"))
++    }
++
++    @Test
++    fun whitespaceIsCollapsedAndLengthIsLimited() {
++        assertEquals("a b c", sanitizeDiagnostic("a \n  b\t c"))
++        val long = sanitizeDiagnostic("word ".repeat(100), maxLength = 20)
++        assertEquals(21, long.length)
++        assertTrue(long.endsWith("…"))
++    }
++
++    @Test
++    fun nullAndBlankBecomeEmpty() {
++        assertEquals("", sanitizeDiagnostic(null))
++        assertEquals("", sanitizeDiagnostic("   "))
++    }
++}
+diff --git a/android/app/src/test/kotlin/app/kontakt/client/AuthFlowTest.kt b/android/app/src/test/kotlin/app/kontakt/client/AuthFlowTest.kt
+new file mode 100644
+index 0000000..fcab1f1
+--- /dev/null
++++ b/android/app/src/test/kotlin/app/kontakt/client/AuthFlowTest.kt
+@@ -0,0 +1,223 @@
++package app.kontakt.client
++
++import app.kontakt.client.auth.AuthFailureKind
++import app.kontakt.client.auth.AuthFlow
++import app.kontakt.client.auth.AuthState
++import app.kontakt.client.auth.SessionSink
++import app.kontakt.client.auth.describeAuthFailure
++import org.junit.Assert.assertEquals
++import org.junit.Assert.assertFalse
++import org.junit.Assert.assertNull
++import org.junit.Assert.assertTrue
++import org.junit.Test
++
++class AuthFlowTest {
++
++    private class FakeSink(var failSave: Boolean = false) : SessionSink {
++        var saved: String? = null
++        var clears = 0
++        override fun save(token: String) {
++            if (failSave) throw IllegalStateException("keystore unavailable")
++            saved = token
++        }
++        override fun clear() {
++            saved = null
++            clears++
++        }
++    }
++
++    private fun message(flow: AuthFlow) = (flow.state.value as AuthState.SignedOut).message
++
++    @Test
++    fun startsSignedOutWithoutToken() {
++        val flow = AuthFlow(FakeSink(), initialToken = null)
++
++        assertTrue(flow.state.value is AuthState.SignedOut)
++        assertNull(flow.token())
++        assertFalse(flow.busy.value)
++    }
++
++    @Test
++    fun startsSignedInWhenTokenWasStored() {
++        val flow = AuthFlow(FakeSink(), initialToken = "stored")
++
++        assertEquals(AuthState.SignedIn, flow.state.value)
++        assertEquals("stored", flow.token())
++    }
++
++    @Test
++    fun secondAttemptIsRefusedWhileFirstIsRunning() {
++        val flow = AuthFlow(FakeSink(), null)
++
++        assertTrue(flow.begin())
++        assertTrue(flow.busy.value)
++        assertFalse(flow.begin())
++    }
++
++    @Test
++    fun successSavesTokenAndClearsBusy() {
++        val sink = FakeSink()
++        val flow = AuthFlow(sink, null)
++        flow.begin()
++
++        flow.succeeded("tok")
++
++        assertEquals("tok", sink.saved)
++        assertEquals("tok", flow.token())
++        assertEquals(AuthState.SignedIn, flow.state.value)
++        assertFalse(flow.busy.value)
++    }
++
++    @Test
++    fun saveFailureDoesNotSignInAndDoesNotKeepToken() {
++        val flow = AuthFlow(FakeSink(failSave = true), null)
++        flow.begin()
++
++        flow.succeeded("tok")
++
++        assertNull(flow.token())
++        assertEquals(AuthFlow.SAVE_FAILED_MESSAGE, message(flow))
++        assertFalse(flow.busy.value)
++    }
++
++    @Test
++    fun blankTokenIsRejectedAsSaveFailure() {
++        val sink = FakeSink()
++        val flow = AuthFlow(sink, null)
++        flow.begin()
++
++        flow.succeeded("  ")
++
++        assertNull(sink.saved)
++        assertNull(flow.token())
++        assertFalse(flow.busy.value)
++    }
++
++    @Test
++    fun cancelReturnsToSignedOutAndAllowsRetry() {
++        val flow = AuthFlow(FakeSink(), null)
++        flow.begin()
++
++        flow.failed(describeAuthFailure(AuthFailureKind.CANCELED, null))
++
++        assertFalse(flow.busy.value)
++        assertTrue(message(flow)!!.startsWith("Вход не завершён"))
++        assertTrue(flow.begin())
++    }
++
++    @Test
++    fun errorReturnsToSignedOutAndAllowsRetry() {
++        val flow = AuthFlow(FakeSink(), null)
++        flow.begin()
++
++        flow.failed(describeAuthFailure(AuthFailureKind.OAUTH, "invalid_request"))
++
++        assertFalse(flow.busy.value)
++        assertTrue("invalid_request" in message(flow)!!)
++        assertTrue(flow.begin())
++    }
++
++    @Test
++    fun newAttemptClearsStaleErrorMessage() {
++        val flow = AuthFlow(FakeSink(), null)
++        flow.reject("старая ошибка")
++
++        flow.begin()
++
++        assertNull(message(flow))
++    }
++
++    @Test
++    fun rejectedAttemptDoesNotStayBusy() {
++        val flow = AuthFlow(FakeSink(), null)
++        flow.begin()
++
++        flow.reject("не настроено")
++
++        assertFalse(flow.busy.value)
++        assertEquals("не настроено", message(flow))
++    }
++
++    @Test
++    fun lostResultIsReleasedByAbandon() {
++        val flow = AuthFlow(FakeSink(), null)
++        flow.begin()
++
++        flow.abandoned()
++
++        assertFalse(flow.busy.value)
++        assertEquals(AuthFlow.ABANDONED_MESSAGE, message(flow))
++    }
++
++    @Test
++    fun abandonDoesNothingWhenNoAttemptIsRunning() {
++        val flow = AuthFlow(FakeSink(), "stored")
++
++        flow.abandoned()
++
++        assertEquals(AuthState.SignedIn, flow.state.value)
++    }
++
++    @Test
++    fun lateSuccessAfterAbandonStillSignsIn() {
++        val flow = AuthFlow(FakeSink(), null)
++        flow.begin()
++        flow.abandoned()
++
++        flow.succeeded("late")
++
++        assertEquals(AuthState.SignedIn, flow.state.value)
++        assertEquals("late", flow.token())
++    }
++
++    @Test
++    fun expiredSessionClearsTokenAndExplainsWhy() {
++        val sink = FakeSink()
++        val flow = AuthFlow(sink, "tok")
++
++        flow.expired()
++
++        assertNull(flow.token())
++        assertEquals(1, sink.clears)
++        assertEquals("Сессия истекла. Войдите снова.", message(flow))
++    }
++
++    @Test
++    fun expiredWhileSignedOutKeepsTheCurrentMessage() {
++        val sink = FakeSink()
++        val flow = AuthFlow(sink, null)
++        flow.reject("своё сообщение")
++
++        flow.expired()
++
++        assertEquals(0, sink.clears)
++        assertEquals("своё сообщение", message(flow))
++    }
++
++    @Test
++    fun signOutWipesSessionEvenIfClearThrows() {
++        val flow = AuthFlow(
++            object : SessionSink {
++                override fun save(token: String) = Unit
++                override fun clear() = throw IllegalStateException("prefs unavailable")
++            },
++            "tok",
++        )
++
++        flow.signOut()
++
++        assertNull(flow.token())
++        assertTrue(flow.state.value is AuthState.SignedOut)
++        assertFalse(flow.busy.value)
++    }
++
++    @Test
++    fun tokenValueNeverAppearsInState() {
++        val flow = AuthFlow(FakeSink(failSave = true), null)
++        flow.begin()
++
++        flow.succeeded("SUPER-SECRET-TOKEN")
++
++        assertFalse("SUPER-SECRET-TOKEN" in flow.state.value.toString())
++    }
++}
+diff --git a/android/settings.gradle.kts b/android/settings.gradle.kts
+index 4f27d7e..d69fc92 100644
+--- a/android/settings.gradle.kts
++++ b/android/settings.gradle.kts
+@@ -17,6 +17,12 @@ dependencyResolutionManagement {
+     repositories {
+         google()
+         mavenCentral()
++        // Официальный репозиторий VK ID SDK (с 2.7.3 SDK и Captcha SDK лежат здесь).
++        maven("https://nexus-external.vkteam.ru/repository/maven/")
++        // Прежние адреса оставлены резервными: именно с ними VK ID 2.7.3 собирался в CI.
++        maven("https://artifactory-external.vkpartner.ru/artifactory/vkid-sdk-android/")
++        maven("https://artifactory-external.vkpartner.ru/artifactory/maven/")
++        maven("https://artifactory-external.vkpartner.ru/artifactory/vk-id-captcha/android/")
+     }
+ }
+ 
+diff --git a/android/tools/verify-core.sh b/android/tools/verify-core.sh
+index e06bc3f..720e624 100755
+--- a/android/tools/verify-core.sh
++++ b/android/tools/verify-core.sh
+@@ -13,7 +13,7 @@ T="$ROOT/app/src/test/kotlin/app/kontakt/client"
+ DEPS="$L/kotlin-stdlib-2.0.21.jar:$L/kotlinx-coroutines-core-jvm-1.6.4.jar:$L/kotlinx-serialization-core-jvm-1.6.2.jar:$L/kotlinx-serialization-json-jvm-1.6.2.jar:$L/junit-4.13.2.jar:$L/hamcrest-core-1.3.jar"
+ 
+ MAIN_FILES=(
+-  "$M/net/VkError.kt" "$M/net/Dto.kt"
++  "$M/net/VkError.kt" "$M/net/Dto.kt" "$M/auth/AuthFailure.kt" "$M/auth/AuthFlow.kt"
+   "$M/data/FeedPost.kt" "$M/data/MessagesMapping.kt" "$M/data/FeedMapping.kt" "$M/data/ForYouRepository.kt" "$M/core/Paging.kt"
+   "$M/core/Diagnostics.kt" "$M/core/NavConfig.kt" "$M/core/Appearance.kt" "$M/ui/theme/ColorMath.kt"
+   "$M/rec/Tokenizer.kt" "$M/rec/InterestProfile.kt" "$M/rec/Ranker.kt" "$M/rec/Signals.kt"
+@@ -21,7 +21,7 @@ MAIN_FILES=(
+ )
+ TEST_FILES=(
+   "$T/TestSupport.kt" "$T/ContentFilterTest.kt" "$T/TokenizerTest.kt" "$T/SignalsTest.kt"
+-  "$T/NavConfigTest.kt" "$T/DiagnosticsTest.kt" "$T/RecommenderTest.kt" "$T/FeedMappingTest.kt" "$T/ForYouRepositoryTest.kt" "$T/ColorMathTest.kt" "$T/StylePaletteTest.kt" "$T/MessagesMappingTest.kt"
++  "$T/NavConfigTest.kt" "$T/DiagnosticsTest.kt" "$T/RecommenderTest.kt" "$T/FeedMappingTest.kt" "$T/ForYouRepositoryTest.kt" "$T/ColorMathTest.kt" "$T/StylePaletteTest.kt" "$T/MessagesMappingTest.kt" "$T/AuthFailureTest.kt" "$T/AuthFlowTest.kt"
+ )
+ echo "== компиляция основного кода"
+ bash "$ROOT/tools/kc.sh" -jvm-target 17 -cp "$DEPS" -d "$OUT/main" "${MAIN_FILES[@]}" 2>&1 | grep -v 'JAVA_TOOL_OPTIONS' || true
+-- 
+2.43.0
+
+
+From d2bd956f60716801f6649e95f829466504499eb9 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sun, 25 Oct 2026 07:29:27 +0300
+Subject: [PATCH 5/5] docs(auth): record the Security Error analysis and the
+ on-device check
+
+Separate what the sources prove from what is still a hypothesis, update the README
+for VK ID, and list the exact steps and cabinet data needed to confirm real sign-in.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01JzUdZYkoiPDqL5pBjLSwYm
+---
+ android/README.md                    | 25 ++++++++--------
+ android/docs/CLIENT_AUTH_RESEARCH.md |  4 +++
+ android/docs/VK_AUTH_DIAGNOSIS.md    | 43 ++++++++++++++++++++++++++++
+ 3 files changed, 60 insertions(+), 12 deletions(-)
+ create mode 100644 android/docs/VK_AUTH_DIAGNOSIS.md
+
+diff --git a/android/README.md b/android/README.md
+index 0fcd619..493790f 100644
+--- a/android/README.md
++++ b/android/README.md
+@@ -48,31 +48,32 @@
+ 
+ По данным, опубликованным в 2026 году: в приватных репозиториях на плане Free — 2000 минут Actions в месяц и 500 МБ хранилища артефактов; в публичных стандартные раннеры бесплатны без лимита минут. Сборка Android обычно занимает несколько минут, workflow хранит APK 7 дней, чтобы не забивать квоту. Условия могут меняться: смотрите Settings → Billing у себя.
+ 
+-## Подключить классическую авторизацию VK Standalone
++## Подключить авторизацию VK ID
+ 
+-Kontakt использует **официальный VK Android SDK** (`com.vk:android-sdk-core:4.1.0`) и приложение типа **Standalone**. Это не VK ID.
++Kontakt входит через **официальный VK ID SDK** (`com.vk.id:vkid:2.7.3`, OAuth 2.1 с PKCE). Прежний вход через классический `com.vk:android-sdk-core` (`VK.login()`, неявный поток `response_type=token`) удалён: почему, описано в [docs/VK_AUTH_DIAGNOSIS.md](docs/VK_AUTH_DIAGNOSIS.md).
+ 
+-1. В кабинете разработчика VK создай приложение типа **Standalone**.
+-2. В настройках Android укажи пакет `com.kontakt.app`, главный Activity `app.kontakt.client.MainActivity` и SHA-1 сертификата APK. Workflow выводит SHA-1 debug-сертификата; добавь отпечатки всех используемых сертификатов.
+-3. В GitHub открой **Settings → Secrets and variables → Actions → Variables** и добавь `VK_STANDALONE_APP_ID` — числовой ID Standalone-приложения. Защищённый ключ VK ID не нужен.
+-4. Запусти **Actions → Kontakt Android CI → Run workflow**, установи APK и проверь вход на устройстве.
++1. В кабинете VK ID (id.vk.com → «Бизнес») создай приложение и добавь платформу **Android**: пакет `com.kontakt.app` и SHA-1 подписи APK. Workflow выводит SHA-1 debug-сертификата (`2D8F47E1627E35EC2BA651B72D4E1B48753FE353`); для release-сборки добавь и её отпечаток.
++2. В GitHub открой **Settings → Secrets and variables → Actions → Variables** и добавь `VK_STANDALONE_APP_ID` — числовой ID приложения (`client_id`). Имя осталось прежним, потому что оно уже задано и проверяется в CI; сборка также понимает `VK_ID_CLIENT_ID` и `VK_CLIENT_ID`.
++3. **Защищённый ключ (`client_secret`) в сборку не передаётся.** SDK использует его только для статистики и необязательного поиска провайдеров тихого входа; обмен кода на токен идёт по PKCE без ключа.
++4. Права доступа (`VK_SCOPES`) должны быть подмножеством прав, включённых для приложения в кабинете VK ID. По умолчанию запрашивается только базовое право. Расширенные права (сообщения, друзья, стена) VK выдаёт отдельно; пока их нет, соответствующие разделы покажут ошибку доступа, а не подмену данных.
++5. Запусти **Actions → Kontakt Android CI → Run workflow**, установи APK и проверь вход по шагам из [docs/VK_AUTH_DIAGNOSIS.md](docs/VK_AUTH_DIAGNOSIS.md).
+ 
+-Успешная сборка не гарантирует успешный вход: пакет, главный Activity и SHA-1 должны совпадать с настройками приложения VK.
++Успешная сборка не гарантирует успешный вход: ID приложения, пакет и SHA-1 должны совпадать с настройками в кабинете VK ID, а проверить вход можно только на устройстве.
+ 
+ ## Что секрет, а что нет
+-- Не в репозитории: `не используется для Standalone`, токены, пароли. Они передаются только через GitHub Secrets.
+-- Внимание: по README VK Android SDK значение `VK ID protected key` подставляется в манифест, то есть **попадает внутрь APK**. Поэтому APK нельзя раздавать другим людям, а репозиторий держите приватным. Подходит ли это для публичного распространения — нужно уточнить в документации VK Standalone. Пока считайте Kontakt личной сборкой.
+-- Не секрет: имя пакета, SHA-1 отпечаток, `VK_STANDALONE_APP_ID`, `app/debug.keystore` (стандартный debug-ключ с паролем `android`, подходит только для личной установки).
++- Не в репозитории: токены, пароли, `client_secret`. Они передаются только через GitHub Secrets; сейчас сборке они не нужны.
++- Не секрет: имя пакета, SHA-1 отпечаток, ID приложения VK, `app/debug.keystore` (стандартный debug-ключ с паролем `android`, подходит только для личной установки).
++- Артефакты публичного репозитория скачивает любой вошедший в GitHub. Поэтому в APK не должно быть ничего секретного: именно по этой причине ключ в сборку не кладётся.
+ 
+ ## Безопасность
+ 
+ - Токен хранится зашифрованным, в логи не пишется, передаётся в теле POST-запроса, не в адресе.
+-- Пароль VK вводится только на странице VK Standalone; формы пароля в Kontakt нет.
++- Пароль VK вводится только на странице VK ID (в приложении VK или браузере); формы пароля в Kontakt нет.
+ - При ответе VK с кодом 5 токен удаляется и показывается экран входа.
+ - Капча не обходится: показывается сообщение.
+ - Резервное копирование Android отключено (`allowBackup=false`).
+ - Из разрешений Android только `INTERNET` и `ACCESS_NETWORK_STATE` (узнать, есть ли сеть). Рекламы и аналитики нет.
+-- Выход удаляет токен, обучение ленты, счётчики, журнал и кеш картинок с устройства. Отзыв токена на стороне VK при выходе не реализован.
++- Выход удаляет токен, обучение ленты, счётчики, журнал и кеш картинок с устройства. При выходе Kontakt также просит VK ID SDK отозвать токен (без гарантии: запрос выполняется по возможности).
+ - Журнал сети хранится только в памяти и не содержит токенов, сообщений и содержимого ответов VK.
+ 
+ ## Производительность (что заложено, не измерено)
+diff --git a/android/docs/CLIENT_AUTH_RESEARCH.md b/android/docs/CLIENT_AUTH_RESEARCH.md
+index 161e8f9..921ad54 100644
+--- a/android/docs/CLIENT_AUTH_RESEARCH.md
++++ b/android/docs/CLIENT_AUTH_RESEARCH.md
+@@ -37,3 +37,7 @@
+ ## Тестовая миграция авторизации (22 октября 2026)
+ 
+ Kontakt подключает официальный классический VK Android SDK (`com.vk:android-sdk-core`) и отдельный ID приложения типа Standalone. SDK credential storage передан в `TokenStore`, чтобы значения шифровались AES-GCM ключом Android Keystore, а не сохранялись в стандартном хранилище SDK. Для проверки требуется зарегистрировать Android package `com.kontakt.app`, SHA-1 используемой подписи и секрет сборки `VK_STANDALONE_APP_ID`. Это эксперимент, не гарантия доступа ко всем методам: после сборки нужно проверить реальные ответы `users.get`, `friends.get`, `newsfeed.get` и `messages.getConversations`; аудио API требует отдельной проверки.
++
++## Переход на VK ID SDK (25 октября 2026)
++
++Вход через классический SDK (`VK.login()`) заменён на официальный VK ID SDK. Причины, доказательства и ограничения выводов: [VK_AUTH_DIAGNOSIS.md](VK_AUTH_DIAGNOSIS.md). Раздел «Тестовая миграция авторизации» выше описывает прежнее состояние и сохранён как история.
+diff --git a/android/docs/VK_AUTH_DIAGNOSIS.md b/android/docs/VK_AUTH_DIAGNOSIS.md
+new file mode 100644
+index 0000000..a03e064
+--- /dev/null
++++ b/android/docs/VK_AUTH_DIAGNOSIS.md
+@@ -0,0 +1,43 @@
++# Вход через VK: ошибка `invalid_request` / `Security Error`
++
++Дата разбора: 24–25 октября 2026. Здесь отдельно записано, что **доказано** исходниками и документацией, а что остаётся **предположением**.
++
++## Что доказано
++
++1. **Текст ошибки приходит с сервера VK, а не из Kontakt и не из SDK.** Строки `Security Error` нет ни в нашем коде, ни в исходниках `com.vk:android-sdk-core:4.1.0` (проверено поиском по обоим деревьям). Так что ошибка не из инициализации SDK и не из возврата результата в приложение, а из ответа VK на запрос авторизации.
++2. **Что именно отправлял прежний вход.** `VK.login()` из SDK 4.1.0 открывает приложение VK (если оно установлено) или `VKWebViewAuthActivity`, которая грузит `https://api.vk.com/oauth/authorize?client_id=…&response_type=token&redirect_uri=https://oauth.vk.com/blank.html&display=mobile&revoke=1` — старый «неявный» OAuth-поток, домен `vk.com`. Код: `VKAuthParams`, `VKWebViewAuthActivity.getUrlParams`.
++3. **Результат окна терялся.** Любой неуспешный результат (кнопка «Назад», ошибка загрузки, `error`/`cancel` в ответе) SDK 4.1.0 превращает в `VKAuthException(authError = "Authentication cancelled with activity code = N")`, а текст исключения всегда «Auth canceled». По этим данным нельзя отличить закрытие окна от ошибки VK (`VKAuthResultContract.parseResult`).
++4. **Официальный современный способ — VK ID SDK.** Его v2.7.3 (сентябрь 2026) открывает `https://id.vk.ru/authorize` с `response_type=code` и PKCE, возвращается по `vk{ID}://vk.ru/blank.html`. В его CHANGELOG (2.5.1): «ВКонтакте переходит на домен vk.ru — теперь все API-интеграции и авторизации будут доступны только через него». В документации VK ID сказано, что Standalone-приложения из dev.vk.com перенесены в сервис VK ID.
++5. **Ключ в APK для входа не нужен.** В исходниках VK ID SDK 2.7.3 обмен кода на токен, обновление и выход не используют `client_secret`; он нужен только для статистики и необязательного списка провайдеров тихого входа, при отказе сервера SDK берёт встроенный список (`TrustedProvidersCache`).
++
++## Что остаётся предположением
++
++- **Прямого описания ошибки `Security Error` в документации VK нет.** Вывод «старый запрос не подходит ID приложения из VK ID» складывается из пунктов 2 и 4 и из того, что приложение регистрировалось в кабинете VK ID. Это наиболее вероятная причина, но не доказанная.
++- Сторонние обсуждения (не официальные, не проверены) пишут, что неявный поток и OAuth 2.0 VK ограничивает, а обычное создание приложений в 2026 году недоступно. Старые заметки про «Security Error» связывают его с устаревшей сессией VK в веб-входе; для Android это не подтверждено.
++
++Подтвердить причину окончательно можно только запуском на устройстве.
++
++## Что изменено в Kontakt
++
++- Вход переведён на VK ID SDK целиком; классический SDK, его хранилище и `VK.login()` удалены. Оба механизма одновременно не используются.
++- Вход запускается от области процесса, а не от Activity: поворот экрана, пока открыто окно VK, не теряет результат.
++- `AuthFlow` (чистая логика, покрыта тестами): одна попытка за раз; любой исход снимает загрузку; сохранение токена проверяется; через 5 минут без ответа загрузка снимается; токен не попадает в состояние и сообщения.
++- Ошибки VK ID SDK разбираются по типам (`Canceled`, `FailedApiCall`, `FailedOAuth`, `FailedOAuthState`, `FailedRedirectActivity`, `NoBrowserAvailable`) и показываются с очищенным описанием: значения `code`, `state`, `device_id`, токены и длинные токеноподобные строки скрываются.
++- `client_secret` в APK не кладётся.
++- По умолчанию запрашивается только базовое право: права вне списка, включённого в кабинете VK ID, делают запрос недействительным.
++
++## Проверка на устройстве
++
++1. Скачай APK из последнего успешного запуска Kontakt Android CI и установи его поверх старого (подпись та же).
++2. Открой Настройки → «О приложении» и сверь строку «сборка …» с началом хэша последнего коммита ветки.
++3. На экране входа нажми «Войти через VK». Ожидаемо: откроется приложение VK («Продолжить как …») или страница `id.vk.ru` в браузере.
++4. Подтверди вход. Ожидаемо: открывается основной интерфейс Kontakt.
++5. Если на странице VK ошибка, пришли её скриншот целиком. Если Kontakt показал красное сообщение, пришли скриншот сообщения. Тексты уже очищены от токенов и кодов.
++6. После входа открой Настройки → «Сеть и диагностика» → «Проверить доступ к VK API» и пришли, какие методы доступны.
++
++## Данные из кабинета VK, которые могут понадобиться
++
++Нужны, только если вход всё равно завершится ошибкой, и каждое — по конкретной причине:
++
++- В каком кабинете создано приложение с ID из `VK_STANDALONE_APP_ID` (VK ID, id.vk.com → «Бизнес», или старый раздел для разработчиков): VK ID SDK работает только с приложениями VK ID.
++- Статус приложения и перечень включённых прав: запрос прав вне списка отклоняется.
+-- 
+2.43.0
+
