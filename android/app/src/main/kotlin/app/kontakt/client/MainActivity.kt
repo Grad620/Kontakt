@@ -27,7 +27,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val app = application as KontaktApp
         val container = app.container
-        container.auth.attachLifecycleOwner(this)
 
         val reportFile = File(filesDir, KontaktApp.CRASH_REPORT)
         val report = runCatching { reportFile.takeIf { it.isFile }?.readText() }.getOrNull()
@@ -63,10 +62,5 @@ class MainActivity : ComponentActivity() {
                 KontaktRoot(container)
             }
         }
-    }
-
-    override fun onDestroy() {
-        (application as? KontaktApp)?.container?.auth?.detachLifecycleOwner(this)
-        super.onDestroy()
     }
 }

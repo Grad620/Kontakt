@@ -136,7 +136,7 @@ fun LoginScreen(container: AppContainer) {
             if (!auth.isConfigured) {
                 SectionCard("Нужно зарегистрировать приложение VK", titleTextAlign = TextAlign.Center) {
                     Text(
-                        "Для классического входа нужно приложение типа Standalone в кабинете разработчика VK. Укажи пакет com.kontakt.app, главный Activity app.kontakt.client.MainActivity и SHA-1 сертификата APK. Числовой ID приложения добавь в GitHub Actions → Settings → Secrets and variables → Actions → Variables под именем VK_STANDALONE_APP_ID.",
+                        "Для входа нужен ID приложения из кабинета VK ID (id.vk.com → Бизнес). Добавь платформу Android: пакет com.kontakt.app и SHA-1 подписи APK. Числовой ID добавь в GitHub Actions → Settings → Secrets and variables → Actions → Variables под именем VK_STANDALONE_APP_ID.",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                     )

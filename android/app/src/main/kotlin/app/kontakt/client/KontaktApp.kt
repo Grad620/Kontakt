@@ -7,6 +7,7 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import app.kontakt.client.auth.TokenStore
+import com.vk.id.VKID
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -24,18 +25,10 @@ class KontaktApp : Application(), ImageLoaderFactory {
         super.onCreate()
         installCrashRecorder()
         val tokenStore = TokenStore(this)
-        if (BuildConfig.VK_STANDALONE_CONFIGURED) {
-            runCatching {
-                com.vk.api.sdk.VK.setConfig(
-                    com.vk.api.sdk.VKApiConfig(this).builder(this)
-                        .setAppId(BuildConfig.VK_STANDALONE_APP_ID.toInt())
-                        .setValidationHandler(com.vk.api.sdk.VKDefaultValidationHandler(this))
-                        .setCustomValueStorage(tokenStore)
-                        .build(),
-                )
-            }.onFailure { error ->
-                // Do not swallow SDK initialization failures; keep diagnostics free of credentials.
-                vkSdkInitError = "VK SDK init failed: ${error.javaClass.simpleName}"
+        if (BuildConfig.VK_ID_CONFIGURED) {
+            runCatching { VKID.init(this) }.onFailure { error ->
+                // Не глотаем сбой инициализации; диагностика не содержит ID приложения, токенов и ответов сервера.
+                vkSdkInitError = "VK ID init failed: ${error.javaClass.simpleName}"
             }
         }
         container = AppContainer(this, tokenStore, vkSdkInitError)

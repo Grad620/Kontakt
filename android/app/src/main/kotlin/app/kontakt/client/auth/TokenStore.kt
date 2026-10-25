@@ -10,14 +10,13 @@ import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
-import com.vk.api.sdk.VKKeyValueStorage
 
 /**
  * Stores the access token encrypted with AES-256-GCM. The key remains in Android Keystore.
  * If encrypted data or the Keystore key becomes unusable, the session is discarded safely:
  * tokens are never written to plaintext storage.
  */
-class TokenStore(context: Context) : VKKeyValueStorage {
+class TokenStore(context: Context) {
     private val appContext = context.applicationContext
     private val prefs by lazy {
         appContext.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -51,23 +50,11 @@ class TokenStore(context: Context) : VKKeyValueStorage {
     @Synchronized
     fun clear() {
         val editor = prefs.edit().remove(KEY_TOKEN)
-        prefs.all.keys.filter { it.startsWith(VK_PREFIX) }.forEach(editor::remove)
+        // Записи прежнего классического VK SDK (сборки до перехода на VK ID) больше не используются: стираем.
+        prefs.all.keys.filter { it.startsWith(LEGACY_VK_SDK_PREFIX) }.forEach(editor::remove)
         editor.apply()
     }
 
-    @Synchronized override fun put(key: String, value: String) {
-        prefs.edit().putString(VK_PREFIX + key, encrypt(value)).apply()
-    }
-    @Synchronized override fun get(key: String): String? {
-        val stored = prefs.getString(VK_PREFIX + key, null) ?: return null
-        return try { decrypt(stored) } catch (_: Exception) {
-            prefs.edit().remove(VK_PREFIX + key).apply()
-            null
-        }
-    }
-    @Synchronized override fun remove(key: String) {
-        prefs.edit().remove(VK_PREFIX + key).apply()
-    }
     private fun encrypt(value: String): String {
         val cipher = Cipher.getInstance(TRANSFORMATION).apply { init(Cipher.ENCRYPT_MODE, key()) }
         return Base64.encodeToString(cipher.iv + cipher.doFinal(value.toByteArray(Charsets.UTF_8)), Base64.NO_WRAP)
@@ -114,7 +101,7 @@ class TokenStore(context: Context) : VKKeyValueStorage {
         const val ANDROID_KEYSTORE = "AndroidKeyStore"
         const val KEY_ALIAS = "vg_token_key"
         const val KEY_TOKEN = "token"
-        const val VK_PREFIX = "vk_sdk_"
+        const val LEGACY_VK_SDK_PREFIX = "vk_sdk_"
         const val PREF_FILE = "vg_secure"
         const val TRANSFORMATION = "AES/GCM/NoPadding"
         const val IV_SIZE = 12

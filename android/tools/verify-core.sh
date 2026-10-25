@@ -13,7 +13,7 @@ T="$ROOT/app/src/test/kotlin/app/kontakt/client"
 DEPS="$L/kotlin-stdlib-2.0.21.jar:$L/kotlinx-coroutines-core-jvm-1.6.4.jar:$L/kotlinx-serialization-core-jvm-1.6.2.jar:$L/kotlinx-serialization-json-jvm-1.6.2.jar:$L/junit-4.13.2.jar:$L/hamcrest-core-1.3.jar"
 
 MAIN_FILES=(
-  "$M/net/VkError.kt" "$M/net/Dto.kt"
+  "$M/net/VkError.kt" "$M/net/Dto.kt" "$M/auth/AuthFailure.kt" "$M/auth/AuthFlow.kt"
   "$M/data/FeedPost.kt" "$M/data/MessagesMapping.kt" "$M/data/FeedMapping.kt" "$M/data/ForYouRepository.kt" "$M/core/Paging.kt"
   "$M/core/Diagnostics.kt" "$M/core/NavConfig.kt" "$M/core/Appearance.kt" "$M/ui/theme/ColorMath.kt"
   "$M/rec/Tokenizer.kt" "$M/rec/InterestProfile.kt" "$M/rec/Ranker.kt" "$M/rec/Signals.kt"
@@ -21,7 +21,7 @@ MAIN_FILES=(
 )
 TEST_FILES=(
   "$T/TestSupport.kt" "$T/ContentFilterTest.kt" "$T/TokenizerTest.kt" "$T/SignalsTest.kt"
-  "$T/NavConfigTest.kt" "$T/DiagnosticsTest.kt" "$T/RecommenderTest.kt" "$T/FeedMappingTest.kt" "$T/ForYouRepositoryTest.kt" "$T/ColorMathTest.kt" "$T/StylePaletteTest.kt" "$T/MessagesMappingTest.kt"
+  "$T/NavConfigTest.kt" "$T/DiagnosticsTest.kt" "$T/RecommenderTest.kt" "$T/FeedMappingTest.kt" "$T/ForYouRepositoryTest.kt" "$T/ColorMathTest.kt" "$T/StylePaletteTest.kt" "$T/MessagesMappingTest.kt" "$T/AuthFailureTest.kt" "$T/AuthFlowTest.kt"
 )
 echo "== компиляция основного кода"
 bash "$ROOT/tools/kc.sh" -jvm-target 17 -cp "$DEPS" -d "$OUT/main" "${MAIN_FILES[@]}" 2>&1 | grep -v 'JAVA_TOOL_OPTIONS' || true
